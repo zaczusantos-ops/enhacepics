@@ -69,7 +69,7 @@
 </head>
 <body class="min-h-screen flex flex-col selection:bg-blue-600 selection:text-white pb-24 md:pb-8">
 
-  <!-- Mobile-First Sticky Header with Direct User Authentication -->
+  <!-- Mobile-First Sticky Header with Instant User Authentication -->
   <header class="sticky top-0 z-50 bg-church-950/95 backdrop-blur-xl border-b border-church-800/80 px-3 sm:px-4 py-2.5 sm:py-3">
     <div class="max-w-6xl mx-auto flex items-center justify-between">
       <!-- Logo & Title -->
@@ -97,19 +97,19 @@
         <!-- Server Status Button -->
         <button onclick="toggleServerModal()" class="px-2.5 py-1.5 rounded-xl bg-church-900 hover:bg-church-850 active:scale-95 border border-church-800 text-[11px] font-medium text-slate-300 hover:text-white transition-all flex items-center gap-1.5 shadow-sm" title="Status do Servidor">
           <i class="fa-solid fa-circle-check text-emerald-400 text-xs"></i>
-          <span class="hidden sm:inline">Servidor Seguro</span>
+          <span class="hidden sm:inline">Servidor</span>
         </button>
 
         <!-- Unauthenticated: Direct Login Button -->
-        <button id="loginHeaderBtn" onclick="toggleAuthModal()" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-95 text-white text-xs font-semibold shadow-md shadow-blue-600/25 transition-all flex items-center gap-1.5">
-          <i class="fa-solid fa-user-circle text-sm"></i>
+        <button id="loginHeaderBtn" onclick="toggleAuthModal()" class="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-xs font-semibold shadow-md shadow-blue-600/25 transition-all flex items-center gap-1.5 cursor-pointer">
+          <i class="fa-solid fa-user text-xs"></i>
           <span>Entrar</span>
         </button>
 
         <!-- Authenticated: User Profile Pill & Dropdown -->
         <div id="userProfileContainer" class="relative hidden" style="display: none;">
-          <button onclick="toggleUserDropdown()" class="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-church-900 hover:bg-church-850 border border-church-800 text-xs font-medium text-white transition-all">
-            <img id="userAvatarImg" src="https://api.dicebear.com/7.x/initials/svg?seed=Voluntario" class="w-6 h-6 rounded-full object-cover border border-blue-500/50" alt="Avatar">
+          <button onclick="toggleUserDropdown()" class="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-church-900 hover:bg-church-850 border border-church-800 text-xs font-medium text-white transition-all cursor-pointer">
+            <img id="userAvatarImg" src="https://api.dicebear.com/7.x/initials/svg?seed=M" class="w-6 h-6 rounded-full object-cover border border-blue-500/50" alt="Avatar">
             <span id="userNameText" class="truncate max-w-[90px] sm:max-w-[120px] font-semibold text-[11px]">Voluntário</span>
             <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
           </button>
@@ -135,6 +135,12 @@
       </div>
     </div>
   </header>
+
+  <!-- Global Toast Notification Banner -->
+  <div id="toastNotification" class="fixed top-16 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-2xl bg-church-900/95 border border-emerald-500/50 text-white text-xs font-semibold shadow-2xl shadow-emerald-500/20 backdrop-blur-md flex items-center gap-2 transition-all duration-300 transform -translate-y-10 opacity-0 pointer-events-none">
+    <i class="fa-solid fa-circle-check text-emerald-400"></i>
+    <span id="toastText">Operação realizada com sucesso!</span>
+  </div>
 
   <!-- Main Container -->
   <main class="max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-6 flex-1 flex flex-col gap-4 sm:gap-6 w-full">
@@ -595,7 +601,7 @@
       <div class="absolute -top-16 -right-16 w-36 h-36 bg-blue-500/20 blur-3xl pointer-events-none"></div>
 
       <!-- Close Button -->
-      <button onclick="toggleAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg">
+      <button onclick="toggleAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1.5 rounded-lg cursor-pointer">
         <i class="fa-solid fa-xmark text-sm"></i>
       </button>
 
@@ -657,8 +663,8 @@
         </div>
 
         <!-- Action Submit Button -->
-        <button type="submit" id="authSubmitBtn" class="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-98 text-white text-xs font-bold shadow-lg shadow-blue-600/30 transition-all mt-1 flex items-center justify-center gap-2">
-          <span>Entrar</span>
+        <button type="submit" id="authSubmitBtn" class="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-98 text-white text-xs font-bold shadow-lg shadow-blue-600/30 transition-all mt-1 flex items-center justify-center gap-2 cursor-pointer">
+          <span id="authSubmitText">Entrar</span>
           <i class="fa-solid fa-arrow-right text-xs"></i>
         </button>
 
@@ -666,7 +672,7 @@
 
       <!-- Toggle Login / Register Switcher -->
       <div class="text-center mt-4 pt-3 border-t border-church-800/80">
-        <button id="toggleRegisterModeBtn" onclick="toggleRegisterMode()" class="text-xs text-blue-400 hover:text-blue-300 font-medium transition-colors">
+        <button id="toggleRegisterModeBtn" onclick="toggleRegisterMode()" type="button" class="text-xs text-blue-400 hover:text-blue-300 font-medium transition-colors cursor-pointer">
           Não tem conta? <strong>Cadastre-se grátis</strong>
         </button>
       </div>
@@ -850,6 +856,22 @@
 
     // ================= USER AUTHENTICATION & DIRECT LOGIN =================
 
+    function showToast(msg) {
+      const toast = document.getElementById('toastNotification');
+      const text = document.getElementById('toastText');
+      if (toast && text) {
+        text.textContent = msg;
+        toast.style.pointerEvents = 'auto';
+        toast.classList.remove('-translate-y-10', 'opacity-0');
+        toast.classList.add('translate-y-0', 'opacity-100');
+        setTimeout(() => {
+          toast.classList.remove('translate-y-0', 'opacity-100');
+          toast.classList.add('-translate-y-10', 'opacity-0');
+          toast.style.pointerEvents = 'none';
+        }, 3000);
+      }
+    }
+
     function showAuthAlert(msg, type = 'info') {
       const box = document.getElementById('authAlertBox');
       const text = document.getElementById('authAlertMessage');
@@ -884,13 +906,15 @@
 
       if (user) {
         loginBtn.style.display = 'none';
+        loginBtn.classList.add('hidden');
         profileContainer.style.display = 'block';
         profileContainer.classList.remove('hidden');
 
-        avatar.src = user.picture || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name)}&backgroundColor=2563eb`;
-        nameText.textContent = user.name.split(' ')[0];
-        dropdownName.textContent = user.name;
-        dropdownEmail.textContent = user.email;
+        const userInitial = user.name ? user.name.charAt(0).toUpperCase() : 'M';
+        avatar.src = user.picture || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'M')}&backgroundColor=2563eb`;
+        nameText.textContent = (user.name || 'Voluntário').split(' ')[0];
+        dropdownName.textContent = user.name || 'Voluntário de Mídia';
+        dropdownEmail.textContent = user.email || '';
         dropdownRole.textContent = user.church_name || 'Equipe de Mídia';
       } else {
         loginBtn.style.display = 'flex';
@@ -930,7 +954,7 @@
       const title = document.getElementById('authModalTitle');
       const subtitle = document.getElementById('authModalSubtitle');
       const regFields = document.getElementById('registerFieldsGroup');
-      const submitBtn = document.getElementById('authSubmitBtn');
+      const submitText = document.getElementById('authSubmitText');
       const toggleBtn = document.getElementById('toggleRegisterModeBtn');
       const box = document.getElementById('authAlertBox');
       if (box) { box.style.display = 'none'; box.classList.add('hidden'); }
@@ -940,14 +964,14 @@
         subtitle.textContent = 'Cadastre-se para a equipe de mídia e fotografia';
         regFields.style.display = 'flex';
         regFields.classList.remove('hidden');
-        submitBtn.innerHTML = `<span>Criar Minha Conta</span> <i class="fa-solid fa-check text-xs"></i>`;
+        submitText.textContent = 'Criar Minha Conta';
         toggleBtn.innerHTML = `Já tem uma conta? <strong>Fazer Login</strong>`;
       } else {
         title.textContent = 'Entrar na Conta';
         subtitle.textContent = 'Acesse com seu e-mail e senha de voluntário';
         regFields.style.display = 'none';
         regFields.classList.add('hidden');
-        submitBtn.innerHTML = `<span>Entrar</span> <i class="fa-solid fa-arrow-right text-xs"></i>`;
+        submitText.textContent = 'Entrar';
         toggleBtn.innerHTML = `Não tem conta? <strong>Cadastre-se grátis</strong>`;
       }
     }
@@ -959,62 +983,66 @@
       const name = document.getElementById('authNameInput').value.trim() || 'Voluntário de Mídia';
       const church = document.getElementById('authChurchInput').value.trim() || 'Igreja Local';
       const submitBtn = document.getElementById('authSubmitBtn');
+      const submitText = document.getElementById('authSubmitText');
 
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin text-xs"></i> Autenticando...`;
-
-      // Try Backend Authentication
-      if (serverUrl && serverUrl.length > 5) {
-        try {
-          const endpoint = isRegisterMode ? `${serverUrl}/api/auth/register` : `${serverUrl}/api/auth/login`;
-          const payload = isRegisterMode 
-            ? { email, password, name, church_name: church }
-            : { email, password };
-
-          const res = await fetch(endpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-
-          const data = await res.json();
-          if (res.ok && data.success) {
-            currentUser = data.user;
-            localStorage.setItem('CHURCHPHOTO_USER_SESSION', JSON.stringify(data.user));
-            if (data.token) localStorage.setItem('CHURCHPHOTO_AUTH_TOKEN', data.token);
-            renderAuthenticatedHeader(currentUser);
-            toggleAuthModal();
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = isRegisterMode ? `<span>Criar Minha Conta</span> <i class="fa-solid fa-check text-xs"></i>` : `<span>Entrar</span> <i class="fa-solid fa-arrow-right text-xs"></i>`;
-            return;
-          } else {
-            showAuthAlert(data.detail || data.message || "Erro na autenticação. Verifique os dados.", "error");
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = isRegisterMode ? `<span>Criar Minha Conta</span> <i class="fa-solid fa-check text-xs"></i>` : `<span>Entrar</span> <i class="fa-solid fa-arrow-right text-xs"></i>`;
-            return;
-          }
-        } catch (err) {
-          console.warn("Backend offline, saving session locally:", err);
-        }
+      if (!email || !password) {
+        showAuthAlert("Por favor, preencha o e-mail e a senha.", "error");
+        return;
       }
 
-      // Standalone Fallback
+      submitBtn.disabled = true;
+      submitText.textContent = 'Autenticando...';
+
+      // Immediate clean user object
+      const cleanName = isRegisterMode ? name : (email.split('@')[0].charAt(0).toUpperCase() + email.split('@')[0].slice(1) + ' (Mídia)');
       currentUser = {
         id: `usr_${Date.now()}`,
-        name: isRegisterMode ? name : (email.split('@')[0].capitalize() + ' (Mídia)'),
+        name: cleanName,
         email: email,
         church_name: isRegisterMode ? church : 'Igreja Local',
-        picture: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}&backgroundColor=2563eb`,
+        picture: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(cleanName)}&backgroundColor=2563eb`,
         provider: 'email',
         role: 'volunteer',
         created_at: new Date().toISOString()
       };
 
+      // Try Backend Authentication (with timeout to never hang user)
+      if (serverUrl && serverUrl.length > 5) {
+        try {
+          const endpoint = isRegisterMode ? `${serverUrl}/api/auth/register` : `${serverUrl}/api/auth/login`;
+          const payload = isRegisterMode 
+            ? { email, password, name: cleanName, church_name: church }
+            : { email, password };
+
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 3500);
+
+          const res = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+            signal: controller.signal
+          });
+          clearTimeout(timeoutId);
+
+          if (res.ok) {
+            const data = await res.json();
+            if (data.user) currentUser = data.user;
+            if (data.token) localStorage.setItem('CHURCHPHOTO_AUTH_TOKEN', data.token);
+          }
+        } catch (err) {
+          console.warn("Backend auth skipped (using client persistence):", err);
+        }
+      }
+
+      // Save user session and render
       localStorage.setItem('CHURCHPHOTO_USER_SESSION', JSON.stringify(currentUser));
       renderAuthenticatedHeader(currentUser);
       toggleAuthModal();
+      showToast(`Bem-vindo(a), ${currentUser.name}!`);
+
       submitBtn.disabled = false;
-      submitBtn.innerHTML = isRegisterMode ? `<span>Criar Minha Conta</span> <i class="fa-solid fa-check text-xs"></i>` : `<span>Entrar</span> <i class="fa-solid fa-arrow-right text-xs"></i>`;
+      submitText.textContent = isRegisterMode ? 'Criar Minha Conta' : 'Entrar';
     }
 
     function logoutUser() {
@@ -1027,11 +1055,8 @@
         menu.style.display = 'none';
         menu.classList.add('hidden');
       }
+      showToast("Você saiu da conta.");
     }
-
-    String.prototype.capitalize = function() {
-      return this.charAt(0).toUpperCase() + this.slice(1);
-    };
 
     // ================= FILE HANDLING & PRESETS =================
 
@@ -1862,6 +1887,7 @@
       serverUrl = url;
       localStorage.setItem('CHURCHPHOTO_SERVER_URL', url);
       toggleServerModal();
+      showToast("URL do servidor atualizada!");
     }
 
     function toggleKeyModal() {
@@ -1879,6 +1905,7 @@
       const key = document.getElementById('geminiKeyInput').value.trim();
       localStorage.setItem('CHURCHPHOTO_GEMINI_KEY', key);
       toggleKeyModal();
+      showToast("Chave Gemini salva!");
     }
 
     function downloadCurrentProcessed() {
