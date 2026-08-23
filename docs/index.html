@@ -41,6 +41,8 @@
   <style>
     * { -webkit-tap-highlight-color: transparent; }
     body { background-color: #07090E; color: #F1F5F9; font-family: 'Inter', sans-serif; }
+    .hidden { display: none !important; }
+    [hidden] { display: none !important; }
     ::-webkit-scrollbar { width: 4px; height: 4px; }
     ::-webkit-scrollbar-track { background: #0E131F; }
     ::-webkit-scrollbar-thumb { background: #2A3753; border-radius: 4px; }
@@ -48,6 +50,7 @@
     .slider-divider { touch-action: none; user-select: none; }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    button, label { cursor: pointer; -webkit-touch-callout: none; }
   </style>
 </head>
 <body class="min-h-screen flex flex-col selection:bg-blue-600 selection:text-white pb-24 md:pb-8">
@@ -110,43 +113,45 @@
           </p>
         </div>
 
-        <!-- Big Dedicated Mobile Upload Buttons (Native Label Trigger) -->
-        <div class="w-full sm:w-auto flex flex-col sm:flex-row items-center gap-2.5 shrink-0">
+        <!-- Big Dedicated Mobile Upload Buttons -->
+        <div class="w-full sm:w-auto flex flex-col sm:flex-row items-center gap-2.5 shrink-0 relative z-10">
           
-          <!-- Primary Upload Button (Label Trigger - 100% Reactive on iOS/Android) -->
-          <label
-            for="fileInput"
+          <!-- Standalone File Inputs -->
+          <input
+            type="file"
+            id="fileInput"
+            multiple
+            accept="image/*,image/jpeg,image/png,image/webp,image/heic"
+            style="position: fixed; top: -9999px; left: -9999px; opacity: 0; pointer-events: none;"
+          >
+          <input
+            type="file"
+            id="cameraInput"
+            accept="image/*"
+            capture="environment"
+            style="position: fixed; top: -9999px; left: -9999px; opacity: 0; pointer-events: none;"
+          >
+
+          <!-- Primary Upload Button -->
+          <button
+            type="button"
+            onclick="openGallery()"
             class="w-full sm:w-auto px-6 py-3.5 sm:py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold text-sm shadow-xl shadow-blue-600/30 active:scale-95 transition-all flex items-center justify-center gap-2.5 cursor-pointer select-none"
           >
-            <i class="fa-solid fa-image text-base"></i>
-            <span>Escolher da Galeria</span>
-            <input
-              type="file"
-              id="fileInput"
-              multiple
-              accept="image/*,image/jpeg,image/png,image/webp,image/heic"
-              class="sr-only"
-              onchange="handleFiles(this.files)"
-            >
-          </label>
+            <i class="fa-solid fa-image text-base pointer-events-none"></i>
+            <span class="pointer-events-none">Escolher da Galeria</span>
+          </button>
 
           <!-- Native Camera Capture Button for Mobile -->
-          <label
-            for="cameraInput"
+          <button
+            type="button"
+            onclick="openCamera()"
             class="w-full sm:w-auto px-5 py-3.5 sm:py-3 rounded-xl bg-church-800 hover:bg-church-700 border border-church-700 text-slate-200 font-semibold text-sm active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer select-none"
           >
-            <i class="fa-solid fa-camera text-blue-400"></i>
-            <span class="sm:hidden">Tirar Foto com a Câmera</span>
-            <span class="hidden sm:inline">Câmera</span>
-            <input
-              type="file"
-              id="cameraInput"
-              accept="image/*"
-              capture="environment"
-              class="sr-only"
-              onchange="handleFiles(this.files)"
-            >
-          </label>
+            <i class="fa-solid fa-camera text-blue-400 pointer-events-none"></i>
+            <span class="sm:hidden pointer-events-none">Tirar Foto com a Câmera</span>
+            <span class="hidden sm:inline pointer-events-none">Câmera</span>
+          </button>
         </div>
       </div>
 
@@ -397,7 +402,7 @@
   </div>
 
   <!-- Server Backend Proxy Modal -->
-  <div id="serverModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm hidden">
+  <div id="serverModal" class="fixed inset-0 z-50 items-center justify-center p-4 bg-black/70 backdrop-blur-sm hidden" style="display: none;">
     <div class="w-full max-w-md bg-church-900 border border-church-800 rounded-2xl p-5 shadow-2xl">
       <div class="flex items-center gap-2 mb-2">
         <i class="fa-solid fa-server text-emerald-400 text-base"></i>
@@ -415,7 +420,7 @@
   </div>
 
   <!-- Key Modal -->
-  <div id="keyModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm hidden">
+  <div id="keyModal" class="fixed inset-0 z-50 items-center justify-center p-4 bg-black/70 backdrop-blur-sm hidden" style="display: none;">
     <div class="w-full max-w-md bg-church-900 border border-church-800 rounded-2xl p-5 shadow-2xl">
       <div class="flex items-center gap-2 mb-2">
         <i class="fa-solid fa-key text-blue-400 text-base"></i>
@@ -552,8 +557,18 @@
       setupSliderEvents();
     });
 
-    function triggerCamera() {
-      document.getElementById('cameraInput').click();
+    function openGallery() {
+      const fileInput = document.getElementById('fileInput');
+      if (fileInput) {
+        fileInput.click();
+      }
+    }
+
+    function openCamera() {
+      const cameraInput = document.getElementById('cameraInput');
+      if (cameraInput) {
+        cameraInput.click();
+      }
     }
 
     function setupFileInputs() {
@@ -1059,7 +1074,14 @@
     }
 
     function toggleServerModal() {
-      document.getElementById('serverModal').classList.toggle('hidden');
+      const modal = document.getElementById('serverModal');
+      if (modal.style.display === 'none' || modal.classList.contains('hidden')) {
+        modal.style.display = 'flex';
+        modal.classList.remove('hidden');
+      } else {
+        modal.style.display = 'none';
+        modal.classList.add('hidden');
+      }
     }
 
     function saveServerUrl() {
@@ -1070,7 +1092,14 @@
     }
 
     function toggleKeyModal() {
-      document.getElementById('keyModal').classList.toggle('hidden');
+      const modal = document.getElementById('keyModal');
+      if (modal.style.display === 'none' || modal.classList.contains('hidden')) {
+        modal.style.display = 'flex';
+        modal.classList.remove('hidden');
+      } else {
+        modal.style.display = 'none';
+        modal.classList.add('hidden');
+      }
     }
 
     function saveGeminiKey() {
