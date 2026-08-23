@@ -1,0 +1,27 @@
+{
+  "usr_c785bfdf86e6": {
+    "id": "usr_c785bfdf86e6",
+    "email": "midia_central@igreja.org",
+    "name": "Equipe Mídia",
+    "password_hash": "1724670057594b77796c41a744fd956d250573971d86647220dded296ac9e9db",
+    "picture": "https://api.dicebear.com/7.x/initials/svg?seed=Equipe Mídia&backgroundColor=2563eb",
+    "provider": "email",
+    "church_name": "Igreja Batista Central",
+    "role": "volunteer",
+    "created_at": "2026-08-23T19:49:59.632293",
+    "last_login": "2026-08-23T19:49:59.635227",
+    "photos_processed_count": 0
+  },
+  "google_109876543210987654321": {
+    "id": "google_109876543210987654321",
+    "email": "voluntario.midia@gmail.com",
+    "name": "Voluntário de Louvor",
+    "picture": "https://lh3.googleusercontent.com/a/mock_photo",
+    "provider": "google",
+    "church_name": "Igreja Local",
+    "role": "volunteer",
+    "created_at": "2026-08-23T19:49:59.668702",
+    "last_login": "2026-08-23T19:49:59.668712",
+    "photos_processed_count": 0
+  }
+}

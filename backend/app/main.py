@@ -1,13 +1,14 @@
 """
-ChurchPhoto Pro - FastAPI Application & REST API Endpoints
+ChurchPhoto Pro - FastAPI Application & REST API Endpoints with Authentication
 """
 
 import time
 import json
 from typing import Optional, List, Dict
-from fastapi import FastAPI, UploadFile, File, Form, Header, HTTPException, Query, status
+from fastapi import FastAPI, UploadFile, File, Form, Header, HTTPException, Query, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response, FileResponse
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 
@@ -18,7 +19,15 @@ from .schemas.colorimetry import (
     ProcessedImageMetadata,
     FullPipelineResponse,
 )
+from .schemas.auth import (
+    GoogleLoginRequest,
+    EmailLoginRequest,
+    EmailRegisterRequest,
+    UserProfile,
+    AuthResponse,
+)
 from .services.gemini_analyzer import GeminiColorimetryAnalyzer
+from .services.auth_service import auth_service
 from .engine.processor import ChurchPhotoProcessor
 
 app = FastAPI(
@@ -36,6 +45,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Security bearer scheme
+security = HTTPBearer(auto_error=False)
+
 # Initialize singletons
 analyzer = GeminiColorimetryAnalyzer()
 processor = ChurchPhotoProcessor()
@@ -43,106 +55,96 @@ processor = ChurchPhotoProcessor()
 # Built-in Church Event Presets
 CHURCH_PRESETS = [
     {
-        "id": "culto_contemporaneo",
-        "name": "Culto Contemporâneo (LEDs de Palco)",
-        "description": "Atenua LEDs azuis/magentas, preserva calor de pele e recupera realces dos telões.",
+        "id": "luz_quente_natural",
+        "name": "Luz Quente Natural",
+        "description": "Tons de pele acolhedores e calor orgânico para louvor e palavra.",
         "params": ColorimetryParameters(
-            exposure_compensation=0.25,
-            temperature_kelvin=5400,
-            tint=-5.0,
-            contrast=1.12,
-            highlights_recovery=0.60,
-            shadows_lift=0.45,
+            exposure_compensation=0.20,
+            temperature_kelvin=5700,
+            tint=-2.0,
+            contrast=1.06,
+            highlights_recovery=0.45,
+            shadows_lift=0.40,
             saturation=1.04,
-            stage_led_tint_suppression=0.65,
-            blue_led_attenuation=0.55,
-            red_magenta_attenuation=0.50,
-            skin_tone_protection_strength=0.90,
-            denoise_strength=0.30,
-            unsharp_mask_amount=0.75,
-            unsharp_mask_radius=1.2,
-            detected_lighting_condition="Palco contemporâneo com refletores LED e contraluz",
-            detected_scene_type="Louvor / Ministério de Música",
-            analysis_summary="Equilíbrio de iluminação de palco contemporânea com proteção estrita de tom de pele.",
-            suggested_preset="Culto Contemporâneo"
-        )
-    },
-    {
-        "id": "culto_tradicional",
-        "name": "Culto Tradicional (Madeira & Luz Quente)",
-        "description": "Corrige sombras do púlpito, equilibra tons tungstênio/madeira e dá acabamento nítido.",
-        "params": ColorimetryParameters(
-            exposure_compensation=0.15,
-            temperature_kelvin=5100,
-            tint=2.0,
-            contrast=1.05,
-            highlights_recovery=0.35,
-            shadows_lift=0.50,
-            saturation=0.98,
-            stage_led_tint_suppression=0.15,
-            blue_led_attenuation=0.10,
-            red_magenta_attenuation=0.15,
-            skin_tone_protection_strength=0.85,
-            denoise_strength=0.20,
-            unsharp_mask_amount=0.60,
-            unsharp_mask_radius=1.0,
-            detected_lighting_condition="Iluminação incandescente e madeira com sombras suaves",
-            detected_scene_type="Púlpito / Pregador",
-            analysis_summary="Balanço tonal suave para púlpito tradicional sem saturação excessiva.",
-            suggested_preset="Culto Tradicional"
-        )
-    },
-    {
-        "id": "louvor_adoracao",
-        "name": "Louvor & Adoração (Baixa Luz / Intimista)",
-        "description": "Forte redução de ruído de alto ISO, realce de sombras do público e suavização de contraste.",
-        "params": ColorimetryParameters(
-            exposure_compensation=0.50,
-            temperature_kelvin=5600,
-            tint=-3.0,
-            contrast=1.08,
-            highlights_recovery=0.70,
-            shadows_lift=0.70,
-            saturation=1.05,
-            stage_led_tint_suppression=0.50,
-            blue_led_attenuation=0.45,
-            red_magenta_attenuation=0.40,
+            vibrance=1.08,
+            chromatic_aberration_fix=0.50,
+            vignette_correction=0.35,
+            lens_distortion_correction=0.20,
+            led_clipping_restoration=0.60,
+            stage_led_tint_suppression=0.45,
+            selective_denoise=0.28,
             skin_tone_protection_strength=0.92,
-            denoise_strength=0.50,
-            unsharp_mask_amount=0.80,
-            unsharp_mask_radius=1.3,
-            detected_lighting_condition="Ambiente de adoração em penumbra com focos de luz",
-            detected_scene_type="Congregação / Público",
-            analysis_summary="Ganho de exposição e redução de ruído ISO para momentos de adoração em baixa luz.",
-            suggested_preset="Louvor & Adoração"
+            f_stop_simulation=2.4,
+            bokeh_smoothness: 0.75,
+            subject_microcontrast: 0.80,
+            scene_moment="Louvor / Palco",
+            analysis_summary="Equilíbrio de calor humano com proteção de pele e profundidade f/2.4."
         )
     },
     {
-        "id": "evento_externo",
-        "name": "Batismo & Evento Externo (Luz Natural)",
-        "description": "Cores naturais, céu equilibrado e tons de pele radiantes para eventos diurnos ao ar livre.",
+        "id": "clean_moderno_neutro",
+        "name": "Clean / Moderno Neutro",
+        "description": "Balanço de estúdio limpo com atenuação precisa de reflexos de LED.",
         "params": ColorimetryParameters(
-            exposure_compensation=0.0,
-            temperature_kelvin=5800,
+            exposure_compensation=0.10,
+            temperature_kelvin=5400,
             tint=0.0,
             contrast=1.10,
-            highlights_recovery=0.40,
+            highlights_recovery=0.55,
+            shadows_lift=0.35,
+            saturation=0.98,
+            vibrance=1.02,
+            chromatic_aberration_fix=0.65,
+            vignette_correction=0.40,
+            lens_distortion_correction=0.20,
+            led_clipping_restoration=0.70,
+            stage_led_tint_suppression=0.55,
+            selective_denoise=0.35,
+            skin_tone_protection_strength=0.88,
+            f_stop_simulation=2.8,
+            bokeh_smoothness: 0.75,
+            subject_microcontrast: 0.75,
+            scene_moment="Celebração / LEDs Cênicos",
+            analysis_summary="Balanço neutro de estúdio com alta fidelidade de cor."
+        )
+    },
+    {
+        "id": "moody_contraste_cenico",
+        "name": "Moody / Contraste Cênico",
+        "description": "Visual cinematográfico com sombras profundas e isolamento cênico.",
+        "params": ColorimetryParameters(
+            exposure_compensation=-0.05,
+            temperature_kelvin=5100,
+            tint=4.0,
+            contrast=1.22,
+            highlights_recovery=0.65,
             shadows_lift=0.25,
-            saturation=1.08,
-            stage_led_tint_suppression=0.0,
-            blue_led_attenuation=0.0,
-            red_magenta_attenuation=0.0,
-            skin_tone_protection_strength=0.80,
-            denoise_strength=0.10,
-            unsharp_mask_amount=0.50,
-            unsharp_mask_radius=1.0,
-            detected_lighting_condition="Luz natural do dia / Área aberta",
-            detected_scene_type="Batismo / Cerimônia",
-            analysis_summary="Fotografia diurna nítida com preservação de céu e folhagens.",
-            suggested_preset="Evento Externo"
+            saturation=1.06,
+            vibrance=1.12,
+            chromatic_aberration_fix=0.55,
+            vignette_correction=0.20,
+            lens_distortion_correction=0.20,
+            led_clipping_restoration=0.60,
+            stage_led_tint_suppression=0.40,
+            selective_denoise=0.25,
+            skin_tone_protection_strength=0.85,
+            f_stop_simulation=1.8,
+            bokeh_smoothness: 0.85,
+            subject_microcontrast: 0.90,
+            scene_moment="Louvor Intimista / Pouca Luz",
+            analysis_summary="Visual cinematográfico com profundidade bokeh f/1.8."
         )
     }
 ]
+
+
+# Dependency to get currently authenticated user (optional)
+async def get_optional_user(credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)) -> Optional[UserProfile]:
+    if credentials and credentials.credentials:
+        payload = auth_service.verify_jwt_token(credentials.credentials)
+        if payload and "sub" in payload:
+            return auth_service.get_user_by_id(payload["sub"])
+    return None
 
 
 @app.get("/api/health")
@@ -154,8 +156,72 @@ async def health_check():
         "version": settings.VERSION,
         "gemini_configured": bool(settings.GEMINI_API_KEY and len(settings.GEMINI_API_KEY) > 10),
         "model": settings.GEMINI_MODEL,
+        "auth_enabled": True,
     }
 
+
+# =========================================================================
+# AUTHENTICATION ENDPOINTS (Google OAuth & Email/Password)
+# =========================================================================
+
+@app.post("/api/auth/google", response_model=AuthResponse)
+async def auth_google(request: GoogleLoginRequest):
+    """
+    Login / Registration using Google Identity Services (GIS) Credential Token.
+    """
+    try:
+        response = auth_service.authenticate_google(request)
+        return response
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@app.post("/api/auth/register", response_model=AuthResponse)
+async def auth_register_email(request: EmailRegisterRequest):
+    """
+    Register new user with email and password.
+    """
+    try:
+        response = auth_service.register_email(request)
+        return response
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@app.post("/api/auth/login", response_model=AuthResponse)
+async def auth_login_email(request: EmailLoginRequest):
+    """
+    Login with email and password.
+    """
+    try:
+        response = auth_service.login_email(request)
+        return response
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
+
+
+@app.get("/api/auth/me", response_model=UserProfile)
+async def auth_get_me(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """
+    Get profile of the currently logged-in user.
+    """
+    if not credentials or not credentials.credentials:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token não fornecido.")
+
+    payload = auth_service.verify_jwt_token(credentials.credentials)
+    if not payload or "sub" not in payload:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token inválido ou expirado.")
+
+    user = auth_service.get_user_by_id(payload["sub"])
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuário não encontrado.")
+
+    return user
+
+
+# =========================================================================
+# PRESETS & IMAGE PROCESSING ENDPOINTS
+# =========================================================================
 
 @app.get("/api/presets")
 async def get_presets():
@@ -169,6 +235,7 @@ async def analyze_and_process_photo(
     output_format: str = Form("JPEG"),
     output_quality: int = Form(92),
     x_gemini_key: Optional[str] = Header(None, alias="X-Gemini-Key"),
+    current_user: Optional[UserProfile] = Depends(get_optional_user),
 ):
     """
     Complete hybrid pipeline:
@@ -199,6 +266,9 @@ async def analyze_and_process_photo(
             output_quality=output_quality,
             include_original_preview=True
         )
+
+        if current_user:
+            auth_service.increment_processed_count(current_user.id)
 
         return FullPipelineResponse(
             success=True,

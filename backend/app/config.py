@@ -40,4 +40,10 @@ class Settings:
         "cr2", "cr3", "nef", "arw", "dng", "orf", "rw2", "pef", "raf"
     }
 
+    # Authentication & Security
+    JWT_SECRET_KEY: str = os.getenv("JWT_SECRET_KEY", "churchphoto_super_secret_jwt_key_2026_change_in_prod")
+    JWT_ALGORITHM: str = "HS256"
+    JWT_ACCESS_TOKEN_EXPIRE_DAYS: int = 30
+    GOOGLE_CLIENT_ID: str = os.getenv("GOOGLE_CLIENT_ID", "")
+
 settings = Settings()
