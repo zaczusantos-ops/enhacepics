@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>ChurchPhoto Pro - Gestão e Tratamento Fotográfico de Cultos</title>
+  <title>ChurchPhoto Pro - Gestão & Tratamento Fotográfico de Cultos</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -21,6 +21,7 @@
               900: '#0E131F',
               850: '#151C2C',
               800: '#1D263B',
+              750: '#232E47',
               700: '#2A3753',
               600: '#3D4F75',
               accent: '#3B82F6',
@@ -68,566 +69,651 @@
     .focal-ring {
       animation: focusPulse 0.30s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
     }
+
+    /* Antigravity Sidebar Collapsible Styles */
+    .sidebar-expanded {
+      width: 260px;
+    }
+    .sidebar-collapsed {
+      width: 72px;
+    }
+    .sidebar-collapsed .sidebar-text,
+    .sidebar-collapsed .sidebar-badge,
+    .sidebar-collapsed .sidebar-section-title,
+    .sidebar-collapsed .sidebar-profile-info {
+      display: none !important;
+    }
+    .sidebar-collapsed .sidebar-item {
+      justify-content: center;
+      padding-left: 0;
+      padding-right: 0;
+    }
+    .sidebar-collapsed .sidebar-logo-text {
+      display: none !important;
+    }
   </style>
 </head>
-<body class="min-h-screen flex flex-col selection:bg-blue-600 selection:text-white pb-24 md:pb-8">
+<body class="min-h-screen flex selection:bg-blue-600 selection:text-white bg-church-950 text-slate-100 overflow-x-hidden">
 
-  <!-- Mobile-First Sticky Header -->
-  <header class="sticky top-0 z-50 bg-church-950/95 backdrop-blur-xl border-b border-church-800/80 px-3 sm:px-4 py-2.5 sm:py-3">
-    <div class="max-w-6xl mx-auto flex items-center justify-between">
-      <!-- Logo & Main Tab Switcher -->
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-600/30">
-          <i class="fa-solid fa-church text-base sm:text-lg"></i>
+  <!-- Mobile Sidebar Backdrop Overlay -->
+  <div id="mobileSidebarBackdrop" onclick="toggleSidebar()" class="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm md:hidden hidden" style="display: none;"></div>
+
+  <!-- ========================================================================= -->
+  <!-- RETRACTABLE SIDEBAR (ESTILO ANTIGRAVITY) -->
+  <!-- ========================================================================= -->
+  <aside id="mainSidebar" class="sidebar-expanded fixed md:sticky top-0 left-0 z-50 h-screen bg-church-900/95 md:bg-church-900 border-r border-church-800/90 flex flex-col justify-between transition-all duration-300 ease-in-out shrink-0 -translate-x-full md:translate-x-0 backdrop-blur-xl">
+    
+    <!-- Top Header: Logo & Retract Button -->
+    <div class="p-3.5 border-b border-church-800/80 flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-600/30 shrink-0">
+          <i class="fa-solid fa-camera-retro text-base"></i>
         </div>
-        <div>
+        <div class="sidebar-logo-text min-w-0">
           <div class="flex items-center gap-1.5">
-            <h1 class="text-sm sm:text-base font-bold tracking-tight text-white">ChurchPhoto <span class="text-blue-400">Pro</span></h1>
-            <span class="px-1.5 py-0.2 bg-blue-950 text-blue-400 border border-blue-800/80 text-[9px] font-mono rounded-full">
-              v3.2
-            </span>
+            <span class="text-sm font-bold tracking-tight text-white truncate">ChurchPhoto</span>
+            <span class="px-1.5 py-0.2 bg-blue-950 text-blue-400 border border-blue-800/80 text-[9px] font-mono rounded-full">Pro</span>
           </div>
-          <p class="text-[10px] sm:text-[11px] text-slate-400 truncate max-w-[150px] sm:max-w-none">
-            Gestão de Cultos & Tratamento Fotográfico
-          </p>
+          <span class="text-[10px] text-slate-400 block truncate">DSLR Engine v3.3</span>
         </div>
       </div>
 
-      <!-- Navigation Tabs (Meus Cultos vs Estúdio) -->
-      <div class="hidden md:flex bg-church-900 p-1 rounded-xl border border-church-800 text-xs">
-        <button id="navTabServices" onclick="switchMainView('services')" class="px-4 py-1.5 rounded-lg bg-blue-600 text-white font-bold flex items-center gap-2 transition-all cursor-pointer">
-          <i class="fa-solid fa-layer-group text-xs"></i>
-          <span>Meus Cultos</span>
-        </button>
-        <button id="navTabStudio" onclick="switchMainView('studio')" class="px-4 py-1.5 rounded-lg text-slate-400 hover:text-white font-semibold flex items-center gap-2 transition-all cursor-pointer">
-          <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
-          <span>Estúdio DSLR</span>
-        </button>
-      </div>
+      <!-- Collapse / Expand Toggle Button -->
+      <button onclick="toggleSidebarCollapse()" class="hidden md:flex p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-church-800 transition-colors cursor-pointer" title="Recolher / Expandir barra lateral">
+        <i id="collapseToggleIcon" class="fa-solid fa-chevron-left text-xs"></i>
+      </button>
 
-      <!-- User Auth & Action Buttons -->
-      <div class="flex items-center gap-1.5 sm:gap-2">
+      <!-- Mobile Close Button -->
+      <button onclick="toggleSidebar()" class="md:hidden p-1.5 rounded-lg text-slate-400 hover:text-white cursor-pointer">
+        <i class="fa-solid fa-xmark text-sm"></i>
+      </button>
+    </div>
+
+    <!-- Middle: Navigation Items & Recent Services -->
+    <div class="flex-1 overflow-y-auto p-2.5 space-y-4 no-scrollbar">
+      
+      <!-- Primary Navigation -->
+      <div class="space-y-1">
+        <span class="sidebar-section-title px-2.5 text-[10px] font-bold tracking-wider uppercase text-slate-400 block">Navegação</span>
         
-        <!-- Server Status Button -->
-        <button onclick="toggleServerModal()" class="px-2.5 py-1.5 rounded-xl bg-church-900 hover:bg-church-850 active:scale-95 border border-church-800 text-[11px] font-medium text-slate-300 hover:text-white transition-all flex items-center gap-1.5 shadow-sm" title="Status do Servidor">
-          <i class="fa-solid fa-circle-check text-emerald-400 text-xs"></i>
-          <span class="hidden sm:inline">Servidor</span>
+        <!-- Meus Cultos Item -->
+        <button onclick="switchMainView('services')" id="sideNavServices" class="sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold bg-blue-600 text-white transition-all cursor-pointer shadow-sm">
+          <div class="flex items-center gap-2.5">
+            <i class="fa-solid fa-layer-group text-sm w-4 text-center"></i>
+            <span class="sidebar-text">Meus Cultos</span>
+          </div>
+          <span id="sideServicesCountBadge" class="sidebar-badge px-1.5 py-0.2 rounded-full bg-blue-950 text-blue-300 text-[10px] font-mono font-bold">0</span>
         </button>
 
-        <!-- Unauthenticated: Direct Login Button -->
-        <button id="loginHeaderBtn" onclick="toggleAuthModal()" class="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-xs font-semibold shadow-md shadow-blue-600/25 transition-all flex items-center gap-1.5 cursor-pointer">
-          <i class="fa-solid fa-user text-xs"></i>
-          <span>Entrar</span>
+        <!-- Estúdio DSLR Item -->
+        <button onclick="switchMainView('studio')" id="sideNavStudio" class="sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-church-800/70 transition-all cursor-pointer">
+          <div class="flex items-center gap-2.5">
+            <i class="fa-solid fa-wand-magic-sparkles text-sm w-4 text-center text-amber-400"></i>
+            <span class="sidebar-text">Estúdio DSLR</span>
+          </div>
+          <span id="sidePhotosCountBadge" class="sidebar-badge px-1.5 py-0.2 rounded-full bg-church-950 text-slate-400 text-[10px] font-mono">0 fotos</span>
         </button>
 
-        <!-- Authenticated: User Profile Pill & Dropdown -->
-        <div id="userProfileContainer" class="relative hidden" style="display: none;">
-          <button onclick="toggleUserDropdown()" class="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-church-900 hover:bg-church-850 border border-church-800 text-xs font-medium text-white transition-all cursor-pointer">
-            <img id="userAvatarImg" src="https://api.dicebear.com/7.x/initials/svg?seed=M" class="w-6 h-6 rounded-full object-cover border border-blue-500/50" alt="Avatar">
-            <span id="userNameText" class="truncate max-w-[90px] sm:max-w-[120px] font-semibold text-[11px]">Voluntário</span>
-            <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
-          </button>
-
-          <!-- Dropdown Menu -->
-          <div id="userDropdownMenu" class="absolute right-0 mt-2 w-56 bg-church-900 border border-church-800 rounded-2xl shadow-2xl p-2 z-50 hidden" style="display: none;">
-            <div class="px-3 py-2 border-b border-church-800 mb-1">
-              <span id="dropdownUserName" class="text-xs font-bold text-white block truncate">Voluntário de Mídia</span>
-              <span id="dropdownUserEmail" class="text-[10px] font-mono text-slate-400 block truncate">voluntario@igreja.org</span>
-              <span id="dropdownUserRole" class="inline-block mt-1 px-1.5 py-0.5 rounded bg-blue-950 text-blue-300 border border-blue-800/60 text-[9px] font-mono">Equipe de Mídia</span>
-            </div>
-
-            <button onclick="toggleKeyModal(); toggleUserDropdown();" class="w-full text-left px-3 py-2 rounded-xl text-xs text-slate-300 hover:text-white hover:bg-church-800 flex items-center gap-2 transition-all">
-              <i class="fa-solid fa-gear text-slate-400"></i> Configurações & API
-            </button>
-
-            <button onclick="logoutUser()" class="w-full text-left px-3 py-2 rounded-xl text-xs text-red-400 hover:text-red-300 hover:bg-red-950/40 flex items-center gap-2 transition-all mt-1">
-              <i class="fa-solid fa-arrow-right-from-bracket"></i> Sair da Conta
-            </button>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </header>
-
-  <!-- Mobile Bottom Tab Navigation -->
-  <div class="fixed bottom-0 left-0 right-0 z-40 bg-church-950/95 backdrop-blur-xl border-t border-church-800 px-4 py-2 flex items-center justify-around md:hidden">
-    <button id="mobileNavTabServices" onclick="switchMainView('services')" class="flex flex-col items-center gap-1 text-blue-400">
-      <i class="fa-solid fa-layer-group text-base"></i>
-      <span class="text-[10px] font-bold">Meus Cultos</span>
-    </button>
-    <button id="mobileNavTabStudio" onclick="switchMainView('studio')" class="flex flex-col items-center gap-1 text-slate-400">
-      <i class="fa-solid fa-wand-magic-sparkles text-base"></i>
-      <span class="text-[10px] font-semibold">Estúdio DSLR</span>
-    </button>
-  </div>
-
-  <!-- Global Toast Notification Banner -->
-  <div id="toastNotification" class="fixed top-16 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-2xl bg-church-900/95 border border-emerald-500/50 text-white text-xs font-semibold shadow-2xl shadow-emerald-500/20 backdrop-blur-md flex items-center gap-2 transition-all duration-300 transform -translate-y-10 opacity-0 pointer-events-none">
-    <i class="fa-solid fa-circle-check text-emerald-400"></i>
-    <span id="toastText">Operação realizada com sucesso!</span>
-  </div>
-
-  <!-- Main Content Container -->
-  <main class="max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-6 flex-1 flex flex-col gap-4 sm:gap-6 w-full">
-
-    <!-- ========================================================================= -->
-    <!-- VIEW 1: ABA DE CULTOS / EVENTOS (MEUS CULTOS) -->
-    <!-- ========================================================================= -->
-    <div id="viewServicesSection" class="flex flex-col gap-5 w-full">
-      
-      <!-- Top Action Banner -->
-      <div class="rounded-2xl sm:rounded-3xl bg-gradient-to-b from-church-900 to-church-950 border border-church-800 p-5 sm:p-6 shadow-2xl relative overflow-hidden">
-        <div class="absolute -top-20 right-0 w-64 h-32 bg-blue-500/10 blur-3xl pointer-events-none"></div>
-
-        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div>
-            <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-950/70 border border-blue-800/60 text-blue-300 text-[10px] sm:text-xs font-semibold mb-2">
-              <i class="fa-solid fa-photo-film text-amber-400"></i>
-              Central de Cultos e Álbuns
-            </div>
-            <h2 class="text-xl sm:text-2xl font-bold text-white leading-tight">
-              Organize seus Cultos & Baixe Edições em Lote
-            </h2>
-            <p class="text-xs text-slate-400 mt-1 max-w-lg">
-              Crie um álbum para cada culto, processe dezenas de fotos em segundos e faça o download de todo o lote em arquivo .ZIP organizado.
-            </p>
-          </div>
-
-          <!-- Primary Button: Create New Church Service -->
-          <button onclick="openCreateServiceModal()" class="w-full sm:w-auto px-6 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-95 text-white font-bold text-xs sm:text-sm rounded-xl shadow-xl shadow-blue-600/30 flex items-center justify-center gap-2.5 transition-all cursor-pointer shrink-0">
-            <i class="fa-solid fa-plus text-sm"></i>
-            <span>Criar Novo Culto</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Church Services Grid Header -->
-      <div class="flex items-center justify-between px-1">
-        <div class="flex items-center gap-2">
-          <span class="text-sm font-bold text-white">Cultos Cadastrados</span>
-          <span id="servicesCountBadge" class="px-2 py-0.5 rounded-full bg-church-800 text-slate-300 text-[10px] font-mono font-semibold">
-            0 cultos
-          </span>
-        </div>
-        <span class="text-[11px] text-slate-400">Clique para abrir no estúdio ou baixar lote</span>
-      </div>
-
-      <!-- Services Cards Grid List -->
-      <div id="servicesListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <!-- Rendered via JS -->
-      </div>
-
-      <!-- Empty State for Services -->
-      <div id="emptyServicesPrompt" class="rounded-3xl bg-church-900/60 border border-church-800/80 p-8 sm:p-12 text-center flex flex-col items-center justify-center">
-        <div class="w-16 h-16 rounded-2xl bg-church-950 border border-church-800 flex items-center justify-center text-slate-600 mb-3 shadow-inner">
-          <i class="fa-solid fa-church text-2xl text-blue-400"></i>
-        </div>
-        <h3 class="text-base font-bold text-white">Nenhum culto criado ainda</h3>
-        <p class="text-xs text-slate-400 mt-1 max-w-sm">
-          Crie seu primeiro culto para fazer upload das fotos da equipe de mídia e tratá-las em lote.
-        </p>
-        <button onclick="openCreateServiceModal()" class="mt-4 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs flex items-center gap-2 transition-all cursor-pointer shadow-lg shadow-blue-600/20">
-          <i class="fa-solid fa-plus"></i> Criar Primeiro Culto
+        <!-- Criar Novo Culto Button -->
+        <button onclick="openCreateServiceModal()" class="sidebar-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-church-800/70 transition-all cursor-pointer">
+          <i class="fa-solid fa-plus text-sm w-4 text-center text-blue-400"></i>
+          <span class="sidebar-text">Novo Culto</span>
         </button>
       </div>
 
-    </div>
-
-    <!-- ========================================================================= -->
-    <!-- VIEW 2: ABA DO ESTÚDIO DSLR (EDITOR & COMPARADOR) -->
-    <!-- ========================================================================= -->
-    <div id="viewStudioSection" class="flex flex-col gap-4 hidden" style="display: none;">
-      
-      <!-- Studio Top Navigation & Service Status -->
-      <div class="flex items-center justify-between p-3.5 rounded-2xl bg-church-900 border border-church-800 shadow-md">
-        <div class="flex items-center gap-2.5 min-w-0">
-          <button onclick="switchMainView('services')" class="px-2.5 py-1.5 rounded-xl bg-church-950 hover:bg-church-850 border border-church-800 text-slate-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
-            <i class="fa-solid fa-arrow-left text-xs"></i>
-            <span>Voltar aos Cultos</span>
-          </button>
-          <div class="min-w-0">
-            <span id="studioServiceTitle" class="text-xs sm:text-sm font-bold text-white block truncate">
-              Culto Ativo
-            </span>
-            <span id="studioServiceDate" class="text-[10px] text-slate-400 font-mono block truncate">
-              0 fotos no lote
-            </span>
-          </div>
+      <!-- Quick Cultos / Eventos List -->
+      <div class="space-y-1 pt-2 border-t border-church-800/70">
+        <div class="flex items-center justify-between px-2.5">
+          <span class="sidebar-section-title text-[10px] font-bold tracking-wider uppercase text-slate-400">Cultos Recentes</span>
+          <button onclick="openCreateServiceModal()" class="sidebar-badge text-[10px] text-blue-400 hover:underline cursor-pointer">+ Criar</button>
         </div>
-
-        <div class="flex items-center gap-2">
-          <!-- Batch Process Button in Studio -->
-          <button id="batchProcessBtn" onclick="processAllInQueue()" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-semibold text-xs flex items-center gap-1.5 shadow transition-all cursor-pointer">
-            <i class="fa-solid fa-bolt text-amber-300 text-xs"></i>
-            <span class="hidden sm:inline">Processar Lote</span>
-          </button>
-
-          <!-- Download ZIP of this Active Service -->
-          <button onclick="downloadActiveServiceZip()" class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-emerald-600/30 transition-all cursor-pointer">
-            <i class="fa-solid fa-file-zipper text-xs"></i>
-            <span>Baixar Lote (.ZIP)</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Presets Carousel in Studio -->
-      <div class="flex flex-col gap-2">
-        <div class="flex items-center justify-between px-1">
-          <span class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-            <i class="fa-solid fa-sliders text-amber-400"></i> Presets Sugeridos para o Culto
-          </span>
-          <span id="sceneMomentBadge" class="text-[10px] text-blue-400 font-mono px-2 py-0.5 rounded-md bg-blue-950/60 border border-blue-800/50">
-            Culto / Palco
-          </span>
-        </div>
-        <div id="presetsContainer" class="flex gap-2.5 overflow-x-auto pb-1.5 pt-0.5 no-scrollbar scroll-smooth">
+        <div id="sideRecentServicesList" class="space-y-0.5">
           <!-- Injected via JS -->
         </div>
       </div>
 
-      <!-- Photo Queue Thumbnails Strip -->
-      <div id="thumbnailsStrip" class="flex flex-col gap-2">
-        <div class="flex items-center justify-between px-1">
-          <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Fotos do Culto</span>
-          <div class="flex items-center gap-2">
-            <span class="text-[10px] text-slate-500 font-mono">Clique para inspecionar</span>
-            <!-- Add More Photos to this Service -->
-            <label class="text-[11px] text-blue-400 hover:underline cursor-pointer flex items-center gap-1">
-              <i class="fa-solid fa-plus text-[10px]"></i> Mais fotos
-              <input type="file" id="addMorePhotosInput" multiple accept="image/*" class="hidden">
-            </label>
+      <!-- System & AI Status Widget -->
+      <div class="pt-2 border-t border-church-800/70">
+        <div class="p-2.5 rounded-xl bg-church-950/70 border border-church-800/60 text-[11px]">
+          <div class="flex items-center gap-2 text-emerald-400 font-semibold mb-1">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="sidebar-text">IA & Servidor Ativos</span>
           </div>
+          <p class="sidebar-text text-[10px] text-slate-400 leading-tight">
+            Gemini 2.5 Pro + Motor 60fps conectado.
+          </p>
         </div>
-        <div id="thumbnailsList" class="flex gap-2 overflow-x-auto pb-1 no-scrollbar min-h-[60px]">
-          <!-- Injected thumbnails via JS -->
-        </div>
-      </div>
-
-      <!-- INTERACTIVE VIEWER -->
-      <div id="viewerContainer" class="flex flex-col rounded-2xl sm:rounded-3xl bg-church-900 border border-church-800 shadow-2xl overflow-hidden min-h-[420px] sm:min-h-[500px]">
-        
-        <!-- Viewer Top Bar -->
-        <div class="flex items-center justify-between px-3.5 py-2.5 bg-church-950 border-b border-church-800">
-          <div class="flex items-center gap-2 min-w-0">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
-            <span id="activePhotoTitle" class="text-xs font-semibold text-white truncate max-w-[150px] sm:max-w-xs">
-              Comparador Interativo
-            </span>
-          </div>
-
-          <div class="flex items-center gap-2">
-            <!-- Switch mode -->
-            <div class="flex bg-church-950 p-0.5 rounded-lg border border-church-800 text-xs">
-              <button id="modeSliderBtn" onclick="setViewerMode('slider')" class="px-2 py-1 rounded-md bg-blue-600 text-white font-medium text-[11px]">Divisão</button>
-              <button id="modeSideBtn" onclick="setViewerMode('side')" class="px-2 py-1 rounded-md text-slate-400 hover:text-white font-medium text-[11px]">Lado a Lado</button>
-            </div>
-
-            <!-- Download Single HD Photo Button -->
-            <button id="downloadBtn" onclick="downloadCurrentProcessed()" disabled class="px-3 py-1.5 rounded-xl bg-church-800 hover:bg-church-700 disabled:opacity-30 disabled:cursor-not-allowed text-white text-xs font-semibold border border-church-700 flex items-center gap-1.5 transition-all">
-              <i class="fa-solid fa-download"></i>
-              <span class="hidden sm:inline">Baixar Foto HD</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Viewport Area -->
-        <div id="viewport" onclick="handleViewportClick(event)" class="relative w-full h-[360px] sm:h-[480px] bg-church-950 flex items-center justify-center overflow-hidden select-none cursor-crosshair">
-          
-          <!-- Empty State -->
-          <div id="emptyPrompt" class="flex flex-col items-center justify-center p-6 text-center text-slate-500">
-            <div class="w-16 h-16 rounded-2xl bg-church-900 border border-church-800 flex items-center justify-center text-slate-600 mb-3 shadow-inner">
-              <i class="fa-solid fa-images text-2xl"></i>
-            </div>
-            <span class="text-sm font-semibold text-slate-300">Nenhuma foto selecionada</span>
-            <p class="text-xs text-slate-500 mt-1 max-w-xs">
-              Clique em uma das fotos do culto acima para visualizar e calibrar.
-            </p>
-          </div>
-
-          <!-- Processing Loader State -->
-          <div id="processingLoader" class="flex flex-col items-center justify-center p-6 text-center text-blue-400 hidden" style="display: none;">
-            <div class="relative w-16 h-16 mb-3">
-              <div class="w-16 h-16 rounded-full border-4 border-blue-600/30 border-t-blue-500 animate-spin"></div>
-              <div class="absolute inset-0 flex items-center justify-center">
-                <i class="fa-solid fa-wand-magic-sparkles text-amber-400 text-lg animate-pulse"></i>
-              </div>
-            </div>
-            <span class="text-sm font-bold text-white" id="loaderTitle">Tratando com Motor DSLR 3.0...</span>
-            <p class="text-xs text-slate-400 mt-1" id="loaderSubtitle">Atenuando LEDs, corrigindo óptica e calibrando tons de pele</p>
-          </div>
-
-          <!-- Slider Comparison View -->
-          <div id="sliderWrapper" class="relative w-full h-full hidden" style="display: none;">
-            <img id="imgAfter" class="absolute inset-0 w-full h-full object-contain pointer-events-none" src="" alt="Depois">
-
-            <div id="clipContainer" class="absolute inset-0 overflow-hidden pointer-events-none" style="clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);">
-              <img id="imgBefore" class="absolute inset-0 w-full h-full object-contain" src="" alt="Antes">
-            </div>
-
-            <!-- Focus Reticle -->
-            <div id="focusReticle" class="absolute z-20 pointer-events-none hidden transition-all duration-150" style="left: 50%; top: 40%; transform: translate(-50%, -50%);">
-              <div class="w-10 h-10 rounded-full border-2 border-amber-400 bg-amber-400/10 shadow-[0_0_15px_rgba(245,158,11,0.6)] focal-ring flex items-center justify-center">
-                <div class="w-1.5 h-1.5 rounded-full bg-amber-300"></div>
-              </div>
-              <span id="focusReticleBadge" class="absolute top-11 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-md bg-black/80 border border-amber-400/40 text-[9px] font-mono text-amber-300 whitespace-nowrap shadow-lg">
-                f/2.8 · Foco Ativo
-              </span>
-            </div>
-
-            <!-- Draggable Divider Line -->
-            <div id="dividerLine" class="slider-divider absolute top-0 bottom-0 z-30 cursor-ew-resize flex items-center justify-center group" style="left: 50%; transform: translateX(-50%);">
-              <div class="w-[2.5px] h-full bg-white group-hover:bg-blue-400 shadow-[0_0_12px_rgba(0,0,0,0.9)]"></div>
-              <div class="absolute w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-church-900/90 border-2 border-white flex items-center justify-center text-white shadow-2xl group-hover:scale-110 active:scale-95 transition-all backdrop-blur-sm">
-                <i class="fa-solid fa-arrows-left-right text-xs"></i>
-              </div>
-            </div>
-
-            <span class="absolute bottom-3 left-3 z-10 px-2 py-0.5 rounded-md bg-black/75 border border-white/10 text-[10px] font-mono text-slate-300 uppercase pointer-events-none">
-              Original (Celular)
-            </span>
-            <span class="absolute bottom-3 right-3 z-10 px-2 py-0.5 rounded-md bg-blue-600/90 border border-blue-400/30 text-[10px] font-mono text-white uppercase flex items-center gap-1 pointer-events-none">
-              <i class="fa-solid fa-sparkles text-amber-300 text-[9px]"></i> DSLR Pro (HD)
-            </span>
-          </div>
-
-          <!-- Side by Side View -->
-          <div id="sideBySideWrapper" class="grid grid-cols-2 w-full h-full gap-1.5 p-1.5 hidden" style="display: none;">
-            <div class="relative rounded-xl overflow-hidden bg-church-900 border border-church-800 flex items-center justify-center">
-              <img id="imgSideBefore" class="w-full h-full object-contain" src="" alt="Antes">
-              <span class="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/75 text-[9px] font-mono text-slate-300 pointer-events-none">Antes</span>
-            </div>
-            <div class="relative rounded-xl overflow-hidden bg-church-900 border border-church-800 flex items-center justify-center">
-              <img id="imgSideAfter" class="w-full h-full object-contain" src="" alt="Depois">
-              <span class="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-blue-600/90 text-[9px] font-mono text-white pointer-events-none">Depois</span>
-            </div>
-          </div>
-
-        </div>
-
-        <div id="telemetryFooter" class="px-3.5 py-2 bg-church-950 border-t border-church-800 flex items-center justify-between text-[11px] text-slate-400">
-          <span id="telemetryText" class="flex items-center gap-1.5">
-            <i class="fa-solid fa-hand-pointer text-amber-400 text-xs"></i>
-            <span>Toque na foto para mudar o foco</span>
-          </span>
-          <span id="resolutionBadge" class="font-mono text-slate-500 text-[10px]"></span>
-        </div>
-      </div>
-
-      <!-- 3-TAB CONTROLS PANEL -->
-      <div id="parametersPanel" class="rounded-2xl sm:rounded-3xl bg-church-900 border border-church-800 p-4 sm:p-5 shadow-xl hidden" style="display: none;">
-        
-        <!-- Diagnostic Scene Bar -->
-        <div class="p-3 rounded-xl bg-church-950 border border-church-800 text-xs mb-4">
-          <div class="flex items-center justify-between mb-1">
-            <div class="flex items-center gap-1.5 text-blue-400 font-semibold">
-              <i class="fa-solid fa-brain text-amber-400"></i> Diagnóstico da Cena (Gemini 2.5 Pro):
-            </div>
-            <span id="focalPointDisplayBadge" class="text-[10px] font-mono text-amber-400">Foco: [50%, 40%]</span>
-          </div>
-          <p id="analysisSummary" class="text-slate-300 font-mono text-[11px] leading-relaxed"></p>
-          <div class="mt-2 flex flex-wrap gap-1.5">
-            <span id="lightingTag" class="px-2 py-0.5 rounded bg-blue-900/40 text-blue-300 border border-blue-800/40 text-[10px]"></span>
-            <span id="sceneTag" class="px-2 py-0.5 rounded bg-purple-900/40 text-purple-300 border border-purple-800/40 text-[10px]"></span>
-            <span id="fStopTag" class="px-2 py-0.5 rounded bg-emerald-900/40 text-emerald-300 border border-emerald-800/40 text-[10px]">f/2.8 Bokeh</span>
-          </div>
-        </div>
-
-        <!-- Navigation Tabs -->
-        <div class="flex border-b border-church-800 mb-4 gap-1 sm:gap-2">
-          <button id="tabBtn1" onclick="switchControlTab(1)" class="px-3 sm:px-4 py-2 text-xs font-bold border-b-2 border-blue-500 text-blue-400 flex items-center gap-1.5 transition-all">
-            <i class="fa-solid fa-palette text-xs"></i>
-            <span>1. Cor & Luz</span>
-          </button>
-          <button id="tabBtn2" onclick="switchControlTab(2)" class="px-3 sm:px-4 py-2 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-1.5 transition-all">
-            <i class="fa-solid fa-bolt text-xs"></i>
-            <span>2. Óptica & LEDs</span>
-          </button>
-          <button id="tabBtn3" onclick="switchControlTab(3)" class="px-3 sm:px-4 py-2 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-1.5 transition-all">
-            <i class="fa-solid fa-bullseye text-xs"></i>
-            <span>3. Foco & Bokeh</span>
-          </button>
-        </div>
-
-        <!-- TAB 1: COR & LUZ -->
-        <div id="tabContent1" class="flex flex-col gap-3.5">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
-            <div>
-              <div class="flex justify-between text-slate-300 mb-1">
-                <span>Compensação de Exposição</span>
-                <span id="val_exposure" class="font-mono text-blue-400 font-bold">0.0 EV</span>
-              </div>
-              <input type="range" id="param_exposure" min="-2.0" max="2.0" step="0.05" oninput="updateSliderAndReprocess('exposure', this.value, ' EV')" class="w-full accent-blue-500 h-2 bg-church-950 rounded-lg">
-            </div>
-
-            <div>
-              <div class="flex justify-between text-slate-300 mb-1">
-                <span>Temperatura de Cor (Kelvin)</span>
-                <span id="val_kelvin" class="font-mono text-amber-400 font-bold">5500K</span>
-              </div>
-              <input type="range" id="param_kelvin" min="2500" max="9000" step="50" oninput="updateSliderAndReprocess('kelvin', this.value, 'K')" class="w-full accent-amber-500 h-2 bg-church-950 rounded-lg">
-            </div>
-
-            <div>
-              <div class="flex justify-between text-slate-300 mb-1">
-                <span>Matiz / Tint (Verde / Magenta)</span>
-                <span id="val_tint" class="font-mono text-pink-400 font-bold">0.0</span>
-              </div>
-              <input type="range" id="param_tint" min="-50.0" max="50.0" step="1.0" oninput="updateSliderAndReprocess('tint', this.value, '')" class="w-full accent-pink-500 h-2 bg-church-950 rounded-lg">
-            </div>
-
-            <div>
-              <div class="flex justify-between text-slate-300 mb-1">
-                <span>Curva Tonal / Contraste</span>
-                <span id="val_contrast" class="font-mono text-blue-400 font-bold">1.10x</span>
-              </div>
-              <input type="range" id="param_contrast" min="0.80" max="1.50" step="0.02" oninput="updateSliderAndReprocess('contrast', this.value, 'x')" class="w-full accent-blue-500 h-2 bg-church-950 rounded-lg">
-            </div>
-
-            <div>
-              <div class="flex justify-between text-slate-300 mb-1">
-                <span>Recuperação de Altas Luzes (Telões)</span>
-                <span id="val_highlights" class="font-mono text-blue-400 font-bold">40%</span>
-              </div>
-              <input type="range" id="param_highlights" min="0.0" max="1.0" step="0.05" oninput="updateSliderAndReprocess('highlights', Math.round(this.value*100), '%')" class="w-full accent-blue-500 h-2 bg-church-950 rounded-lg">
-            </div>
-
-            <div>
-              <div class="flex justify-between text-slate-300 mb-1">
-                <span>Abertura de Sombras (Público)</span>
-                <span id="val_shadows" class="font-mono text-blue-400 font-bold">35%</span>
-              </div>
-              <input type="range" id="param_shadows" min="0.0" max="1.0" step="0.05" oninput="updateSliderAndReprocess('shadows', Math.round(this.value*100), '%')" class="w-full accent-blue-500 h-2 bg-church-950 rounded-lg">
-            </div>
-
-            <div>
-              <div class="flex justify-between text-slate-300 mb-1">
-                <span>Saturação de Cor</span>
-                <span id="val_saturation" class="font-mono text-emerald-400 font-bold">100%</span>
-              </div>
-              <input type="range" id="param_saturation" min="0.5" max="1.5" step="0.02" oninput="updateSliderAndReprocess('saturation', Math.round(this.value*100), '%')" class="w-full accent-emerald-500 h-2 bg-church-950 rounded-lg">
-            </div>
-
-            <div>
-              <div class="flex justify-between text-slate-300 mb-1">
-                <span>Vibração Tonal (Médios-Tons)</span>
-                <span id="val_vibrance" class="font-mono text-emerald-400 font-bold">105%</span>
-              </div>
-              <input type="range" id="param_vibrance" min="0.5" max="1.5" step="0.02" oninput="updateSliderAndReprocess('vibrance', Math.round(this.value*100), '%')" class="w-full accent-emerald-500 h-2 bg-church-950 rounded-lg">
-            </div>
-          </div>
-        </div>
-
-        <!-- TAB 2: CORREÇÃO ÓPTICA & LEDS -->
-        <div id="tabContent2" class="flex flex-col gap-3.5 hidden" style="display: none;">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
-            <div>
-              <div class="flex justify-between text-purple-300 font-semibold mb-1">
-                <span>Correção de Franjas Cromáticas (Roxo/Verde)</span>
-                <span id="val_chromatic" class="font-mono text-purple-400 font-bold">50%</span>
-              </div>
-              <input type="range" id="param_chromatic" min="0.0" max="1.0" step="0.05" oninput="updateSliderAndReprocess('chromatic', Math.round(this.value*100), '%')" class="w-full accent-purple-500 h-2 bg-church-950 rounded-lg">
-            </div>
-
-            <div>
-              <div class="flex justify-between text-amber-300 font-semibold mb-1">
-                <span>Restauração de LEDs Estourados (Clipping)</span>
-                <span id="val_led_clip" class="font-mono text-amber-400 font-bold">60%</span>
-              </div>
-              <input type="range" id="param_led_clip" min="0.0" max="1.0" step="0.05" oninput="updateSliderAndReprocess('led_clip', Math.round(this.value*100), '%')" class="w-full accent-amber-500 h-2 bg-church-950 rounded-lg">
-            </div>
-
-            <div>
-              <div class="flex justify-between text-slate-300 mb-1">
-                <span>Atenuação de Vazamento de LED em Pele</span>
-                <span id="val_led" class="font-mono text-purple-400 font-bold">45%</span>
-              </div>
-              <input type="range" id="param_led" min="0.0" max="1.0" step="0.05" oninput="updateSliderAndReprocess('led', Math.round(this.value*100), '%')" class="w-full accent-purple-500 h-2 bg-church-950 rounded-lg">
-            </div>
-
-            <div>
-              <div class="flex justify-between text-slate-300 mb-1">
-                <span>Correção de Vinhetagem de Celular</span>
-                <span id="val_vignette" class="font-mono text-blue-400 font-bold">35%</span>
-              </div>
-              <input type="range" id="param_vignette" min="0.0" max="1.0" step="0.05" oninput="updateSliderAndReprocess('vignette', Math.round(this.value*100), '%')" class="w-full accent-blue-500 h-2 bg-church-950 rounded-lg">
-            </div>
-
-            <div>
-              <div class="flex justify-between text-slate-300 mb-1">
-                <span>Redução de Ruído Térmico / Alto ISO</span>
-                <span id="val_denoise" class="font-mono text-blue-400 font-bold">30%</span>
-              </div>
-              <input type="range" id="param_denoise" min="0.0" max="1.0" step="0.05" oninput="updateSliderAndReprocess('denoise', Math.round(this.value*100), '%')" class="w-full accent-blue-500 h-2 bg-church-950 rounded-lg">
-            </div>
-
-            <div>
-              <div class="flex justify-between text-amber-300 font-semibold mb-1">
-                <span>Proteção de Melanina / Tom de Pele</span>
-                <span id="val_skin" class="font-mono text-amber-400 font-bold">88%</span>
-              </div>
-              <input type="range" id="param_skin" min="0.0" max="1.0" step="0.05" oninput="updateSliderAndReprocess('skin', Math.round(this.value*100), '%')" class="w-full accent-amber-500 h-2 bg-church-950 rounded-lg">
-            </div>
-          </div>
-        </div>
-
-        <!-- TAB 3: FOCO ÓPTICO & BOKEH DSLR -->
-        <div id="tabContent3" class="flex flex-col gap-3.5 hidden" style="display: none;">
-          <div class="p-3 rounded-xl bg-blue-950/40 border border-blue-800/40 flex items-center justify-between text-xs">
-            <div class="flex items-center gap-2">
-              <i class="fa-solid fa-bullseye text-amber-400 text-sm"></i>
-              <div>
-                <span class="font-bold text-white">Clique ou toque na foto</span>
-                <p class="text-[11px] text-slate-400">Reposiciona o ponto focal e a profundidade de campo imediatamente.</p>
-              </div>
-            </div>
-            <button onclick="resetFocalCenter()" class="px-2.5 py-1 rounded-lg bg-church-800 border border-church-700 text-slate-300 hover:text-white text-[11px]">
-              Centralizar
-            </button>
-          </div>
-
-          <div>
-            <span class="text-xs text-slate-300 font-semibold mb-1.5 block">Simulação de Abertura f/Stop (Lente DSLR):</span>
-            <div class="grid grid-cols-6 gap-1.5 text-xs font-mono">
-              <button onclick="setFStop(1.4)" class="fstop-btn py-1.5 rounded-lg bg-church-950 border border-church-800 text-slate-300 hover:text-white font-bold" data-fstop="1.4">f/1.4</button>
-              <button onclick="setFStop(1.8)" class="fstop-btn py-1.5 rounded-lg bg-church-950 border border-church-800 text-slate-300 hover:text-white font-bold" data-fstop="1.8">f/1.8</button>
-              <button onclick="setFStop(2.8)" class="fstop-btn py-1.5 rounded-lg bg-blue-600 border border-blue-500 text-white font-bold" data-fstop="2.8">f/2.8</button>
-              <button onclick="setFStop(4.0)" class="fstop-btn py-1.5 rounded-lg bg-church-950 border border-church-800 text-slate-300 hover:text-white font-bold" data-fstop="4.0">f/4.0</button>
-              <button onclick="setFStop(5.6)" class="fstop-btn py-1.5 rounded-lg bg-church-950 border border-church-800 text-slate-300 hover:text-white font-bold" data-fstop="5.6">f/5.6</button>
-              <button onclick="setFStop(8.0)" class="fstop-btn py-1.5 rounded-lg bg-church-950 border border-church-800 text-slate-300 hover:text-white font-bold" data-fstop="8.0">f/8.0</button>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
-            <div>
-              <div class="flex justify-between text-slate-300 mb-1">
-                <span>Suavidade do Desfoque (Bokeh)</span>
-                <span id="val_bokeh" class="font-mono text-emerald-400 font-bold">75%</span>
-              </div>
-              <input type="range" id="param_bokeh" min="0.0" max="1.0" step="0.05" oninput="updateSliderAndReprocess('bokeh', Math.round(this.value*100), '%')" class="w-full accent-emerald-500 h-2 bg-church-950 rounded-lg">
-            </div>
-
-            <div>
-              <div class="flex justify-between text-amber-300 font-semibold mb-1">
-                <span>Microcontraste & Nitidez no Sujeito</span>
-                <span id="val_microcontrast" class="font-mono text-amber-400 font-bold">75%</span>
-              </div>
-              <input type="range" id="param_microcontrast" min="0.0" max="2.0" step="0.05" oninput="updateSliderAndReprocess('microcontrast', Math.round(this.value*100), '%')" class="w-full accent-amber-500 h-2 bg-church-950 rounded-lg">
-            </div>
-          </div>
-        </div>
-
-        <!-- Apply Manual Sliders Button -->
-        <button onclick="applyCurrentManualParams()" class="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-98 text-white text-xs font-semibold shadow-md flex items-center justify-center gap-1.5 transition-all mt-4 cursor-pointer">
-          <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
-          <span>Aplicar Ajustes DSLR</span>
-        </button>
-
       </div>
 
     </div>
 
-  </main>
+    <!-- Bottom Profile & Settings Footer -->
+    <div class="p-3 border-t border-church-800/80 bg-church-950/40">
+      
+      <!-- Logged User Profile -->
+      <div id="sideProfileLoggedIn" class="flex items-center justify-between gap-2 hidden" style="display: none;">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <img id="sideUserAvatar" src="https://api.dicebear.com/7.x/initials/svg?seed=M" class="w-8 h-8 rounded-full border border-blue-500/50 object-cover shrink-0" alt="Avatar">
+          <div class="sidebar-profile-info min-w-0">
+            <span id="sideUserName" class="text-xs font-bold text-white block truncate">Voluntário</span>
+            <span id="sideUserChurch" class="text-[10px] text-slate-400 block truncate">Igreja Local</span>
+          </div>
+        </div>
+        <button onclick="logoutUser()" class="sidebar-badge p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-church-800 transition-colors cursor-pointer" title="Sair da Conta">
+          <i class="fa-solid fa-arrow-right-from-bracket text-xs"></i>
+        </button>
+      </div>
+
+      <!-- Unauthenticated Login Prompt -->
+      <div id="sideProfileLoggedOut" class="flex items-center justify-between gap-2">
+        <button onclick="toggleAuthModal()" class="w-full py-2 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md shadow-blue-600/20">
+          <i class="fa-solid fa-user text-xs shrink-0"></i>
+          <span class="sidebar-text">Entrar / Cadastrar</span>
+        </button>
+      </div>
+
+    </div>
+
+  </aside>
+
+  <!-- ========================================================================= -->
+  <!-- MAIN APP WRAPPER & TOP NAV BAR -->
+  <!-- ========================================================================= -->
+  <div class="flex-1 flex flex-col min-w-0 min-h-screen">
+    
+    <!-- Top Header Bar -->
+    <header class="sticky top-0 z-30 bg-church-950/95 backdrop-blur-xl border-b border-church-800/80 px-3 sm:px-6 py-2.5 flex items-center justify-between">
+      
+      <!-- Left: Mobile Menu Toggle & Title -->
+      <div class="flex items-center gap-3">
+        <button onclick="toggleSidebar()" class="p-2 rounded-xl bg-church-900 hover:bg-church-850 border border-church-800 text-slate-300 hover:text-white transition-colors cursor-pointer">
+          <i class="fa-solid fa-bars text-sm"></i>
+        </button>
+
+        <div class="flex items-center gap-2">
+          <h2 id="topNavViewTitle" class="text-sm sm:text-base font-bold text-white tracking-tight">Meus Cultos</h2>
+          <span id="topNavViewBadge" class="hidden sm:inline-block px-2 py-0.5 rounded-md bg-church-900 border border-church-800 text-[10px] font-mono text-slate-400">
+            Painel Central
+          </span>
+        </div>
+      </div>
+
+      <!-- Right: Action Buttons -->
+      <div class="flex items-center gap-2">
+        <button onclick="toggleServerModal()" class="px-2.5 py-1.5 rounded-xl bg-church-900 hover:bg-church-850 border border-church-800 text-[11px] font-medium text-slate-300 hover:text-white transition-all flex items-center gap-1.5 shadow-sm cursor-pointer" title="Configurar Servidor">
+          <i class="fa-solid fa-server text-emerald-400 text-xs"></i>
+          <span class="hidden sm:inline">Servidor</span>
+        </button>
+
+        <button onclick="openCreateServiceModal()" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-xs font-semibold shadow-md shadow-blue-600/25 transition-all flex items-center gap-1.5 cursor-pointer">
+          <i class="fa-solid fa-plus text-xs"></i>
+          <span>Novo Culto</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Global Toast Notification Banner -->
+    <div id="toastNotification" class="fixed top-16 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-2xl bg-church-900/95 border border-emerald-500/50 text-white text-xs font-semibold shadow-2xl shadow-emerald-500/20 backdrop-blur-md flex items-center gap-2 transition-all duration-300 transform -translate-y-10 opacity-0 pointer-events-none">
+      <i class="fa-solid fa-circle-check text-emerald-400"></i>
+      <span id="toastText">Operação realizada com sucesso!</span>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="max-w-6xl w-full mx-auto px-3 sm:px-6 py-4 sm:py-6 flex-1 flex flex-col gap-4 sm:gap-6">
+
+      <!-- ========================================================================= -->
+      <!-- VIEW 1: MEUS CULTOS (GERENCIADOR DE ÁLBUNS & DOWNLOAD EM LOTE) -->
+      <!-- ========================================================================= -->
+      <div id="viewServicesSection" class="flex flex-col gap-5 w-full">
+        
+        <!-- Hero Banner -->
+        <div class="rounded-2xl sm:rounded-3xl bg-gradient-to-b from-church-900 to-church-950 border border-church-800 p-5 sm:p-6 shadow-2xl relative overflow-hidden">
+          <div class="absolute -top-20 right-0 w-64 h-32 bg-blue-500/10 blur-3xl pointer-events-none"></div>
+
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-950/70 border border-blue-800/60 text-blue-300 text-[10px] sm:text-xs font-semibold mb-2">
+                <i class="fa-solid fa-photo-film text-amber-400"></i>
+                Gestão por Cultos & Lotes
+              </div>
+              <h2 class="text-xl sm:text-2xl font-bold text-white leading-tight">
+                Seus Cultos & Edições em Lote
+              </h2>
+              <p class="text-xs text-slate-400 mt-1 max-w-lg">
+                Crie um álbum para cada culto, processe dezenas de fotos em segundos e faça o download de todo o lote em arquivo .ZIP organizado.
+              </p>
+            </div>
+
+            <!-- Primary Action -->
+            <button onclick="openCreateServiceModal()" class="w-full sm:w-auto px-6 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-95 text-white font-bold text-xs sm:text-sm rounded-xl shadow-xl shadow-blue-600/30 flex items-center justify-center gap-2.5 transition-all cursor-pointer shrink-0">
+              <i class="fa-solid fa-plus text-sm"></i>
+              <span>Criar Novo Culto</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Church Services Grid Header -->
+        <div class="flex items-center justify-between px-1">
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-bold text-white">Cultos Salvos</span>
+            <span id="servicesCountBadge" class="px-2 py-0.5 rounded-full bg-church-800 text-slate-300 text-[10px] font-mono font-semibold">
+              0 cultos
+            </span>
+          </div>
+          <span class="text-[11px] text-slate-400">Clique para abrir no estúdio ou baixar lote</span>
+        </div>
+
+        <!-- Services Cards Grid List -->
+        <div id="servicesListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Rendered via JS -->
+        </div>
+
+        <!-- Empty State for Services -->
+        <div id="emptyServicesPrompt" class="rounded-3xl bg-church-900/60 border border-church-800/80 p-8 sm:p-12 text-center flex flex-col items-center justify-center">
+          <div class="w-16 h-16 rounded-2xl bg-church-950 border border-church-800 flex items-center justify-center text-slate-600 mb-3 shadow-inner">
+            <i class="fa-solid fa-church text-2xl text-blue-400"></i>
+          </div>
+          <h3 class="text-base font-bold text-white">Nenhum culto criado ainda</h3>
+          <p class="text-xs text-slate-400 mt-1 max-w-sm">
+            Crie seu primeiro culto para fazer upload das fotos da equipe de mídia e tratá-las em lote.
+          </p>
+          <button onclick="openCreateServiceModal()" class="mt-4 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs flex items-center gap-2 transition-all cursor-pointer shadow-lg shadow-blue-600/20">
+            <i class="fa-solid fa-plus"></i> Criar Primeiro Culto
+          </button>
+        </div>
+
+      </div>
+
+      <!-- ========================================================================= -->
+      <!-- VIEW 2: ESTÚDIO DSLR (EDITOR & COMPARADOR) -->
+      <!-- ========================================================================= -->
+      <div id="viewStudioSection" class="flex flex-col gap-4 hidden" style="display: none;">
+        
+        <!-- Studio Top Navigation & Service Status -->
+        <div class="flex items-center justify-between p-3.5 rounded-2xl bg-church-900 border border-church-800 shadow-md">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <button onclick="switchMainView('services')" class="px-2.5 py-1.5 rounded-xl bg-church-950 hover:bg-church-850 border border-church-800 text-slate-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
+              <i class="fa-solid fa-arrow-left text-xs"></i>
+              <span>Voltar</span>
+            </button>
+            <div class="min-w-0">
+              <span id="studioServiceTitle" class="text-xs sm:text-sm font-bold text-white block truncate">
+                Culto Ativo
+              </span>
+              <span id="studioServiceDate" class="text-[10px] text-slate-400 font-mono block truncate">
+                0 fotos no lote
+              </span>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button id="batchProcessBtn" onclick="processAllInQueue()" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-semibold text-xs flex items-center gap-1.5 shadow transition-all cursor-pointer">
+              <i class="fa-solid fa-bolt text-amber-300 text-xs"></i>
+              <span class="hidden sm:inline">Processar Lote</span>
+            </button>
+
+            <button onclick="downloadActiveServiceZip()" class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-emerald-600/30 transition-all cursor-pointer">
+              <i class="fa-solid fa-file-zipper text-xs"></i>
+              <span>Baixar (.ZIP)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Presets Carousel in Studio -->
+        <div class="flex flex-col gap-2">
+          <div class="flex items-center justify-between px-1">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+              <i class="fa-solid fa-sliders text-amber-400"></i> Presets Sugeridos
+            </span>
+            <span id="sceneMomentBadge" class="text-[10px] text-blue-400 font-mono px-2 py-0.5 rounded-md bg-blue-950/60 border border-blue-800/50">
+              Culto / Palco
+            </span>
+          </div>
+          <div id="presetsContainer" class="flex gap-2.5 overflow-x-auto pb-1.5 pt-0.5 no-scrollbar scroll-smooth">
+            <!-- Injected via JS -->
+          </div>
+        </div>
+
+        <!-- Photo Queue Thumbnails Strip -->
+        <div id="thumbnailsStrip" class="flex flex-col gap-2">
+          <div class="flex items-center justify-between px-1">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Fotos do Culto</span>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] text-slate-500 font-mono">Clique para inspecionar</span>
+              <label class="text-[11px] text-blue-400 hover:underline cursor-pointer flex items-center gap-1">
+                <i class="fa-solid fa-plus text-[10px]"></i> Mais fotos
+                <input type="file" id="addMorePhotosInput" multiple accept="image/*" class="hidden">
+              </label>
+            </div>
+          </div>
+          <div id="thumbnailsList" class="flex gap-2 overflow-x-auto pb-1 no-scrollbar min-h-[60px]">
+            <!-- Injected thumbnails via JS -->
+          </div>
+        </div>
+
+        <!-- INTERACTIVE VIEWER -->
+        <div id="viewerContainer" class="flex flex-col rounded-2xl sm:rounded-3xl bg-church-900 border border-church-800 shadow-2xl overflow-hidden min-h-[420px] sm:min-h-[500px]">
+          
+          <!-- Viewer Top Bar -->
+          <div class="flex items-center justify-between px-3.5 py-2.5 bg-church-950 border-b border-church-800">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+              <span id="activePhotoTitle" class="text-xs font-semibold text-white truncate max-w-[150px] sm:max-w-xs">
+                Comparador Interativo
+              </span>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <div class="flex bg-church-950 p-0.5 rounded-lg border border-church-800 text-xs">
+                <button id="modeSliderBtn" onclick="setViewerMode('slider')" class="px-2 py-1 rounded-md bg-blue-600 text-white font-medium text-[11px]">Divisão</button>
+                <button id="modeSideBtn" onclick="setViewerMode('side')" class="px-2 py-1 rounded-md text-slate-400 hover:text-white font-medium text-[11px]">Lado a Lado</button>
+              </div>
+
+              <button id="downloadBtn" onclick="downloadCurrentProcessed()" disabled class="px-3 py-1.5 rounded-xl bg-church-800 hover:bg-church-700 disabled:opacity-30 disabled:cursor-not-allowed text-white text-xs font-semibold border border-church-700 flex items-center gap-1.5 transition-all">
+                <i class="fa-solid fa-download"></i>
+                <span class="hidden sm:inline">Baixar Foto HD</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Viewport Area -->
+          <div id="viewport" onclick="handleViewportClick(event)" class="relative w-full h-[360px] sm:h-[480px] bg-church-950 flex items-center justify-center overflow-hidden select-none cursor-crosshair">
+            
+            <!-- Empty State -->
+            <div id="emptyPrompt" class="flex flex-col items-center justify-center p-6 text-center text-slate-500">
+              <div class="w-16 h-16 rounded-2xl bg-church-900 border border-church-800 flex items-center justify-center text-slate-600 mb-3 shadow-inner">
+                <i class="fa-solid fa-images text-2xl"></i>
+              </div>
+              <span class="text-sm font-semibold text-slate-300">Nenhuma foto selecionada</span>
+              <p class="text-xs text-slate-500 mt-1 max-w-xs">
+                Clique em uma das fotos do culto acima para visualizar e calibrar.
+              </p>
+            </div>
+
+            <!-- Processing Loader State -->
+            <div id="processingLoader" class="flex flex-col items-center justify-center p-6 text-center text-blue-400 hidden" style="display: none;">
+              <div class="relative w-16 h-16 mb-3">
+                <div class="w-16 h-16 rounded-full border-4 border-blue-600/30 border-t-blue-500 animate-spin"></div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                  <i class="fa-solid fa-wand-magic-sparkles text-amber-400 text-lg animate-pulse"></i>
+                </div>
+              </div>
+              <span class="text-sm font-bold text-white" id="loaderTitle">Tratando com Motor DSLR 3.0...</span>
+              <p class="text-xs text-slate-400 mt-1" id="loaderSubtitle">Atenuando LEDs, corrigindo óptica e calibrando tons de pele</p>
+            </div>
+
+            <!-- Slider Comparison View -->
+            <div id="sliderWrapper" class="relative w-full h-full hidden" style="display: none;">
+              <img id="imgAfter" class="absolute inset-0 w-full h-full object-contain pointer-events-none" src="" alt="Depois">
+
+              <div id="clipContainer" class="absolute inset-0 overflow-hidden pointer-events-none" style="clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);">
+                <img id="imgBefore" class="absolute inset-0 w-full h-full object-contain" src="" alt="Antes">
+              </div>
+
+              <!-- Focus Reticle -->
+              <div id="focusReticle" class="absolute z-20 pointer-events-none hidden transition-all duration-150" style="left: 50%; top: 40%; transform: translate(-50%, -50%);">
+                <div class="w-10 h-10 rounded-full border-2 border-amber-400 bg-amber-400/10 shadow-[0_0_15px_rgba(245,158,11,0.6)] focal-ring flex items-center justify-center">
+                  <div class="w-1.5 h-1.5 rounded-full bg-amber-300"></div>
+                </div>
+                <span id="focusReticleBadge" class="absolute top-11 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-md bg-black/80 border border-amber-400/40 text-[9px] font-mono text-amber-300 whitespace-nowrap shadow-lg">
+                  f/2.8 · Foco Ativo
+                </span>
+              </div>
+
+              <!-- Divider Line -->
+              <div id="dividerLine" class="slider-divider absolute top-0 bottom-0 z-30 cursor-ew-resize flex items-center justify-center group" style="left: 50%; transform: translateX(-50%);">
+                <div class="w-[2.5px] h-full bg-white group-hover:bg-blue-400 shadow-[0_0_12px_rgba(0,0,0,0.9)]"></div>
+                <div class="absolute w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-church-900/90 border-2 border-white flex items-center justify-center text-white shadow-2xl group-hover:scale-110 active:scale-95 transition-all backdrop-blur-sm">
+                  <i class="fa-solid fa-arrows-left-right text-xs"></i>
+                </div>
+              </div>
+
+              <span class="absolute bottom-3 left-3 z-10 px-2 py-0.5 rounded-md bg-black/75 border border-white/10 text-[10px] font-mono text-slate-300 uppercase pointer-events-none">
+                Original (Celular)
+              </span>
+              <span class="absolute bottom-3 right-3 z-10 px-2 py-0.5 rounded-md bg-blue-600/90 border border-blue-400/30 text-[10px] font-mono text-white uppercase flex items-center gap-1 pointer-events-none">
+                <i class="fa-solid fa-sparkles text-amber-300 text-[9px]"></i> DSLR Pro (HD)
+              </span>
+            </div>
+
+            <!-- Side by Side View -->
+            <div id="sideBySideWrapper" class="grid grid-cols-2 w-full h-full gap-1.5 p-1.5 hidden" style="display: none;">
+              <div class="relative rounded-xl overflow-hidden bg-church-900 border border-church-800 flex items-center justify-center">
+                <img id="imgSideBefore" class="w-full h-full object-contain" src="" alt="Antes">
+                <span class="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/75 text-[9px] font-mono text-slate-300 pointer-events-none">Antes</span>
+              </div>
+              <div class="relative rounded-xl overflow-hidden bg-church-900 border border-church-800 flex items-center justify-center">
+                <img id="imgSideAfter" class="w-full h-full object-contain" src="" alt="Depois">
+                <span class="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-blue-600/90 text-[9px] font-mono text-white pointer-events-none">Depois</span>
+              </div>
+            </div>
+
+          </div>
+
+          <div id="telemetryFooter" class="px-3.5 py-2 bg-church-950 border-t border-church-800 flex items-center justify-between text-[11px] text-slate-400">
+            <span id="telemetryText" class="flex items-center gap-1.5">
+              <i class="fa-solid fa-hand-pointer text-amber-400 text-xs"></i>
+              <span>Toque na foto para mudar o foco</span>
+            </span>
+            <span id="resolutionBadge" class="font-mono text-slate-500 text-[10px]"></span>
+          </div>
+        </div>
+
+        <!-- 3-TAB CONTROLS PANEL -->
+        <div id="parametersPanel" class="rounded-2xl sm:rounded-3xl bg-church-900 border border-church-800 p-4 sm:p-5 shadow-xl hidden" style="display: none;">
+          
+          <!-- Diagnostic Scene Bar -->
+          <div class="p-3 rounded-xl bg-church-950 border border-church-800 text-xs mb-4">
+            <div class="flex items-center justify-between mb-1">
+              <div class="flex items-center gap-1.5 text-blue-400 font-semibold">
+                <i class="fa-solid fa-brain text-amber-400"></i> Diagnóstico da Cena (Gemini 2.5 Pro):
+              </div>
+              <span id="focalPointDisplayBadge" class="text-[10px] font-mono text-amber-400">Foco: [50%, 40%]</span>
+            </div>
+            <p id="analysisSummary" class="text-slate-300 font-mono text-[11px] leading-relaxed"></p>
+            <div class="mt-2 flex flex-wrap gap-1.5">
+              <span id="lightingTag" class="px-2 py-0.5 rounded bg-blue-900/40 text-blue-300 border border-blue-800/40 text-[10px]"></span>
+              <span id="sceneTag" class="px-2 py-0.5 rounded bg-purple-900/40 text-purple-300 border border-purple-800/40 text-[10px]"></span>
+              <span id="fStopTag" class="px-2 py-0.5 rounded bg-emerald-900/40 text-emerald-300 border border-emerald-800/40 text-[10px]">f/2.8 Bokeh</span>
+            </div>
+          </div>
+
+          <!-- Navigation Tabs -->
+          <div class="flex border-b border-church-800 mb-4 gap-1 sm:gap-2">
+            <button id="tabBtn1" onclick="switchControlTab(1)" class="px-3 sm:px-4 py-2 text-xs font-bold border-b-2 border-blue-500 text-blue-400 flex items-center gap-1.5 transition-all">
+              <i class="fa-solid fa-palette text-xs"></i>
+              <span>1. Cor & Luz</span>
+            </button>
+            <button id="tabBtn2" onclick="switchControlTab(2)" class="px-3 sm:px-4 py-2 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-1.5 transition-all">
+              <i class="fa-solid fa-bolt text-xs"></i>
+              <span>2. Óptica & LEDs</span>
+            </button>
+            <button id="tabBtn3" onclick="switchControlTab(3)" class="px-3 sm:px-4 py-2 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-1.5 transition-all">
+              <i class="fa-solid fa-bullseye text-xs"></i>
+              <span>3. Foco & Bokeh</span>
+            </button>
+          </div>
+
+          <!-- TAB 1: COR & LUZ -->
+          <div id="tabContent1" class="flex flex-col gap-3.5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
+              <div>
+                <div class="flex justify-between text-slate-300 mb-1">
+                  <span>Compensação de Exposição</span>
+                  <span id="val_exposure" class="font-mono text-blue-400 font-bold">0.0 EV</span>
+                </div>
+                <input type="range" id="param_exposure" min="-2.0" max="2.0" step="0.05" oninput="updateSliderAndReprocess('exposure', this.value, ' EV')" class="w-full accent-blue-500 h-2 bg-church-950 rounded-lg">
+              </div>
+
+              <div>
+                <div class="flex justify-between text-slate-300 mb-1">
+                  <span>Temperatura de Cor (Kelvin)</span>
+                  <span id="val_kelvin" class="font-mono text-amber-400 font-bold">5500K</span>
+                </div>
+                <input type="range" id="param_kelvin" min="2500" max="9000" step="50" oninput="updateSliderAndReprocess('kelvin', this.value, 'K')" class="w-full accent-amber-500 h-2 bg-church-950 rounded-lg">
+              </div>
+
+              <div>
+                <div class="flex justify-between text-slate-300 mb-1">
+                  <span>Matiz / Tint (Verde / Magenta)</span>
+                  <span id="val_tint" class="font-mono text-pink-400 font-bold">0.0</span>
+                </div>
+                <input type="range" id="param_tint" min="-50.0" max="50.0" step="1.0" oninput="updateSliderAndReprocess('tint', this.value, '')" class="w-full accent-pink-500 h-2 bg-church-950 rounded-lg">
+              </div>
+
+              <div>
+                <div class="flex justify-between text-slate-300 mb-1">
+                  <span>Curva Tonal / Contraste</span>
+                  <span id="val_contrast" class="font-mono text-blue-400 font-bold">1.10x</span>
+                </div>
+                <input type="range" id="param_contrast" min="0.80" max="1.50" step="0.02" oninput="updateSliderAndReprocess('contrast', this.value, 'x')" class="w-full accent-blue-500 h-2 bg-church-950 rounded-lg">
+              </div>
+
+              <div>
+                <div class="flex justify-between text-slate-300 mb-1">
+                  <span>Recuperação de Altas Luzes (Telões)</span>
+                  <span id="val_highlights" class="font-mono text-blue-400 font-bold">40%</span>
+                </div>
+                <input type="range" id="param_highlights" min="0.0" max="1.0" step="0.05" oninput="updateSliderAndReprocess('highlights', Math.round(this.value*100), '%')" class="w-full accent-blue-500 h-2 bg-church-950 rounded-lg">
+              </div>
+
+              <div>
+                <div class="flex justify-between text-slate-300 mb-1">
+                  <span>Abertura de Sombras (Público)</span>
+                  <span id="val_shadows" class="font-mono text-blue-400 font-bold">35%</span>
+                </div>
+                <input type="range" id="param_shadows" min="0.0" max="1.0" step="0.05" oninput="updateSliderAndReprocess('shadows', Math.round(this.value*100), '%')" class="w-full accent-blue-500 h-2 bg-church-950 rounded-lg">
+              </div>
+
+              <div>
+                <div class="flex justify-between text-slate-300 mb-1">
+                  <span>Saturação de Cor</span>
+                  <span id="val_saturation" class="font-mono text-emerald-400 font-bold">100%</span>
+                </div>
+                <input type="range" id="param_saturation" min="0.5" max="1.5" step="0.02" oninput="updateSliderAndReprocess('saturation', Math.round(this.value*100), '%')" class="w-full accent-emerald-500 h-2 bg-church-950 rounded-lg">
+              </div>
+
+              <div>
+                <div class="flex justify-between text-slate-300 mb-1">
+                  <span>Vibração Tonal (Médios-Tons)</span>
+                  <span id="val_vibrance" class="font-mono text-emerald-400 font-bold">105%</span>
+                </div>
+                <input type="range" id="param_vibrance" min="0.5" max="1.5" step="0.02" oninput="updateSliderAndReprocess('vibrance', Math.round(this.value*100), '%')" class="w-full accent-emerald-500 h-2 bg-church-950 rounded-lg">
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 2: CORREÇÃO ÓPTICA & LEDS -->
+          <div id="tabContent2" class="flex flex-col gap-3.5 hidden" style="display: none;">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
+              <div>
+                <div class="flex justify-between text-purple-300 font-semibold mb-1">
+                  <span>Correção de Franjas Cromáticas (Roxo/Verde)</span>
+                  <span id="val_chromatic" class="font-mono text-purple-400 font-bold">50%</span>
+                </div>
+                <input type="range" id="param_chromatic" min="0.0" max="1.0" step="0.05" oninput="updateSliderAndReprocess('chromatic', Math.round(this.value*100), '%')" class="w-full accent-purple-500 h-2 bg-church-950 rounded-lg">
+              </div>
+
+              <div>
+                <div class="flex justify-between text-amber-300 font-semibold mb-1">
+                  <span>Restauração de LEDs Estourados (Clipping)</span>
+                  <span id="val_led_clip" class="font-mono text-amber-400 font-bold">60%</span>
+                </div>
+                <input type="range" id="param_led_clip" min="0.0" max="1.0" step="0.05" oninput="updateSliderAndReprocess('led_clip', Math.round(this.value*100), '%')" class="w-full accent-amber-500 h-2 bg-church-950 rounded-lg">
+              </div>
+
+              <div>
+                <div class="flex justify-between text-slate-300 mb-1">
+                  <span>Atenuação de Vazamento de LED em Pele</span>
+                  <span id="val_led" class="font-mono text-purple-400 font-bold">45%</span>
+                </div>
+                <input type="range" id="param_led" min="0.0" max="1.0" step="0.05" oninput="updateSliderAndReprocess('led', Math.round(this.value*100), '%')" class="w-full accent-purple-500 h-2 bg-church-950 rounded-lg">
+              </div>
+
+              <div>
+                <div class="flex justify-between text-slate-300 mb-1">
+                  <span>Correção de Vinhetagem de Celular</span>
+                  <span id="val_vignette" class="font-mono text-blue-400 font-bold">35%</span>
+                </div>
+                <input type="range" id="param_vignette" min="0.0" max="1.0" step="0.05" oninput="updateSliderAndReprocess('vignette', Math.round(this.value*100), '%')" class="w-full accent-blue-500 h-2 bg-church-950 rounded-lg">
+              </div>
+
+              <div>
+                <div class="flex justify-between text-slate-300 mb-1">
+                  <span>Redução de Ruído Térmico / Alto ISO</span>
+                  <span id="val_denoise" class="font-mono text-blue-400 font-bold">30%</span>
+                </div>
+                <input type="range" id="param_denoise" min="0.0" max="1.0" step="0.05" oninput="updateSliderAndReprocess('denoise', Math.round(this.value*100), '%')" class="w-full accent-blue-500 h-2 bg-church-950 rounded-lg">
+              </div>
+
+              <div>
+                <div class="flex justify-between text-amber-300 font-semibold mb-1">
+                  <span>Proteção de Melanina / Tom de Pele</span>
+                  <span id="val_skin" class="font-mono text-amber-400 font-bold">88%</span>
+                </div>
+                <input type="range" id="param_skin" min="0.0" max="1.0" step="0.05" oninput="updateSliderAndReprocess('skin', Math.round(this.value*100), '%')" class="w-full accent-amber-500 h-2 bg-church-950 rounded-lg">
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 3: FOCO ÓPTICO & BOKEH DSLR -->
+          <div id="tabContent3" class="flex flex-col gap-3.5 hidden" style="display: none;">
+            <div class="p-3 rounded-xl bg-blue-950/40 border border-blue-800/40 flex items-center justify-between text-xs">
+              <div class="flex items-center gap-2">
+                <i class="fa-solid fa-bullseye text-amber-400 text-sm"></i>
+                <div>
+                  <span class="font-bold text-white">Clique ou toque na foto</span>
+                  <p class="text-[11px] text-slate-400">Reposiciona o ponto focal e a profundidade de campo imediatamente.</p>
+                </div>
+              </div>
+              <button onclick="resetFocalCenter()" class="px-2.5 py-1 rounded-lg bg-church-800 border border-church-700 text-slate-300 hover:text-white text-[11px]">
+                Centralizar
+              </button>
+            </div>
+
+            <div>
+              <span class="text-xs text-slate-300 font-semibold mb-1.5 block">Simulação de Abertura f/Stop (Lente DSLR):</span>
+              <div class="grid grid-cols-6 gap-1.5 text-xs font-mono">
+                <button onclick="setFStop(1.4)" class="fstop-btn py-1.5 rounded-lg bg-church-950 border border-church-800 text-slate-300 hover:text-white font-bold" data-fstop="1.4">f/1.4</button>
+                <button onclick="setFStop(1.8)" class="fstop-btn py-1.5 rounded-lg bg-church-950 border border-church-800 text-slate-300 hover:text-white font-bold" data-fstop="1.8">f/1.8</button>
+                <button onclick="setFStop(2.8)" class="fstop-btn py-1.5 rounded-lg bg-blue-600 border border-blue-500 text-white font-bold" data-fstop="2.8">f/2.8</button>
+                <button onclick="setFStop(4.0)" class="fstop-btn py-1.5 rounded-lg bg-church-950 border border-church-800 text-slate-300 hover:text-white font-bold" data-fstop="4.0">f/4.0</button>
+                <button onclick="setFStop(5.6)" class="fstop-btn py-1.5 rounded-lg bg-church-950 border border-church-800 text-slate-300 hover:text-white font-bold" data-fstop="5.6">f/5.6</button>
+                <button onclick="setFStop(8.0)" class="fstop-btn py-1.5 rounded-lg bg-church-950 border border-church-800 text-slate-300 hover:text-white font-bold" data-fstop="8.0">f/8.0</button>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
+              <div>
+                <div class="flex justify-between text-slate-300 mb-1">
+                  <span>Suavidade do Desfoque (Bokeh)</span>
+                  <span id="val_bokeh" class="font-mono text-emerald-400 font-bold">75%</span>
+                </div>
+                <input type="range" id="param_bokeh" min="0.0" max="1.0" step="0.05" oninput="updateSliderAndReprocess('bokeh', Math.round(this.value*100), '%')" class="w-full accent-emerald-500 h-2 bg-church-950 rounded-lg">
+              </div>
+
+              <div>
+                <div class="flex justify-between text-amber-300 font-semibold mb-1">
+                  <span>Microcontraste & Nitidez no Sujeito</span>
+                  <span id="val_microcontrast" class="font-mono text-amber-400 font-bold">75%</span>
+                </div>
+                <input type="range" id="param_microcontrast" min="0.0" max="2.0" step="0.05" oninput="updateSliderAndReprocess('microcontrast', Math.round(this.value*100), '%')" class="w-full accent-amber-500 h-2 bg-church-950 rounded-lg">
+              </div>
+            </div>
+          </div>
+
+          <!-- Apply Manual Sliders Button -->
+          <button onclick="applyCurrentManualParams()" class="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-98 text-white text-xs font-semibold shadow-md flex items-center justify-center gap-1.5 transition-all mt-4 cursor-pointer">
+            <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+            <span>Aplicar Ajustes DSLR</span>
+          </button>
+
+        </div>
+
+      </div>
+
+    </main>
+  </div>
 
   <!-- ========================================================================= -->
   <!-- MODAL: + CRIAR NOVO CULTO (COM UPLOAD DE FOTOS) -->
@@ -651,13 +737,10 @@
       </div>
 
       <form onsubmit="handleCreateServiceSubmit(event)" class="flex flex-col gap-4">
-        
-        <!-- Service Title Input -->
         <div>
           <label class="text-xs font-semibold text-slate-300 block mb-1.5">Nome do Culto / Evento</label>
           <input type="text" id="newServiceTitle" required placeholder="Ex: Culto de Celebração - Domingo Noite" class="w-full px-3.5 py-2.5 rounded-xl bg-church-950 border border-church-800 text-white text-xs sm:text-sm focus:outline-none focus:border-blue-500">
           
-          <!-- Quick Suggestions Chips -->
           <div class="flex flex-wrap gap-1.5 mt-2">
             <button type="button" onclick="setServiceSuggestion('Culto Domingo Noite')" class="px-2.5 py-1 rounded-lg bg-church-950 hover:bg-church-800 border border-church-800 text-[10px] text-slate-300">Domingo Noite</button>
             <button type="button" onclick="setServiceSuggestion('Culto da Família')" class="px-2.5 py-1 rounded-lg bg-church-950 hover:bg-church-800 border border-church-800 text-[10px] text-slate-300">Culto da Família</button>
@@ -667,13 +750,11 @@
           </div>
         </div>
 
-        <!-- Date Picker -->
         <div>
           <label class="text-xs font-semibold text-slate-300 block mb-1.5">Data do Culto</label>
           <input type="date" id="newServiceDate" required class="w-full px-3.5 py-2 rounded-xl bg-church-950 border border-church-800 text-white text-xs focus:outline-none focus:border-blue-500">
         </div>
 
-        <!-- Initial Preset Selector -->
         <div>
           <label class="text-xs font-semibold text-slate-300 block mb-1.5">Preset Recomendado para o Culto</label>
           <select id="newServicePreset" class="w-full px-3.5 py-2 rounded-xl bg-church-950 border border-church-800 text-white text-xs focus:outline-none focus:border-blue-500">
@@ -684,7 +765,6 @@
           </select>
         </div>
 
-        <!-- Upload Files Input Box -->
         <div>
           <label class="text-xs font-semibold text-slate-300 block mb-1.5">Fotos do Culto (Selecione múltiplas fotos)</label>
           <div class="relative w-full rounded-2xl border-2 border-dashed border-church-700 hover:border-blue-500/80 bg-church-950/70 p-5 text-center transition-all cursor-pointer">
@@ -695,17 +775,15 @@
           </div>
         </div>
 
-        <!-- Submit Button -->
         <button type="submit" id="createServiceSubmitBtn" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-98 text-white font-bold text-xs sm:text-sm shadow-xl shadow-blue-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer mt-2">
           <i class="fa-solid fa-wand-magic-sparkles"></i>
           <span>Criar Culto & Iniciar Lote</span>
         </button>
-
       </form>
     </div>
   </div>
 
-  <!-- AUTHENTICATION & LOGIN/REGISTER MODAL -->
+  <!-- AUTHENTICATION MODAL -->
   <div id="authModal" class="fixed inset-0 z-50 items-center justify-center p-4 bg-black/75 backdrop-blur-md hidden" style="display: none;">
     <div class="w-full max-w-md bg-church-900 border border-church-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
       <div class="absolute -top-16 -right-16 w-36 h-36 bg-blue-500/20 blur-3xl pointer-events-none"></div>
@@ -796,24 +874,6 @@
     </div>
   </div>
 
-  <!-- Key Modal -->
-  <div id="keyModal" class="fixed inset-0 z-50 items-center justify-center p-4 bg-black/70 backdrop-blur-sm hidden" style="display: none;">
-    <div class="w-full max-w-md bg-church-900 border border-church-800 rounded-2xl p-5 shadow-2xl">
-      <div class="flex items-center gap-2 mb-2">
-        <i class="fa-solid fa-key text-blue-400 text-base"></i>
-        <h3 class="text-base font-bold text-white">Configurações & Chave API</h3>
-      </div>
-      <p class="text-xs text-slate-400 mb-3 leading-relaxed">
-        Como o servidor Render já está configurado, você não precisa inserir chave aqui, a menos que queira processar offline no navegador.
-      </p>
-      <input type="password" id="geminiKeyInput" placeholder="Cole sua chave AIzaSy..." class="w-full px-3 py-2 rounded-xl bg-church-950 border border-church-800 text-white font-mono text-xs focus:outline-none focus:border-blue-500 mb-4">
-      <div class="flex items-center justify-end gap-2">
-        <button onclick="toggleKeyModal()" class="px-3.5 py-1.5 rounded-xl text-xs font-medium text-slate-400 hover:text-white">Fechar</button>
-        <button onclick="saveGeminiKey()" class="px-4 py-1.5 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white shadow-md">Salvar</button>
-      </div>
-    </div>
-  </div>
-
   <!-- ================= JAVASCRIPT CORE LOGIC ================= -->
   <script>
     // Global Application State
@@ -821,7 +881,8 @@
     let activeService = null;
     let queue = [];
     let activeItem = null;
-    let currentMainView = 'services'; // 'services' or 'studio'
+    let currentMainView = 'services';
+    let isSidebarCollapsed = false;
 
     let viewerMode = 'slider';
     let sliderPercent = 50;
@@ -949,10 +1010,6 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('serverUrlInput').value = serverUrl;
-      const savedKey = localStorage.getItem('CHURCHPHOTO_GEMINI_KEY') || '';
-      document.getElementById('geminiKeyInput').value = savedKey;
-
-      // Set today's date in create service modal
       document.getElementById('newServiceDate').valueAsDate = new Date();
 
       loadStoredServices();
@@ -962,16 +1019,49 @@
       setupAddMorePhotosInput();
     });
 
-    // ================= MAIN NAVIGATION (SERVICES vs STUDIO) =================
+    // ================= SIDEBAR RETRACTABLE / COLLAPSIBLE SYSTEM =================
+
+    function toggleSidebar() {
+      const sidebar = document.getElementById('mainSidebar');
+      const backdrop = document.getElementById('mobileSidebarBackdrop');
+      
+      if (sidebar.classList.contains('-translate-x-full')) {
+        sidebar.classList.remove('-translate-x-full');
+        backdrop.style.display = 'block';
+        backdrop.classList.remove('hidden');
+      } else {
+        sidebar.classList.add('-translate-x-full');
+        backdrop.style.display = 'none';
+        backdrop.classList.add('hidden');
+      }
+    }
+
+    function toggleSidebarCollapse() {
+      const sidebar = document.getElementById('mainSidebar');
+      const icon = document.getElementById('collapseToggleIcon');
+      isSidebarCollapsed = !isSidebarCollapsed;
+
+      if (isSidebarCollapsed) {
+        sidebar.classList.remove('sidebar-expanded');
+        sidebar.classList.add('sidebar-collapsed');
+        icon.className = 'fa-solid fa-chevron-right text-xs';
+      } else {
+        sidebar.classList.remove('sidebar-collapsed');
+        sidebar.classList.add('sidebar-expanded');
+        icon.className = 'fa-solid fa-chevron-left text-xs';
+      }
+    }
+
+    // ================= MAIN NAVIGATION =================
 
     function switchMainView(view) {
       currentMainView = view;
       const viewServices = document.getElementById('viewServicesSection');
       const viewStudio = document.getElementById('viewStudioSection');
-      const tabServices = document.getElementById('navTabServices');
-      const tabStudio = document.getElementById('navTabStudio');
-      const mobTabServices = document.getElementById('mobileNavTabServices');
-      const mobTabStudio = document.getElementById('mobileNavTabStudio');
+      const topTitle = document.getElementById('topNavViewTitle');
+      const topBadge = document.getElementById('topNavViewBadge');
+      const sideNavServices = document.getElementById('sideNavServices');
+      const sideNavStudio = document.getElementById('sideNavStudio');
 
       if (view === 'services') {
         viewServices.style.display = 'flex';
@@ -979,10 +1069,11 @@
         viewStudio.style.display = 'none';
         viewStudio.classList.add('hidden');
 
-        tabServices.className = 'px-4 py-1.5 rounded-lg bg-blue-600 text-white font-bold flex items-center gap-2 transition-all cursor-pointer';
-        tabStudio.className = 'px-4 py-1.5 rounded-lg text-slate-400 hover:text-white font-semibold flex items-center gap-2 transition-all cursor-pointer';
-        mobTabServices.className = 'flex flex-col items-center gap-1 text-blue-400';
-        mobTabStudio.className = 'flex flex-col items-center gap-1 text-slate-400';
+        topTitle.textContent = "Meus Cultos";
+        topBadge.textContent = "Painel Central";
+
+        sideNavServices.className = "sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold bg-blue-600 text-white transition-all cursor-pointer shadow-sm";
+        sideNavStudio.className = "sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-church-800/70 transition-all cursor-pointer";
 
         renderServicesGrid();
       } else {
@@ -991,18 +1082,28 @@
         viewStudio.style.display = 'flex';
         viewStudio.classList.remove('hidden');
 
-        tabServices.className = 'px-4 py-1.5 rounded-lg text-slate-400 hover:text-white font-semibold flex items-center gap-2 transition-all cursor-pointer';
-        tabStudio.className = 'px-4 py-1.5 rounded-lg bg-blue-600 text-white font-bold flex items-center gap-2 transition-all cursor-pointer';
-        mobTabServices.className = 'flex flex-col items-center gap-1 text-slate-400';
-        mobTabStudio.className = 'flex flex-col items-center gap-1 text-blue-400';
+        topTitle.textContent = "Estúdio DSLR";
+        topBadge.textContent = activeService ? activeService.title : "Comparador";
+
+        sideNavServices.className = "sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-church-800/70 transition-all cursor-pointer";
+        sideNavStudio.className = "sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold bg-blue-600 text-white transition-all cursor-pointer shadow-sm";
 
         if (activeItem) {
           showProcessedViewer(activeItem);
         }
       }
+
+      // Close mobile sidebar drawer if open
+      if (window.innerWidth < 768) {
+        const sidebar = document.getElementById('mainSidebar');
+        const backdrop = document.getElementById('mobileSidebarBackdrop');
+        sidebar.classList.add('-translate-x-full');
+        backdrop.style.display = 'none';
+        backdrop.classList.add('hidden');
+      }
     }
 
-    // ================= CHURCH SERVICES MANAGER =================
+    // ================= SERVICES MANAGER & SIDEBAR SYNC =================
 
     function loadStoredServices() {
       const stored = localStorage.getItem('CHURCHPHOTO_SERVICES_DATA');
@@ -1014,6 +1115,7 @@
         }
       }
       renderServicesGrid();
+      renderSidebarRecentServices();
     }
 
     function saveServicesToStorage() {
@@ -1022,6 +1124,39 @@
       } catch (e) {
         console.warn("Storage quota limit reached for services:", e);
       }
+      renderSidebarRecentServices();
+    }
+
+    function renderSidebarRecentServices() {
+      const container = document.getElementById('sideRecentServicesList');
+      const sideServicesCount = document.getElementById('sideServicesCountBadge');
+      const sidePhotosCount = document.getElementById('sidePhotosCountBadge');
+
+      if (sideServicesCount) sideServicesCount.textContent = churchServices.length;
+      
+      let totalPhotos = 0;
+      churchServices.forEach(s => totalPhotos += (s.items ? s.items.length : 0));
+      if (sidePhotosCount) sidePhotosCount.textContent = `${totalPhotos} fotos`;
+
+      if (!churchServices || churchServices.length === 0) {
+        container.innerHTML = `<span class="sidebar-text text-[11px] text-slate-500 px-2 py-1 block">Nenhum culto salvo</span>`;
+        return;
+      }
+
+      container.innerHTML = churchServices.slice(0, 5).map(s => {
+        const isCurrentActive = activeService && activeService.id === s.id;
+        return `
+          <button onclick="openServiceInStudio('${s.id}')" class="sidebar-item w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left text-xs transition-colors cursor-pointer ${
+            isCurrentActive ? 'bg-church-800 text-blue-400 font-bold' : 'text-slate-400 hover:text-slate-200 hover:bg-church-800/40'
+          }">
+            <div class="flex items-center gap-2 min-w-0">
+              <i class="fa-solid fa-church text-[11px] w-4 text-center text-slate-500"></i>
+              <span class="sidebar-text truncate max-w-[130px]">${s.title}</span>
+            </div>
+            <span class="sidebar-badge text-[9px] font-mono text-slate-500">${s.items ? s.items.length : 0}</span>
+          </button>
+        `;
+      }).join('');
     }
 
     function renderServicesGrid() {
@@ -1047,7 +1182,6 @@
         const completedCount = srv.items ? srv.items.filter(i => i.status === 'completed').length : 0;
         const progressPct = totalPhotos > 0 ? Math.round((completedCount / totalPhotos) * 100) : 0;
 
-        // Up to 4 preview thumbnails
         const previewThumbs = (srv.items || []).slice(0, 4).map(i => `
           <div class="w-12 h-12 rounded-lg overflow-hidden bg-church-950 border border-church-800 shrink-0">
             <img src="${i.processedBase64 || i.previewUrl}" class="w-full h-full object-cover">
@@ -1057,7 +1191,6 @@
         return `
           <div class="rounded-2xl sm:rounded-3xl bg-church-900 border border-church-800 hover:border-blue-500/50 p-4 sm:p-5 shadow-xl flex flex-col justify-between transition-all group">
             <div>
-              <!-- Card Header -->
               <div class="flex items-start justify-between gap-2 mb-2">
                 <div>
                   <h4 class="text-sm sm:text-base font-bold text-white group-hover:text-blue-400 transition-colors line-clamp-1">
@@ -1073,19 +1206,16 @@
                   </div>
                 </div>
 
-                <!-- Delete Service Action -->
                 <button onclick="deleteChurchService('${srv.id}', event)" class="text-slate-500 hover:text-red-400 p-1.5 rounded-lg transition-colors cursor-pointer" title="Excluir Culto">
                   <i class="fa-solid fa-trash-can text-xs"></i>
                 </button>
               </div>
 
-              <!-- Thumbnails Preview Row -->
               <div class="flex items-center gap-1.5 my-3">
                 ${previewThumbs}
                 ${totalPhotos > 4 ? `<span class="w-12 h-12 rounded-lg bg-church-950 border border-church-800 flex items-center justify-center text-[10px] font-bold text-slate-400">+${totalPhotos - 4}</span>` : ''}
               </div>
 
-              <!-- Progress Status -->
               <div class="flex items-center justify-between text-[11px] mb-1">
                 <span class="text-slate-400">${totalPhotos} foto${totalPhotos === 1 ? '' : 's'} no lote</span>
                 <span class="font-bold ${progressPct === 100 ? 'text-emerald-400' : 'text-blue-400'}">${progressPct}% Tratado</span>
@@ -1095,7 +1225,6 @@
               </div>
             </div>
 
-            <!-- Card Action Buttons -->
             <div class="grid grid-cols-2 gap-2 pt-2 border-t border-church-800">
               <button onclick="openServiceInStudio('${srv.id}')" class="py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow transition-all cursor-pointer">
                 <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
@@ -1180,8 +1309,6 @@
       closeCreateServiceModal();
 
       showToast(`Culto "${title}" criado com sucesso!`);
-
-      // Open immediately in Studio & start batch process
       openServiceInStudio(newService.id);
     }
 
@@ -1196,11 +1323,11 @@
       document.getElementById('studioServiceDate').textContent = `${srv.date} · ${queue.length} fotos`;
 
       renderThumbnails();
+      renderSidebarRecentServices();
       switchMainView('studio');
 
       if (queue.length > 0) {
         selectQueueItem(queue[0].id);
-        // Process queue in batch
         processAllInQueue();
       } else {
         document.getElementById('emptyPrompt').style.display = 'flex';
@@ -1216,6 +1343,7 @@
         churchServices = churchServices.filter(s => s.id !== serviceId);
         saveServicesToStorage();
         renderServicesGrid();
+        renderSidebarRecentServices();
         showToast("Culto excluído.");
       }
     }
@@ -1269,7 +1397,7 @@
         return;
       }
 
-      showToast("Compactando lote de fotos HD em ZIP...");
+      showToast("Compactando fotos HD em ZIP...");
 
       try {
         const zip = new JSZip();
@@ -1280,7 +1408,6 @@
           const item = srv.items[i];
           let base64Data = item.processedBase64;
 
-          // If not processed yet, process full resolution fast
           if (!base64Data) {
             const img = item.cachedImg || new Image();
             if (!item.cachedImg) img.src = item.previewUrl;
@@ -1289,7 +1416,6 @@
             base64Data = res.base64;
           }
 
-          // Strip data url header
           const cleanBase64 = base64Data.replace(/^data:image\/(png|jpeg|jpg);base64,/, '');
           const fileName = `foto_${(i + 1).toString().padStart(2, '0')}_dslr_hd.jpg`;
           zipFolder.file(fileName, cleanBase64, { base64: true });
@@ -1312,7 +1438,7 @@
       }
     }
 
-    // ================= USER AUTHENTICATION & DIRECT LOGIN =================
+    // ================= USER AUTHENTICATION =================
 
     function showToast(msg) {
       const toast = document.getElementById('toastNotification');
@@ -1346,49 +1472,34 @@
       if (savedUser) {
         try {
           currentUser = JSON.parse(savedUser);
-          renderAuthenticatedHeader(currentUser);
+          renderAuthenticatedUser(currentUser);
         } catch (e) {
           currentUser = null;
         }
       }
     }
 
-    function renderAuthenticatedHeader(user) {
-      const loginBtn = document.getElementById('loginHeaderBtn');
-      const profileContainer = document.getElementById('userProfileContainer');
-      const avatar = document.getElementById('userAvatarImg');
-      const nameText = document.getElementById('userNameText');
-      const dropdownName = document.getElementById('dropdownUserName');
-      const dropdownEmail = document.getElementById('dropdownUserEmail');
-      const dropdownRole = document.getElementById('dropdownUserRole');
+    function renderAuthenticatedUser(user) {
+      const sideLoggedIn = document.getElementById('sideProfileLoggedIn');
+      const sideLoggedOut = document.getElementById('sideProfileLoggedOut');
+      const sideAvatar = document.getElementById('sideUserAvatar');
+      const sideName = document.getElementById('sideUserName');
+      const sideChurch = document.getElementById('sideUserChurch');
 
       if (user) {
-        loginBtn.style.display = 'none';
-        loginBtn.classList.add('hidden');
-        profileContainer.style.display = 'block';
-        profileContainer.classList.remove('hidden');
+        sideLoggedOut.style.display = 'none';
+        sideLoggedOut.classList.add('hidden');
+        sideLoggedIn.style.display = 'flex';
+        sideLoggedIn.classList.remove('hidden');
 
-        avatar.src = user.picture || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'M')}&backgroundColor=2563eb`;
-        nameText.textContent = (user.name || 'Voluntário').split(' ')[0];
-        dropdownName.textContent = user.name || 'Voluntário de Mídia';
-        dropdownEmail.textContent = user.email || '';
-        dropdownRole.textContent = user.church_name || 'Equipe de Mídia';
+        sideAvatar.src = user.picture || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'M')}&backgroundColor=2563eb`;
+        sideName.textContent = user.name || 'Voluntário';
+        sideChurch.textContent = user.church_name || 'Equipe de Mídia';
       } else {
-        loginBtn.style.display = 'flex';
-        loginBtn.classList.remove('hidden');
-        profileContainer.style.display = 'none';
-        profileContainer.classList.add('hidden');
-      }
-    }
-
-    function toggleUserDropdown() {
-      const menu = document.getElementById('userDropdownMenu');
-      if (menu.style.display === 'none' || menu.classList.contains('hidden')) {
-        menu.style.display = 'block';
-        menu.classList.remove('hidden');
-      } else {
-        menu.style.display = 'none';
-        menu.classList.add('hidden');
+        sideLoggedIn.style.display = 'none';
+        sideLoggedIn.classList.add('hidden');
+        sideLoggedOut.style.display = 'flex';
+        sideLoggedOut.classList.remove('hidden');
       }
     }
 
@@ -1491,7 +1602,7 @@
       }
 
       localStorage.setItem('CHURCHPHOTO_USER_SESSION', JSON.stringify(currentUser));
-      renderAuthenticatedHeader(currentUser);
+      renderAuthenticatedUser(currentUser);
       toggleAuthModal();
       showToast(`Bem-vindo(a), ${currentUser.name}!`);
 
@@ -1503,12 +1614,7 @@
       currentUser = null;
       localStorage.removeItem('CHURCHPHOTO_USER_SESSION');
       localStorage.removeItem('CHURCHPHOTO_AUTH_TOKEN');
-      renderAuthenticatedHeader(null);
-      const menu = document.getElementById('userDropdownMenu');
-      if (menu) {
-        menu.style.display = 'none';
-        menu.classList.add('hidden');
-      }
+      renderAuthenticatedUser(null);
       showToast("Você saiu da conta.");
     }
 
@@ -1547,7 +1653,6 @@
       } else if (activeItem.status === 'analyzing') {
         showLoaderState("Tratando com Motor DSLR 3.0...", "Analisando cena, iluminação cênica e saturação");
       } else {
-        // Process on demand if idle
         processItem(id, false);
       }
     }
@@ -1610,7 +1715,6 @@
 
         updateFocusReticleUI();
 
-        // TAB 1 Sliders
         document.getElementById('param_exposure').value = p.exposure_compensation;
         document.getElementById('val_exposure').textContent = `${p.exposure_compensation > 0 ? '+' : ''}${p.exposure_compensation} EV`;
 
@@ -1635,7 +1739,6 @@
         document.getElementById('param_vibrance').value = p.vibrance || 1.05;
         document.getElementById('val_vibrance').textContent = `${Math.round((p.vibrance||1.05)*100)}%`;
 
-        // TAB 2 Sliders
         document.getElementById('param_chromatic').value = p.chromatic_aberration_fix || 0.50;
         document.getElementById('val_chromatic').textContent = `${Math.round((p.chromatic_aberration_fix||0.50)*100)}%`;
 
@@ -1654,7 +1757,6 @@
         document.getElementById('param_skin').value = p.skin_tone_protection_strength || 0.88;
         document.getElementById('val_skin').textContent = `${Math.round((p.skin_tone_protection_strength||0.88)*100)}%`;
 
-        // TAB 3 Sliders & Buttons
         document.getElementById('param_bokeh').value = p.bokeh_smoothness || 0.75;
         document.getElementById('val_bokeh').textContent = `${Math.round((p.bokeh_smoothness||0.75)*100)}%`;
 
@@ -1675,7 +1777,6 @@
         showLoaderState("Tratando com Motor DSLR...", "Calibrando cor, iluminação e removendo aberrações");
       }
 
-      // Fast Client-side DSLR Engine with LUT Acceleration
       if (!item.cachedImg) {
         const img = new Image();
         img.src = item.previewUrl;
@@ -1726,6 +1827,7 @@
       }
 
       renderServicesGrid();
+      renderSidebarRecentServices();
     }
 
     // ================= ULTRA-FAST LOOKUP-TABLE ACCELERATED CLIENT ENGINE =================
@@ -2213,24 +2315,6 @@
       localStorage.setItem('CHURCHPHOTO_SERVER_URL', url);
       toggleServerModal();
       showToast("URL do servidor atualizada!");
-    }
-
-    function toggleKeyModal() {
-      const modal = document.getElementById('keyModal');
-      if (modal.style.display === 'none' || modal.classList.contains('hidden')) {
-        modal.style.display = 'flex';
-        modal.classList.remove('hidden');
-      } else {
-        modal.style.display = 'none';
-        modal.classList.add('hidden');
-      }
-    }
-
-    function saveGeminiKey() {
-      const key = document.getElementById('geminiKeyInput').value.trim();
-      localStorage.setItem('CHURCHPHOTO_GEMINI_KEY', key);
-      toggleKeyModal();
-      showToast("Chave Gemini salva!");
     }
 
     function downloadCurrentProcessed() {
