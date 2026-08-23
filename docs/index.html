@@ -110,29 +110,43 @@
           </p>
         </div>
 
-        <!-- Big Dedicated Mobile Upload Buttons -->
+        <!-- Big Dedicated Mobile Upload Buttons (Native Label Trigger) -->
         <div class="w-full sm:w-auto flex flex-col sm:flex-row items-center gap-2.5 shrink-0">
-          <input type="file" id="fileInput" multiple accept="image/*,.cr2,.cr3,.nef,.arw,.dng" class="hidden">
           
-          <!-- Primary Upload Button -->
-          <button
-            onclick="document.getElementById('fileInput').click()"
-            class="w-full sm:w-auto px-6 py-3.5 sm:py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold text-sm shadow-xl shadow-blue-600/30 active:scale-95 transition-all flex items-center justify-center gap-2.5 cursor-pointer"
+          <!-- Primary Upload Button (Label Trigger - 100% Reactive on iOS/Android) -->
+          <label
+            for="fileInput"
+            class="w-full sm:w-auto px-6 py-3.5 sm:py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold text-sm shadow-xl shadow-blue-600/30 active:scale-95 transition-all flex items-center justify-center gap-2.5 cursor-pointer select-none"
           >
             <i class="fa-solid fa-image text-base"></i>
             <span>Escolher da Galeria</span>
-          </button>
+            <input
+              type="file"
+              id="fileInput"
+              multiple
+              accept="image/*,image/jpeg,image/png,image/webp,image/heic"
+              class="sr-only"
+              onchange="handleFiles(this.files)"
+            >
+          </label>
 
           <!-- Native Camera Capture Button for Mobile -->
-          <button
-            onclick="triggerCamera()"
-            class="w-full sm:w-auto px-5 py-3.5 sm:py-3 rounded-xl bg-church-800 hover:bg-church-700 border border-church-700 text-slate-200 font-semibold text-sm active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
+          <label
+            for="cameraInput"
+            class="w-full sm:w-auto px-5 py-3.5 sm:py-3 rounded-xl bg-church-800 hover:bg-church-700 border border-church-700 text-slate-200 font-semibold text-sm active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer select-none"
           >
             <i class="fa-solid fa-camera text-blue-400"></i>
             <span class="sm:hidden">Tirar Foto com a Câmera</span>
             <span class="hidden sm:inline">Câmera</span>
-          </button>
-          <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden">
+            <input
+              type="file"
+              id="cameraInput"
+              accept="image/*"
+              capture="environment"
+              class="sr-only"
+              onchange="handleFiles(this.files)"
+            >
+          </label>
         </div>
       </div>
 
@@ -374,9 +388,9 @@
 
   <!-- MOBILE STICKY FLOATING ACTION BAR (When photo is processed) -->
   <div id="mobileBottomBar" class="fixed bottom-0 left-0 right-0 z-40 bg-church-950/95 backdrop-blur-lg border-t border-church-800 p-3 flex items-center justify-between sm:hidden hidden">
-    <button onclick="document.getElementById('fileInput').click()" class="px-4 py-2.5 rounded-xl bg-church-800 border border-church-700 text-xs font-semibold text-slate-200 flex items-center gap-1.5">
+    <label for="fileInput" class="px-4 py-2.5 rounded-xl bg-church-800 border border-church-700 text-xs font-semibold text-slate-200 flex items-center gap-1.5 cursor-pointer select-none">
       <i class="fa-solid fa-plus text-blue-400"></i> Outra Foto
-    </button>
+    </label>
     <button onclick="downloadCurrentProcessed()" class="px-5 py-2.5 rounded-xl bg-emerald-600 active:bg-emerald-500 text-xs font-bold text-white flex items-center gap-1.5 shadow-lg shadow-emerald-600/30">
       <i class="fa-solid fa-download"></i> Baixar Foto HD
     </button>
@@ -546,8 +560,22 @@
       const fileInput = document.getElementById('fileInput');
       const cameraInput = document.getElementById('cameraInput');
 
-      fileInput.onchange = (e) => handleFiles(e.target.files);
-      cameraInput.onchange = (e) => handleFiles(e.target.files);
+      if (fileInput) {
+        fileInput.addEventListener('change', (e) => {
+          if (e.target.files && e.target.files.length > 0) {
+            handleFiles(e.target.files);
+            e.target.value = '';
+          }
+        });
+      }
+      if (cameraInput) {
+        cameraInput.addEventListener('change', (e) => {
+          if (e.target.files && e.target.files.length > 0) {
+            handleFiles(e.target.files);
+            e.target.value = '';
+          }
+        });
+      }
     }
 
     function handleFiles(files) {
