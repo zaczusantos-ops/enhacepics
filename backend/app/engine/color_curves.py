@@ -168,12 +168,13 @@ def apply_s_curve_contrast(
 
 def apply_saturation(
     img_rgb: np.ndarray,
-    saturation: float = 1.0
+    saturation: float = 1.0,
+    vibrance: float = 1.0
 ) -> np.ndarray:
     """
-    Adjusts color saturation in HSV space with vibrance protection for already-saturated pixels.
+    Adjusts color saturation and vibrance in HSV space with protection for skin tones and already-saturated pixels.
     """
-    if abs(saturation - 1.0) < 0.01:
+    if abs(saturation - 1.0) < 0.01 and abs(vibrance - 1.0) < 0.01:
         return img_rgb
 
     img_uint8 = (img_rgb * 255.0).astype(np.uint8)
@@ -182,12 +183,13 @@ def apply_saturation(
     # Scale saturation channel
     s = hsv[:, :, 1] / 255.0
     
-    if saturation > 1.0:
-        # Vibrance: boost muted colors more than already saturated colors
-        vibrance_boost = (saturation - 1.0) * (1.0 - s * 0.6)
-        s = s * (1.0 + vibrance_boost)
-    else:
-        s = s * saturation
+    # 1. Base Saturation
+    s = s * saturation
+
+    # 2. Vibrance: boost muted/dull colors more than already saturated colors
+    if abs(vibrance - 1.0) > 0.01:
+        v_factor = (vibrance - 1.0) * (1.0 - (s ** 1.2) * 0.7)
+        s = np.clip(s * (1.0 + v_factor), 0.0, 1.0)
 
     hsv[:, :, 1] = np.clip(s * 255.0, 0.0, 255.0)
     result_uint8 = cv2.cvtColor(hsv.astype(np.uint8), cv2.COLOR_HSV2RGB)

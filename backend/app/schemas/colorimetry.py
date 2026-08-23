@@ -1,115 +1,207 @@
 """
-ChurchPhoto Pro - Pydantic Schemas for Colorimetry & Image Analysis
+ChurchPhoto Pro - Pydantic Schemas for 3-Stage DSLR Colorimetry & Image Analysis
 """
 
 from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, Field
 
 
+class PresetData(BaseModel):
+    """
+    Individual preset configuration recommended by Gemini or selected by user.
+    """
+    id: str = Field(..., description="Unique preset identifier")
+    name: str = Field(..., description="Display name of the preset")
+    description: str = Field(..., description="Description of the look and mood")
+    icon: str = Field(default="fa-wand-magic-sparkles", description="FontAwesome icon class")
+    exposure_compensation: float = Field(default=0.0, ge=-2.0, le=2.0)
+    temperature_kelvin: int = Field(default=5500, ge=2500, le=9000)
+    tint: float = Field(default=0.0, ge=-100.0, le=100.0)
+    contrast: float = Field(default=1.08, ge=0.8, le=1.5)
+    highlights_recovery: float = Field(default=0.4, ge=0.0, le=1.0)
+    shadows_lift: float = Field(default=0.35, ge=0.0, le=1.0)
+    saturation: float = Field(default=1.02, ge=0.5, le=1.5)
+    vibrance: float = Field(default=1.05, ge=0.5, le=1.5)
+    chromatic_aberration_fix: float = Field(default=0.5, ge=0.0, le=1.0)
+    vignette_correction: float = Field(default=0.3, ge=0.0, le=1.0)
+    led_clipping_restoration: float = Field(default=0.5, ge=0.0, le=1.0)
+    selective_denoise: float = Field(default=0.3, ge=0.0, le=1.0)
+    skin_tone_protection_strength: float = Field(default=0.85, ge=0.0, le=1.0)
+    f_stop_simulation: float = Field(default=2.8, ge=1.4, le=8.0)
+    subject_microcontrast: float = Field(default=0.7, ge=0.0, le=2.0)
+
+
 class ColorimetryParameters(BaseModel):
     """
-    Structured colorimetry parameters calculated by Gemini for Church & Event Photography.
-    All values are strictly bounded and deterministic.
+    Complete structured colorimetry & optical parameters calculated by Gemini for Church & Event Photography.
+    Organized into 3 specialized professional DSLR branches.
     """
+    # === VERTENTE 1: Cor, Iluminação & Estilo (Look Cinematográfico/Culto) ===
     exposure_compensation: float = Field(
         default=0.0,
         ge=-2.0,
         le=2.0,
-        description="Exposure compensation in EV stops (-2.0 = underexpose by 2 stops, +2.0 = overexpose by 2 stops)."
+        description="Compensação de exposição em stops EV (-2.0 a +2.0)."
     )
     temperature_kelvin: int = Field(
         default=5500,
         ge=2500,
         le=9000,
-        description="Target color temperature in Kelvin (2500K = warm/tungsten, 5500K = daylight, 9000K = cool/shade)."
+        description="Temperatura de cor em Kelvin (2500K a 9000K)."
     )
     tint: float = Field(
         default=0.0,
         ge=-100.0,
         le=100.0,
-        description="Green/Magenta tint balance (-100 = strong green compensation, +100 = strong magenta compensation)."
+        description="Balanço Verde/Magenta de matiz (-100 a +100)."
     )
     contrast: float = Field(
-        default=1.0,
+        default=1.08,
         ge=0.8,
         le=1.5,
-        description="Tonal contrast curve multiplier (0.8 = soft/flat, 1.0 = neutral, 1.5 = high contrast S-curve)."
+        description="Contraste de curva tonal S (0.8 a 1.5)."
     )
     highlights_recovery: float = Field(
-        default=0.3,
-        ge=0.0,
-        le=1.0,
-        description="Highlights recovery strength (0.0 = none, 1.0 = maximum recovery of blown stage spots and screens)."
-    )
-    shadows_lift: float = Field(
-        default=0.3,
-        ge=0.0,
-        le=1.0,
-        description="Shadows lift factor (0.0 = dark church environment, 1.0 = maximum fill light on faces and congregation)."
-    )
-    saturation: float = Field(
-        default=1.0,
-        ge=0.7,
-        le=1.3,
-        description="Overall color saturation multiplier (0.7 = desaturated/muted, 1.0 = natural, 1.3 = vibrant)."
-    )
-    stage_led_tint_suppression: float = Field(
         default=0.4,
         ge=0.0,
         le=1.0,
-        description="Aggressiveness of stage LED spill reduction on skin and subjects (0.0 = no filter, 1.0 = maximum suppression)."
+        description="Recuperação de altas luzes em telões e refletores (0.0 a 1.0)."
+    )
+    shadows_lift: float = Field(
+        default=0.35,
+        ge=0.0,
+        le=1.0,
+        description="Abertura de sombras na congregação e palco (0.0 a 1.0)."
+    )
+    saturation: float = Field(
+        default=1.02,
+        ge=0.5,
+        le=1.5,
+        description="Saturação geral de cor (0.5 a 1.5)."
+    )
+    vibrance: float = Field(
+        default=1.06,
+        ge=0.5,
+        le=1.5,
+        description="Vibração seletiva de médios tons sem super-saturar pele (0.5 a 1.5)."
+    )
+
+    # === VERTENTE 2: Correção de Falhas, Anomalias de Lente & Luz Extrema ===
+    chromatic_aberration_fix: float = Field(
+        default=0.45,
+        ge=0.0,
+        le=1.0,
+        description="Atenuação de aberrações cromáticas e franjas roxas/verdes em volta de luzes de palco (0.0 a 1.0)."
+    )
+    vignette_correction: float = Field(
+        default=0.35,
+        ge=0.0,
+        le=1.0,
+        description="Compensação de vinhetagem e escurecimento de cantos de celular (0.0 a 1.0)."
+    )
+    lens_distortion_correction: float = Field(
+        default=0.20,
+        ge=0.0,
+        le=1.0,
+        description="Correção de distorção de grande-angular de smartphones (0.0 a 1.0)."
+    )
+    led_clipping_restoration: float = Field(
+        default=0.60,
+        ge=0.0,
+        le=1.0,
+        description="Restauração de detalhes e textura onde LEDs de palco saturaram/estouraram canais RGB (0.0 a 1.0)."
+    )
+    stage_led_tint_suppression: float = Field(
+        default=0.45,
+        ge=0.0,
+        le=1.0,
+        description="Supressão de vazamento excessivo de LED cênico sobre peles (0.0 a 1.0)."
     )
     blue_led_attenuation: float = Field(
-        default=0.3,
+        default=0.40,
         ge=0.0,
         le=1.0,
-        description="Selective attenuation for aggressive stage blue/cyan PAR LEDs (0.0 = disabled, 1.0 = high attenuation)."
+        description="Atenuação seletiva de canhões PAR LED Azuis/Cianos (0.0 a 1.0)."
     )
     red_magenta_attenuation: float = Field(
-        default=0.3,
+        default=0.35,
         ge=0.0,
         le=1.0,
-        description="Selective attenuation for aggressive stage red/magenta/purple wash (0.0 = disabled, 1.0 = high attenuation)."
+        description="Atenuação seletiva de canhões PAR LED Vermelhos/Magentas (0.0 a 1.0)."
+    )
+    selective_denoise: float = Field(
+        default=0.30,
+        ge=0.0,
+        le=1.0,
+        description="Redução de ruído térmico/ISO alto preservando cabelos, olhos e tecidos (0.0 a 1.0)."
     )
     skin_tone_protection_strength: float = Field(
-        default=0.8,
+        default=0.88,
         ge=0.0,
         le=1.0,
-        description="Strength of skin melanin preservation mask (0.0 = no protection, 1.0 = strict natural skin tone priority)."
+        description="Proteção de melanina e tom natural de pele humana (0.0 a 1.0)."
     )
-    denoise_strength: float = Field(
-        default=0.25,
+
+    # === VERTENTE 3: Foco Óptico Profissional & Profundidade de Campo (Bokeh) ===
+    focal_point_x: float = Field(
+        default=0.50,
         ge=0.0,
         le=1.0,
-        description="High-ISO noise reduction strength (0.0 = no denoise, 1.0 = maximum smoothing of sensor noise)."
+        description="Coordenada X normalizada do ponto de foco principal (0.0 esquerda a 1.0 direita)."
     )
-    unsharp_mask_amount: float = Field(
-        default=0.6,
+    focal_point_y: float = Field(
+        default=0.40,
+        ge=0.0,
+        le=1.0,
+        description="Coordenada Y normalizada do ponto de foco principal (0.0 topo a 1.0 base)."
+    )
+    f_stop_simulation: float = Field(
+        default=2.8,
+        ge=1.4,
+        le=8.0,
+        description="Simulação de abertura de lente f/Stop (f/1.4 = bokeh cremoso profundo, f/8.0 = plano nítido total)."
+    )
+    bokeh_smoothness: float = Field(
+        default=0.75,
+        ge=0.0,
+        le=1.0,
+        description="Suavidade do desfoque progressivo do fundo (0.0 a 1.0)."
+    )
+    subject_microcontrast: float = Field(
+        default=0.70,
         ge=0.0,
         le=2.0,
-        description="Adaptive unsharp masking amount for crisp facial features and fabric textures (0.0 = off, 2.0 = strong)."
+        description="Realce de nitidez e microcontraste concentrado exclusivamente no sujeito em foco (0.0 a 2.0)."
     )
-    unsharp_mask_radius: float = Field(
-        default=1.2,
-        ge=0.5,
-        le=3.0,
-        description="Radius in pixels for unsharp mask filter."
+
+    # === DIAGNÓSTICO & PRESETS CONTEXTUAIS ===
+    scene_moment: str = Field(
+        default="Louvor / Palco",
+        description="Classificação do momento do culto: 'Louvor Intimista / Pouca Luz', 'Pregação / Palavra', 'Celebração / LEDs Cênicos', 'Retrato de Voluntário / Membro', 'Batismo / Cerimônia', 'Geral'."
     )
     detected_lighting_condition: str = Field(
         default="Iluminação mista de palco",
-        description="Brief description of the detected church lighting environment (e.g. 'Forte luz de LED azul com contraluz', 'Luz quente de púlpito com sombras duras')."
+        description="Descrição técnica do ambiente de luz detectado."
     )
     detected_scene_type: str = Field(
         default="Culto / Palco",
-        description="Scene type detected: 'Púlpito / Pregador', 'Louvor / Ministério de Música', 'Congregação / Público', 'Batismo / Cerimônia', 'Geral'."
+        description="Tipo de cena fotográfica."
+    )
+    subject_description: str = Field(
+        default="Pregador ou ministro no centro",
+        description="Descrição do assunto principal focado pela IA."
     )
     analysis_summary: str = Field(
-        default="Ajuste colorimétrico para correção de luz cênica e realce de tons de pele.",
-        description="Photographic explanation of the adjustments made for the media team."
+        default="Calibração DSLR: balanço de cor cinematográfico, restauração de LEDs estourados e isolamento óptico do sujeito.",
+        description="Resumo fotográfico explicativo."
     )
     suggested_preset: str = Field(
-        default="Culto Contemporâneo",
-        description="Matching church preset: 'Culto Contemporâneo', 'Culto Tradicional', 'Louvor & Adoração', 'Iluminação Intimista', 'Evento Externo'."
+        default="Luz Quente Natural",
+        description="Preset principal sugerido."
+    )
+    alternative_presets: List[PresetData] = Field(
+        default_factory=list,
+        description="Lista de 3 presets contextuais alternativos calibrados para a cena específica."
     )
 
 

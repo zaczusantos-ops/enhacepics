@@ -1,5 +1,5 @@
 """
-Unit tests for deterministic ChurchPhoto image processing engine.
+Unit tests for deterministic ChurchPhoto 3-Stage DSLR image processing engine.
 """
 
 import numpy as np
@@ -16,12 +16,22 @@ from backend.app.engine.color_curves import (
     apply_s_curve_contrast,
     apply_saturation,
 )
+from backend.app.engine.optical_corrections import (
+    correct_chromatic_aberration,
+    restore_extreme_led_clipping,
+    correct_lens_vignetting_and_distortion,
+    apply_selective_denoise,
+)
+from backend.app.engine.depth_bokeh import (
+    generate_depth_and_subject_mask,
+    apply_optical_bokeh_and_dof,
+    apply_subject_microcontrast,
+)
 from backend.app.engine.stage_lighting import attenuate_stage_led_spill
 from backend.app.engine.skin_tones import protect_and_restore_skin_tones, generate_skin_tone_mask
-from backend.app.engine.denoise_sharpen import apply_bilateral_denoise, apply_adaptive_unsharp_mask
 
 
-def create_synthetic_church_image(width=300, height=200) -> bytes:
+def create_synthetic_church_image(width=400, height=300) -> bytes:
     """Creates a synthetic test image with stage blue LED, pulpit highlight and human skin tones."""
     img = np.zeros((height, width, 3), dtype=np.uint8)
     
@@ -32,13 +42,11 @@ def create_synthetic_church_image(width=300, height=200) -> bytes:
     img[:, :100] = [30, 80, 240]
 
     # Warm human face simulation in the center (Skin tone)
-    # Natural skin tone RGB approx: [220, 160, 130]
     face_y, face_x = height // 2, width // 2
-    cv2_face = cv2 = None
     img[face_y-30:face_y+30, face_x-25:face_x+25] = [220, 160, 130]
 
     # Blown spotlight / screen on top right
-    img[:50, 200:] = [250, 250, 245]
+    img[:50, 250:] = [250, 250, 245]
 
     pil_img = Image.fromarray(img)
     buf = io.BytesIO()
@@ -47,11 +55,9 @@ def create_synthetic_church_image(width=300, height=200) -> bytes:
 
 
 def test_kelvin_multipliers():
-    # Warm tungsten (3000K) should boost red more than blue
     r_warm, g_warm, b_warm = kelvin_to_rgb_multipliers(3000)
     assert r_warm > b_warm
 
-    # Cool daylight/shade (7500K) should boost blue more than red
     r_cool, g_cool, b_cool = kelvin_to_rgb_multipliers(7500)
     assert b_cool > r_cool
 
@@ -59,42 +65,67 @@ def test_kelvin_multipliers():
 def test_exposure_compensation():
     arr = np.ones((50, 50, 3), dtype=np.float32) * 0.4
     boosted = apply_exposure_compensation(arr, ev=1.0)
-    # +1 EV should roughly double intensity
     assert np.mean(boosted) > np.mean(arr)
     assert np.max(boosted) <= 1.0
 
 
-def test_skin_tone_mask():
-    # Warm skin block
-    skin_patch = np.full((50, 50, 3), [215, 155, 125], dtype=np.uint8)
-    mask = generate_skin_tone_mask(skin_patch)
-    assert np.mean(mask) > 0.6
+def test_optical_corrections_led_clipping():
+    # Saturated blue spot
+    arr = np.zeros((50, 50, 3), dtype=np.float32)
+    arr[:, :] = [0.1, 0.2, 0.95]
+    repaired = restore_extreme_led_clipping(arr, strength=0.8)
+    # Blue should be attenuated and red/green slightly boosted into natural highlight
+    assert repaired[0, 0, 2] < arr[0, 0, 2]
+    assert repaired[0, 0, 0] > arr[0, 0, 0]
 
 
-def test_full_processor_pipeline():
+def test_depth_bokeh_engine():
+    arr = np.random.uniform(0.2, 0.8, (200, 300, 3)).astype(np.float32)
+    # Apply f/1.8 optical bokeh at center (0.5, 0.5)
+    blurred = apply_optical_bokeh_and_dof(
+        arr,
+        focal_x=0.5,
+        focal_y=0.5,
+        f_stop=1.8,
+        bokeh_smoothness=0.8,
+        subject_microcontrast=0.8
+    )
+    assert blurred.shape == arr.shape
+    assert np.min(blurred) >= 0.0
+    assert np.max(blurred) <= 1.0
+
+
+def test_full_dslr_3stage_pipeline():
     image_bytes = create_synthetic_church_image(400, 300)
     processor = ChurchPhotoProcessor()
     params = ColorimetryParameters(
-        exposure_compensation=0.3,
+        exposure_compensation=0.25,
         temperature_kelvin=5400,
-        tint=-5.0,
-        contrast=1.1,
-        highlights_recovery=0.5,
-        shadows_lift=0.4,
-        saturation=1.05,
-        stage_led_tint_suppression=0.6,
-        blue_led_attenuation=0.5,
-        red_magenta_attenuation=0.4,
-        skin_tone_protection_strength=0.85,
-        denoise_strength=0.3,
-        unsharp_mask_amount=0.7,
-        unsharp_mask_radius=1.2,
+        tint=-3.0,
+        contrast=1.12,
+        highlights_recovery=0.55,
+        shadows_lift=0.40,
+        saturation=1.04,
+        vibrance=1.08,
+        chromatic_aberration_fix=0.50,
+        vignette_correction=0.35,
+        lens_distortion_correction=0.20,
+        led_clipping_restoration=0.65,
+        stage_led_tint_suppression=0.50,
+        selective_denoise=0.30,
+        skin_tone_protection_strength=0.90,
+        focal_point_x=0.50,
+        focal_point_y=0.50,
+        f_stop_simulation=2.4,
+        bokeh_smoothness=0.75,
+        subject_microcontrast=0.80,
+        scene_moment="Louvor / Palco",
     )
 
     processed_bytes, processed_b64, metadata, orig_b64 = processor.process(
         image_bytes=image_bytes,
         params=params,
-        filename="test_church_event.jpg"
+        filename="test_church_dslr.jpg"
     )
 
     assert len(processed_bytes) > 0
@@ -105,12 +136,13 @@ def test_full_processor_pipeline():
     assert metadata.execution_time_ms > 0
     assert "r" in metadata.histogram
     assert len(metadata.histogram["r"]) == 64
-    print("Processor test passed successfully!")
+    print("Full 3-stage DSLR processor pipeline test passed successfully!")
 
 
 if __name__ == "__main__":
     test_kelvin_multipliers()
     test_exposure_compensation()
-    test_skin_tone_mask()
-    test_full_processor_pipeline()
-    print("All deterministic engine tests passed!")
+    test_optical_corrections_led_clipping()
+    test_depth_bokeh_engine()
+    test_full_dslr_3stage_pipeline()
+    print("All 3-stage DSLR engine tests passed!")

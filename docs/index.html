@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>ChurchPhoto Pro - Pós-Processamento Fotográfico para Cultos e Eventos</title>
+  <title>ChurchPhoto Pro - Tratamento Fotográfico DSLR Profissional</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -53,7 +53,17 @@
     .slider-divider { touch-action: none; user-select: none; }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    button, label { cursor: pointer; -webkit-touch-callout: none; }
+    button, label, input, select { touch-action: manipulation; }
+    
+    /* Animated focal reticle */
+    @keyframes focusPulse {
+      0% { transform: translate(-50%, -50%) scale(1.4); opacity: 0.9; }
+      50% { transform: translate(-50%, -50%) scale(0.95); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(1); opacity: 0.85; }
+    }
+    .focal-ring {
+      animation: focusPulse 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col selection:bg-blue-600 selection:text-white pb-24 md:pb-8">
@@ -71,23 +81,23 @@
             <h1 class="text-sm sm:text-base font-bold tracking-tight text-white">ChurchPhoto <span class="text-blue-400">Pro</span></h1>
             <span class="px-1.5 py-0.2 bg-emerald-950 text-emerald-400 border border-emerald-800/80 text-[9px] font-mono rounded-full flex items-center gap-1">
               <span class="w-1 h-1 rounded-full bg-emerald-400 animate-ping"></span>
-              IA Pro
+              DSLR Engine 3.0
             </span>
           </div>
           <p class="text-[10px] sm:text-[11px] text-slate-400 truncate max-w-[200px] sm:max-w-none">
-            Tratamento fotográfico para cultos e eventos
+            Processamento fotográfico com estética de câmera profissional
           </p>
         </div>
       </div>
 
       <!-- Quick Action Buttons -->
       <div class="flex items-center gap-1.5 sm:gap-2">
-        <button onclick="toggleServerModal()" class="px-2.5 py-1.5 rounded-xl bg-church-900 hover:bg-church-850 border border-church-800 text-[11px] font-medium text-slate-300 hover:text-white transition-all flex items-center gap-1.5 shadow-sm" title="Status do Servidor">
+        <button onclick="toggleServerModal()" class="px-2.5 py-1.5 rounded-xl bg-church-900 hover:bg-church-850 active:scale-95 border border-church-800 text-[11px] font-medium text-slate-300 hover:text-white transition-all flex items-center gap-1.5 shadow-sm" title="Status do Servidor">
           <i class="fa-solid fa-circle-check text-emerald-400 text-xs"></i>
-          <span class="hidden sm:inline">Servidor Ativo</span>
+          <span class="hidden sm:inline">Servidor Seguro</span>
         </button>
 
-        <button onclick="toggleKeyModal()" class="p-2 sm:px-2.5 sm:py-1.5 rounded-xl bg-church-900 hover:bg-church-850 border border-church-800 text-xs text-slate-400 hover:text-white transition-all" title="Configurações de Chave">
+        <button onclick="toggleKeyModal()" class="p-2 sm:px-2.5 sm:py-1.5 rounded-xl bg-church-900 hover:bg-church-850 active:scale-95 border border-church-800 text-xs text-slate-400 hover:text-white transition-all" title="Configurações de Chave">
           <i class="fa-solid fa-gear"></i>
         </button>
       </div>
@@ -106,13 +116,13 @@
         <div class="text-center sm:text-left">
           <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-950/70 border border-blue-800/60 text-blue-300 text-[10px] sm:text-xs font-semibold mb-2">
             <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i>
-            Análise Inteligente com Gemini 2.5 Pro
+            Motor DSLR em 3 Vertentes: Cor, Óptica & Bokeh
           </div>
           <h2 class="text-lg sm:text-xl font-bold text-white leading-tight">
-            Envie a foto do culto e receba em padrão profissional
+            Transforme fotos de celular em padrão de câmera Full-Frame
           </h2>
           <p class="text-xs text-slate-400 mt-1 max-w-md">
-            Correção de luzes de palco (LEDs azuis/magentas), preservação de pele e redução de ruído.
+            Correção de aberrações de lente, restauração de LEDs estourados e simulação de desfoque óptico f/1.4 - f/2.8.
           </p>
         </div>
 
@@ -156,7 +166,7 @@
       </div>
 
       <!-- Quick Upload Queue Counter Pill (if items exist) -->
-      <div id="queueStatsBanner" class="mt-4 pt-3 border-t border-church-800/80 flex items-center justify-between text-xs hidden">
+      <div id="queueStatsBanner" class="mt-4 pt-3 border-t border-church-800/80 flex items-center justify-between text-xs hidden" style="display: none;">
         <span class="text-slate-300 font-medium flex items-center gap-1.5">
           <i class="fa-solid fa-layer-group text-blue-400"></i>
           <span id="queueStatsText">0 fotos na fila</span>
@@ -167,13 +177,15 @@
       </div>
     </div>
 
-    <!-- PRESETS CAROUSEL (Touch Scrollable on Mobile) -->
+    <!-- PRESETS CAROUSEL (Smart Contextual Presets from AI + Curated) -->
     <div class="flex flex-col gap-2">
       <div class="flex items-center justify-between px-1">
         <span class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-          <i class="fa-solid fa-sliders text-amber-400"></i> Presets de Culto
+          <i class="fa-solid fa-sliders text-amber-400"></i> Presets Sugeridos para o Momento
         </span>
-        <span class="text-[10px] text-slate-500 font-mono">Deslize para ver mais ➔</span>
+        <span id="sceneMomentBadge" class="text-[10px] text-blue-400 font-mono px-2 py-0.5 rounded-md bg-blue-950/60 border border-blue-800/50">
+          Culto / Palco
+        </span>
       </div>
 
       <!-- Scrollable Presets List -->
@@ -183,14 +195,14 @@
     </div>
 
     <!-- QUEUE HORIZONTAL THUMBNAIL STRIP (When files loaded) -->
-    <div id="thumbnailsStrip" class="flex flex-col gap-2 hidden">
+    <div id="thumbnailsStrip" class="flex flex-col gap-2 hidden" style="display: none;">
       <span class="text-xs font-bold uppercase tracking-wider text-slate-400 px-1">Fotos Carregadas</span>
       <div id="thumbnailsList" class="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
         <!-- Injected thumbnails via JS -->
       </div>
     </div>
 
-    <!-- STEP 2: INTERACTIVE BEFORE / AFTER VIEWER -->
+    <!-- STEP 2: INTERACTIVE BEFORE / AFTER VIEWER WITH FOCUS RETICLE -->
     <div id="viewerContainer" class="flex flex-col rounded-2xl sm:rounded-3xl bg-church-900 border border-church-800 shadow-2xl overflow-hidden min-h-[420px] sm:min-h-[500px]">
       
       <!-- Viewer Top Bar -->
@@ -218,7 +230,7 @@
       </div>
 
       <!-- Main Image Viewport Area -->
-      <div id="viewport" class="relative w-full h-[360px] sm:h-[480px] bg-church-950 flex items-center justify-center overflow-hidden select-none touch-none">
+      <div id="viewport" onclick="handleViewportClick(event)" class="relative w-full h-[360px] sm:h-[480px] bg-church-950 flex items-center justify-center overflow-hidden select-none cursor-crosshair">
         
         <!-- Empty State -->
         <div id="emptyPrompt" class="flex flex-col items-center justify-center p-6 text-center text-slate-500">
@@ -232,19 +244,19 @@
         </div>
 
         <!-- Processing Loader State -->
-        <div id="processingLoader" class="flex flex-col items-center justify-center p-6 text-center text-blue-400 hidden">
+        <div id="processingLoader" class="flex flex-col items-center justify-center p-6 text-center text-blue-400 hidden" style="display: none;">
           <div class="relative w-16 h-16 mb-3">
             <div class="w-16 h-16 rounded-full border-4 border-blue-600/30 border-t-blue-500 animate-spin"></div>
             <div class="absolute inset-0 flex items-center justify-center">
               <i class="fa-solid fa-wand-magic-sparkles text-amber-400 text-lg animate-pulse"></i>
             </div>
           </div>
-          <span class="text-sm font-bold text-white" id="loaderTitle">Tratando com Gemini 2.5 Pro...</span>
-          <p class="text-xs text-slate-400 mt-1" id="loaderSubtitle">Analisando iluminação cênica e tons de pele</p>
+          <span class="text-sm font-bold text-white" id="loaderTitle">Tratando com Motor DSLR 3.0...</span>
+          <p class="text-xs text-slate-400 mt-1" id="loaderSubtitle">Atenuando LEDs, corrigindo óptica e gerando profundidade bokeh</p>
         </div>
 
         <!-- Slider Comparison View (Processed & Original) -->
-        <div id="sliderWrapper" class="relative w-full h-full hidden">
+        <div id="sliderWrapper" class="relative w-full h-full hidden" style="display: none;">
           <!-- After (Processed) -->
           <img id="imgAfter" class="absolute inset-0 w-full h-full object-contain pointer-events-none" src="" alt="Depois">
 
@@ -253,8 +265,18 @@
             <img id="imgBefore" class="absolute inset-0 w-full h-full object-contain" src="" alt="Antes">
           </div>
 
+          <!-- Interactive Focal Reticle (Glowing Ring) -->
+          <div id="focusReticle" class="absolute z-20 pointer-events-none hidden transition-all duration-200" style="left: 50%; top: 40%; transform: translate(-50%, -50%);">
+            <div class="w-10 h-10 rounded-full border-2 border-amber-400 bg-amber-400/10 shadow-[0_0_15px_rgba(245,158,11,0.6)] focal-ring flex items-center justify-center">
+              <div class="w-1.5 h-1.5 rounded-full bg-amber-300"></div>
+            </div>
+            <span id="focusReticleBadge" class="absolute top-11 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-md bg-black/80 border border-amber-400/40 text-[9px] font-mono text-amber-300 whitespace-nowrap shadow-lg">
+              f/2.8 · Foco Ativo
+            </span>
+          </div>
+
           <!-- Draggable Divider Line & Touch Knob -->
-          <div id="dividerLine" class="slider-divider absolute top-0 bottom-0 z-20 cursor-ew-resize flex items-center justify-center group" style="left: 50%; transform: translateX(-50%);">
+          <div id="dividerLine" class="slider-divider absolute top-0 bottom-0 z-30 cursor-ew-resize flex items-center justify-center group" style="left: 50%; transform: translateX(-50%);">
             <div class="w-[2.5px] h-full bg-white group-hover:bg-blue-400 shadow-[0_0_12px_rgba(0,0,0,0.9)]"></div>
             <div class="absolute w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-church-900/90 border-2 border-white flex items-center justify-center text-white shadow-2xl group-hover:scale-110 active:scale-95 transition-all backdrop-blur-sm">
               <i class="fa-solid fa-arrows-left-right text-xs"></i>
@@ -262,23 +284,23 @@
           </div>
 
           <!-- Floating Comparison Tags -->
-          <span class="absolute bottom-3 left-3 z-10 px-2 py-0.5 rounded-md bg-black/75 border border-white/10 text-[10px] font-mono text-slate-300 uppercase">
-            Antes
+          <span class="absolute bottom-3 left-3 z-10 px-2 py-0.5 rounded-md bg-black/75 border border-white/10 text-[10px] font-mono text-slate-300 uppercase pointer-events-none">
+            Original (Celular)
           </span>
-          <span class="absolute bottom-3 right-3 z-10 px-2 py-0.5 rounded-md bg-blue-600/90 border border-blue-400/30 text-[10px] font-mono text-white uppercase flex items-center gap-1">
-            <i class="fa-solid fa-sparkles text-amber-300 text-[9px]"></i> Depois (HD)
+          <span class="absolute bottom-3 right-3 z-10 px-2 py-0.5 rounded-md bg-blue-600/90 border border-blue-400/30 text-[10px] font-mono text-white uppercase flex items-center gap-1 pointer-events-none">
+            <i class="fa-solid fa-sparkles text-amber-300 text-[9px]"></i> DSLR Pro (HD)
           </span>
         </div>
 
         <!-- Side by Side View -->
-        <div id="sideBySideWrapper" class="grid grid-cols-2 w-full h-full gap-1.5 p-1.5 hidden">
+        <div id="sideBySideWrapper" class="grid grid-cols-2 w-full h-full gap-1.5 p-1.5 hidden" style="display: none;">
           <div class="relative rounded-xl overflow-hidden bg-church-900 border border-church-800 flex items-center justify-center">
             <img id="imgSideBefore" class="w-full h-full object-contain" src="" alt="Antes">
-            <span class="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/75 text-[9px] font-mono text-slate-300">Antes</span>
+            <span class="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/75 text-[9px] font-mono text-slate-300 pointer-events-none">Antes</span>
           </div>
           <div class="relative rounded-xl overflow-hidden bg-church-900 border border-church-800 flex items-center justify-center">
             <img id="imgSideAfter" class="w-full h-full object-contain" src="" alt="Depois">
-            <span class="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-blue-600/90 text-[9px] font-mono text-white">Depois</span>
+            <span class="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-blue-600/90 text-[9px] font-mono text-white pointer-events-none">Depois</span>
           </div>
         </div>
 
@@ -286,107 +308,243 @@
 
       <!-- Telemetry Info -->
       <div id="telemetryFooter" class="px-3.5 py-2 bg-church-950 border-t border-church-800 flex items-center justify-between text-[11px] text-slate-400">
-        <span id="telemetryText">Toque e arraste para comparar o acabamento</span>
+        <span id="telemetryText" class="flex items-center gap-1.5">
+          <i class="fa-solid fa-hand-pointer text-amber-400 text-xs"></i>
+          <span>Toque na foto para mudar o foco ou arraste o divisor</span>
+        </span>
         <span id="resolutionBadge" class="font-mono text-slate-500 text-[10px]"></span>
       </div>
     </div>
 
-    <!-- STEP 3: ADVANCED FINE-TUNING ACCORDION (Clean & Collapsible for Mobile) -->
-    <div id="parametersPanel" class="rounded-2xl sm:rounded-3xl bg-church-900 border border-church-800 p-4 sm:p-5 shadow-xl hidden">
-      <div class="flex items-center justify-between cursor-pointer" onclick="toggleSlidersAccordion()">
-        <div class="flex items-center gap-2">
-          <i class="fa-solid fa-sliders text-blue-400 text-sm"></i>
-          <h3 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-white">
-            Ajustes Manuais & Telemetria
-          </h3>
+    <!-- STEP 3: ADVANCED 3-TAB CONTROLS PANEL (Cor & Luz, Correções, Foco & Bokeh) -->
+    <div id="parametersPanel" class="rounded-2xl sm:rounded-3xl bg-church-900 border border-church-800 p-4 sm:p-5 shadow-xl hidden" style="display: none;">
+      
+      <!-- Diagnostic Scene Bar -->
+      <div class="p-3 rounded-xl bg-church-950 border border-church-800 text-xs mb-4">
+        <div class="flex items-center justify-between mb-1">
+          <div class="flex items-center gap-1.5 text-blue-400 font-semibold">
+            <i class="fa-solid fa-brain text-amber-400"></i> Diagnóstico da Cena (Gemini 2.5 Pro):
+          </div>
+          <span id="focalPointDisplayBadge" class="text-[10px] font-mono text-amber-400">Foco: [50%, 40%]</span>
         </div>
-        <div class="flex items-center gap-2">
-          <span id="accordionArrow" class="text-slate-400 text-xs transition-transform duration-200">
-            <i class="fa-solid fa-chevron-down"></i>
-          </span>
+        <p id="analysisSummary" class="text-slate-300 font-mono text-[11px] leading-relaxed"></p>
+        <div class="mt-2 flex flex-wrap gap-1.5">
+          <span id="lightingTag" class="px-2 py-0.5 rounded bg-blue-900/40 text-blue-300 border border-blue-800/40 text-[10px]"></span>
+          <span id="sceneTag" class="px-2 py-0.5 rounded bg-purple-900/40 text-purple-300 border border-purple-800/40 text-[10px]"></span>
+          <span id="fStopTag" class="px-2 py-0.5 rounded bg-emerald-900/40 text-emerald-300 border border-emerald-800/40 text-[10px]">f/2.8 Bokeh</span>
         </div>
       </div>
 
-      <!-- Accordion Body -->
-      <div id="slidersBody" class="mt-4 flex flex-col gap-4">
-        
-        <!-- Gemini Diagnostic Summary -->
-        <div class="p-3 rounded-xl bg-church-950 border border-church-800 text-xs">
-          <div class="flex items-center gap-1.5 text-blue-400 font-semibold mb-1">
-            <i class="fa-solid fa-brain text-amber-400"></i> Diagnóstico da Cena (Gemini 2.5 Pro):
-          </div>
-          <p id="analysisSummary" class="text-slate-300 font-mono text-[11px] leading-relaxed"></p>
-          <div class="mt-2 flex flex-wrap gap-1.5">
-            <span id="lightingTag" class="px-2 py-0.5 rounded bg-blue-900/40 text-blue-300 border border-blue-800/40 text-[10px]"></span>
-            <span id="sceneTag" class="px-2 py-0.5 rounded bg-purple-900/40 text-purple-300 border border-purple-800/40 text-[10px]"></span>
-          </div>
-        </div>
+      <!-- Navigation Tabs (3 Vertentes) -->
+      <div class="flex border-b border-church-800 mb-4 gap-1 sm:gap-2">
+        <button id="tabBtn1" onclick="switchControlTab(1)" class="px-3 sm:px-4 py-2 text-xs font-bold border-b-2 border-blue-500 text-blue-400 flex items-center gap-1.5 transition-all">
+          <i class="fa-solid fa-palette text-xs"></i>
+          <span>1. Cor & Luz</span>
+        </button>
+        <button id="tabBtn2" onclick="switchControlTab(2)" class="px-3 sm:px-4 py-2 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-1.5 transition-all">
+          <i class="fa-solid fa-bolt text-xs"></i>
+          <span>2. Óptica & LEDs</span>
+        </button>
+        <button id="tabBtn3" onclick="switchControlTab(3)" class="px-3 sm:px-4 py-2 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-1.5 transition-all">
+          <i class="fa-solid fa-bullseye text-xs"></i>
+          <span>3. Foco & Bokeh</span>
+        </button>
+      </div>
 
-        <!-- Sliders Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs pt-1">
-          
+      <!-- ================= TAB 1: COR, ILUMINAÇÃO & ESTILO ================= -->
+      <div id="tabContent1" class="flex flex-col gap-3.5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
           <!-- Exposure -->
           <div>
             <div class="flex justify-between text-slate-300 mb-1">
               <span>Compensação de Exposição</span>
               <span id="val_exposure" class="font-mono text-blue-400 font-bold">0.0 EV</span>
             </div>
-            <input type="range" id="param_exposure" min="-2.0" max="2.0" step="0.05" oninput="updateSliderVal('exposure', this.value, ' EV')" class="w-full accent-blue-500 h-2 bg-church-950 rounded-lg">
+            <input type="range" id="param_exposure" min="-2.0" max="2.0" step="0.05" oninput="updateSliderAndReprocess('exposure', this.value, ' EV')" class="w-full accent-blue-500 h-2 bg-church-950 rounded-lg">
           </div>
 
-          <!-- Temperature Kelvin -->
+          <!-- Kelvin -->
           <div>
             <div class="flex justify-between text-slate-300 mb-1">
               <span>Temperatura de Cor (Kelvin)</span>
               <span id="val_kelvin" class="font-mono text-amber-400 font-bold">5500K</span>
             </div>
-            <input type="range" id="param_kelvin" min="2500" max="9000" step="50" oninput="updateSliderVal('kelvin', this.value, 'K')" class="w-full accent-amber-500 h-2 bg-church-950 rounded-lg">
+            <input type="range" id="param_kelvin" min="2500" max="9000" step="50" oninput="updateSliderAndReprocess('kelvin', this.value, 'K')" class="w-full accent-amber-500 h-2 bg-church-950 rounded-lg">
+          </div>
+
+          <!-- Tint -->
+          <div>
+            <div class="flex justify-between text-slate-300 mb-1">
+              <span>Matiz / Tint (Verde / Magenta)</span>
+              <span id="val_tint" class="font-mono text-pink-400 font-bold">0.0</span>
+            </div>
+            <input type="range" id="param_tint" min="-50.0" max="50.0" step="1.0" oninput="updateSliderAndReprocess('tint', this.value, '')" class="w-full accent-pink-500 h-2 bg-church-950 rounded-lg">
+          </div>
+
+          <!-- Contrast S-Curve -->
+          <div>
+            <div class="flex justify-between text-slate-300 mb-1">
+              <span>Curva Tonal / Contraste</span>
+              <span id="val_contrast" class="font-mono text-blue-400 font-bold">1.10x</span>
+            </div>
+            <input type="range" id="param_contrast" min="0.80" max="1.50" step="0.02" oninput="updateSliderAndReprocess('contrast', this.value, 'x')" class="w-full accent-blue-500 h-2 bg-church-950 rounded-lg">
           </div>
 
           <!-- Highlights -->
           <div>
             <div class="flex justify-between text-slate-300 mb-1">
-              <span>Recuperação de Realces (Telões)</span>
+              <span>Recuperação de Altas Luzes (Telões)</span>
               <span id="val_highlights" class="font-mono text-blue-400 font-bold">40%</span>
             </div>
-            <input type="range" id="param_highlights" min="0.0" max="1.0" step="0.05" oninput="updateSliderVal('highlights', Math.round(this.value*100), '%')" class="w-full accent-blue-500 h-2 bg-church-950 rounded-lg">
+            <input type="range" id="param_highlights" min="0.0" max="1.0" step="0.05" oninput="updateSliderAndReprocess('highlights', Math.round(this.value*100), '%')" class="w-full accent-blue-500 h-2 bg-church-950 rounded-lg">
           </div>
 
           <!-- Shadows -->
           <div>
             <div class="flex justify-between text-slate-300 mb-1">
-              <span>Abertura de Sombras</span>
+              <span>Abertura de Sombras (Público)</span>
               <span id="val_shadows" class="font-mono text-blue-400 font-bold">35%</span>
             </div>
-            <input type="range" id="param_shadows" min="0.0" max="1.0" step="0.05" oninput="updateSliderVal('shadows', Math.round(this.value*100), '%')" class="w-full accent-blue-500 h-2 bg-church-950 rounded-lg">
+            <input type="range" id="param_shadows" min="0.0" max="1.0" step="0.05" oninput="updateSliderAndReprocess('shadows', Math.round(this.value*100), '%')" class="w-full accent-blue-500 h-2 bg-church-950 rounded-lg">
           </div>
 
-          <!-- Stage LED Suppression -->
+          <!-- Saturation -->
+          <div>
+            <div class="flex justify-between text-slate-300 mb-1">
+              <span>Saturação de Cor</span>
+              <span id="val_saturation" class="font-mono text-emerald-400 font-bold">100%</span>
+            </div>
+            <input type="range" id="param_saturation" min="0.5" max="1.5" step="0.02" oninput="updateSliderAndReprocess('saturation', Math.round(this.value*100), '%')" class="w-full accent-emerald-500 h-2 bg-church-950 rounded-lg">
+          </div>
+
+          <!-- Vibrance -->
+          <div>
+            <div class="flex justify-between text-slate-300 mb-1">
+              <span>Vibração Tonal (Médios-Tons)</span>
+              <span id="val_vibrance" class="font-mono text-emerald-400 font-bold">105%</span>
+            </div>
+            <input type="range" id="param_vibrance" min="0.5" max="1.5" step="0.02" oninput="updateSliderAndReprocess('vibrance', Math.round(this.value*100), '%')" class="w-full accent-emerald-500 h-2 bg-church-950 rounded-lg">
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= TAB 2: CORREÇÃO ÓPTICA & LEDS ================= -->
+      <div id="tabContent2" class="flex flex-col gap-3.5 hidden" style="display: none;">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
+          <!-- Chromatic Aberration Fix -->
           <div>
             <div class="flex justify-between text-purple-300 font-semibold mb-1">
-              <span>Atenuação de LEDs de Palco</span>
-              <span id="val_led" class="font-mono text-purple-400 font-bold">50%</span>
+              <span>Correção de Franjas Cromáticas (Roxo/Verde)</span>
+              <span id="val_chromatic" class="font-mono text-purple-400 font-bold">50%</span>
             </div>
-            <input type="range" id="param_led" min="0.0" max="1.0" step="0.05" oninput="updateSliderVal('led', Math.round(this.value*100), '%')" class="w-full accent-purple-500 h-2 bg-church-950 rounded-lg">
+            <input type="range" id="param_chromatic" min="0.0" max="1.0" step="0.05" oninput="updateSliderAndReprocess('chromatic', Math.round(this.value*100), '%')" class="w-full accent-purple-500 h-2 bg-church-950 rounded-lg">
           </div>
 
-          <!-- Skin Protection -->
+          <!-- Extreme LED Clipping Restoration -->
           <div>
             <div class="flex justify-between text-amber-300 font-semibold mb-1">
-              <span>Proteção de Tom de Pele (Melanina)</span>
-              <span id="val_skin" class="font-mono text-amber-400 font-bold">85%</span>
+              <span>Restauração de LEDs Estourados (Clipping)</span>
+              <span id="val_led_clip" class="font-mono text-amber-400 font-bold">60%</span>
             </div>
-            <input type="range" id="param_skin" min="0.0" max="1.0" step="0.05" oninput="updateSliderVal('skin', Math.round(this.value*100), '%')" class="w-full accent-amber-500 h-2 bg-church-950 rounded-lg">
+            <input type="range" id="param_led_clip" min="0.0" max="1.0" step="0.05" oninput="updateSliderAndReprocess('led_clip', Math.round(this.value*100), '%')" class="w-full accent-amber-500 h-2 bg-church-950 rounded-lg">
           </div>
 
+          <!-- Stage LED Tint Suppression -->
+          <div>
+            <div class="flex justify-between text-slate-300 mb-1">
+              <span>Atenuação de Vazamento de LED em Pele</span>
+              <span id="val_led" class="font-mono text-purple-400 font-bold">45%</span>
+            </div>
+            <input type="range" id="param_led" min="0.0" max="1.0" step="0.05" oninput="updateSliderAndReprocess('led', Math.round(this.value*100), '%')" class="w-full accent-purple-500 h-2 bg-church-950 rounded-lg">
+          </div>
+
+          <!-- Vignette Correction -->
+          <div>
+            <div class="flex justify-between text-slate-300 mb-1">
+              <span>Correção de Vinhetagem de Celular</span>
+              <span id="val_vignette" class="font-mono text-blue-400 font-bold">35%</span>
+            </div>
+            <input type="range" id="param_vignette" min="0.0" max="1.0" step="0.05" oninput="updateSliderAndReprocess('vignette', Math.round(this.value*100), '%')" class="w-full accent-blue-500 h-2 bg-church-950 rounded-lg">
+          </div>
+
+          <!-- Selective Denoise -->
+          <div>
+            <div class="flex justify-between text-slate-300 mb-1">
+              <span>Redução de Ruído Térmico / Alto ISO</span>
+              <span id="val_denoise" class="font-mono text-blue-400 font-bold">30%</span>
+            </div>
+            <input type="range" id="param_denoise" min="0.0" max="1.0" step="0.05" oninput="updateSliderAndReprocess('denoise', Math.round(this.value*100), '%')" class="w-full accent-blue-500 h-2 bg-church-950 rounded-lg">
+          </div>
+
+          <!-- Melanin & Skin Protection -->
+          <div>
+            <div class="flex justify-between text-amber-300 font-semibold mb-1">
+              <span>Proteção de Melanina / Tom de Pele</span>
+              <span id="val_skin" class="font-mono text-amber-400 font-bold">88%</span>
+            </div>
+            <input type="range" id="param_skin" min="0.0" max="1.0" step="0.05" oninput="updateSliderAndReprocess('skin', Math.round(this.value*100), '%')" class="w-full accent-amber-500 h-2 bg-church-950 rounded-lg">
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= TAB 3: FOCO ÓPTICO & BOKEH DSLR ================= -->
+      <div id="tabContent3" class="flex flex-col gap-3.5 hidden" style="display: none;">
+        
+        <!-- Interactive Focus Helper Banner -->
+        <div class="p-3 rounded-xl bg-blue-950/40 border border-blue-800/40 flex items-center justify-between text-xs">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-bullseye text-amber-400 text-sm"></i>
+            <div>
+              <span class="font-bold text-white">Clique ou toque na foto</span>
+              <p class="text-[11px] text-slate-400">Reposiciona o ponto de foco e a profundidade de campo na hora.</p>
+            </div>
+          </div>
+          <button onclick="resetFocalCenter()" class="px-2.5 py-1 rounded-lg bg-church-800 border border-church-700 text-slate-300 hover:text-white text-[11px]">
+            Centralizar
+          </button>
         </div>
 
-        <button onclick="applyManualSliders()" class="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-md flex items-center justify-center gap-1.5 transition-all mt-1 cursor-pointer active:scale-98">
-          <i class="fa-solid fa-rotate text-xs"></i>
-          <span>Aplicar Ajustes Manuais</span>
-        </button>
+        <!-- Quick Aperture f/Stop Buttons -->
+        <div>
+          <span class="text-xs text-slate-300 font-semibold mb-1.5 block">Simulação de Abertura f/Stop (Lente DSLR):</span>
+          <div class="grid grid-cols-6 gap-1.5 text-xs font-mono">
+            <button onclick="setFStop(1.4)" class="fstop-btn py-1.5 rounded-lg bg-church-950 border border-church-800 text-slate-300 hover:text-white font-bold" data-fstop="1.4">f/1.4</button>
+            <button onclick="setFStop(1.8)" class="fstop-btn py-1.5 rounded-lg bg-church-950 border border-church-800 text-slate-300 hover:text-white font-bold" data-fstop="1.8">f/1.8</button>
+            <button onclick="setFStop(2.8)" class="fstop-btn py-1.5 rounded-lg bg-blue-600 border border-blue-500 text-white font-bold" data-fstop="2.8">f/2.8</button>
+            <button onclick="setFStop(4.0)" class="fstop-btn py-1.5 rounded-lg bg-church-950 border border-church-800 text-slate-300 hover:text-white font-bold" data-fstop="4.0">f/4.0</button>
+            <button onclick="setFStop(5.6)" class="fstop-btn py-1.5 rounded-lg bg-church-950 border border-church-800 text-slate-300 hover:text-white font-bold" data-fstop="5.6">f/5.6</button>
+            <button onclick="setFStop(8.0)" class="fstop-btn py-1.5 rounded-lg bg-church-950 border border-church-800 text-slate-300 hover:text-white font-bold" data-fstop="8.0">f/8.0</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
+          <!-- Bokeh Smoothness -->
+          <div>
+            <div class="flex justify-between text-slate-300 mb-1">
+              <span>Suavidade do Desfoque (Bokeh)</span>
+              <span id="val_bokeh" class="font-mono text-emerald-400 font-bold">75%</span>
+            </div>
+            <input type="range" id="param_bokeh" min="0.0" max="1.0" step="0.05" oninput="updateSliderAndReprocess('bokeh', Math.round(this.value*100), '%')" class="w-full accent-emerald-500 h-2 bg-church-950 rounded-lg">
+          </div>
+
+          <!-- Subject Microcontrast & Sharpness -->
+          <div>
+            <div class="flex justify-between text-amber-300 font-semibold mb-1">
+              <span>Microcontraste & Nitidez no Sujeito</span>
+              <span id="val_microcontrast" class="font-mono text-amber-400 font-bold">75%</span>
+            </div>
+            <input type="range" id="param_microcontrast" min="0.0" max="2.0" step="0.05" oninput="updateSliderAndReprocess('microcontrast', Math.round(this.value*100), '%')" class="w-full accent-amber-500 h-2 bg-church-950 rounded-lg">
+          </div>
+        </div>
 
       </div>
+
+      <!-- Apply Manual Sliders Button -->
+      <button onclick="applyCurrentManualParams()" class="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-98 text-white text-xs font-semibold shadow-md flex items-center justify-center gap-1.5 transition-all mt-4 cursor-pointer">
+        <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+        <span>Aplicar Ajustes DSLR</span>
+      </button>
+
     </div>
 
   </main>
@@ -403,7 +561,7 @@
         multiple
         accept="image/*"
         class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-30"
-        onchange="handleFiles(this.files)"
+        style="font-size: 100px; touch-action: manipulation;"
       >
     </div>
     <button onclick="downloadCurrentProcessed()" class="px-5 py-2.5 rounded-xl bg-emerald-600 active:bg-emerald-500 text-xs font-bold text-white flex items-center gap-1.5 shadow-lg shadow-emerald-600/30">
@@ -419,7 +577,7 @@
         <h3 class="text-base font-bold text-white">Servidor Backend Seguro</h3>
       </div>
       <p class="text-xs text-slate-400 mb-3 leading-relaxed">
-        Seu servidor no Render está conectado e ativo. Todos os voluntários usam o Gemini 2.5 Pro automaticamente!
+        Seu servidor no Render está conectado e ativo. O Gemini 2.5 Pro processa todas as fotos com segurança!
       </p>
       <input type="text" id="serverUrlInput" value="https://enhacepics.onrender.com" class="w-full px-3 py-2 rounded-xl bg-church-950 border border-church-800 text-white font-mono text-xs focus:outline-none focus:border-emerald-500 mb-4">
       <div class="flex items-center justify-end gap-2">
@@ -447,107 +605,8 @@
     </div>
   </div>
 
-  <!-- CORE LOGIC JS -->
+  <!-- ================= JAVASCRIPT CORE LOGIC ================= -->
   <script>
-    const PRESETS = [
-      {
-        id: "culto_contemporaneo",
-        name: "Louvor / LEDs de Palco",
-        icon: "fa-bolt text-amber-400",
-        description: "Atenua luzes azuis e magentas, mantendo o calor da pele.",
-        params: {
-          exposure_compensation: 0.25,
-          temperature_kelvin: 5400,
-          tint: -5.0,
-          contrast: 1.12,
-          highlights_recovery: 0.60,
-          shadows_lift: 0.45,
-          saturation: 1.04,
-          stage_led_tint_suppression: 0.65,
-          blue_led_attenuation: 0.55,
-          red_magenta_attenuation: 0.50,
-          skin_tone_protection_strength: 0.90,
-          denoise_strength: 0.30,
-          unsharp_mask_amount: 0.75,
-          detected_lighting_condition: "Palco com iluminação cênica de LED",
-          detected_scene_type: "Louvor / Palco",
-          analysis_summary: "Atenuação de LEDs de palco e preservação natural de tom de pele."
-        }
-      },
-      {
-        id: "culto_tradicional",
-        name: "Púlpito / Palavra",
-        icon: "fa-church text-blue-400",
-        description: "Equilibra sombras no rosto do pregador e tons quentes.",
-        params: {
-          exposure_compensation: 0.15,
-          temperature_kelvin: 5100,
-          tint: 2.0,
-          contrast: 1.05,
-          highlights_recovery: 0.35,
-          shadows_lift: 0.50,
-          saturation: 0.98,
-          stage_led_tint_suppression: 0.15,
-          blue_led_attenuation: 0.10,
-          red_magenta_attenuation: 0.15,
-          skin_tone_protection_strength: 0.85,
-          denoise_strength: 0.20,
-          unsharp_mask_amount: 0.60,
-          detected_lighting_condition: "Luz de púlpito e ambiente",
-          detected_scene_type: "Púlpito / Pregador",
-          analysis_summary: "Balanço suave para o púlpito com alta nitidez facial."
-        }
-      },
-      {
-        id: "louvor_adoracao",
-        name: "Baixa Luz / Adoração",
-        icon: "fa-moon text-purple-400",
-        description: "Reduz ruído de celular escuro e ilumina a congregação.",
-        params: {
-          exposure_compensation: 0.50,
-          temperature_kelvin: 5600,
-          tint: -3.0,
-          contrast: 1.08,
-          highlights_recovery: 0.70,
-          shadows_lift: 0.70,
-          saturation: 1.05,
-          stage_led_tint_suppression: 0.50,
-          blue_led_attenuation: 0.45,
-          red_magenta_attenuation: 0.40,
-          skin_tone_protection_strength: 0.92,
-          denoise_strength: 0.50,
-          unsharp_mask_amount: 0.80,
-          detected_lighting_condition: "Ambiente de adoração em penumbra",
-          detected_scene_type: "Congregação",
-          analysis_summary: "Abertura de sombras e redução de ruído ISO de baixa luz."
-        }
-      },
-      {
-        id: "evento_externo",
-        name: "Batismo / Área Aberta",
-        icon: "fa-sun text-amber-400",
-        description: "Cores vivas e céu nítido para eventos diurnos.",
-        params: {
-          exposure_compensation: 0.0,
-          temperature_kelvin: 5800,
-          tint: 0.0,
-          contrast: 1.10,
-          highlights_recovery: 0.40,
-          shadows_lift: 0.25,
-          saturation: 1.08,
-          stage_led_tint_suppression: 0.0,
-          blue_led_attenuation: 0.0,
-          red_magenta_attenuation: 0.0,
-          skin_tone_protection_strength: 0.80,
-          denoise_strength: 0.10,
-          unsharp_mask_amount: 0.50,
-          detected_lighting_condition: "Luz natural do dia",
-          detected_scene_type: "Batismo / Cerimônia",
-          analysis_summary: "Calibração de luz solar com realce de cores naturais."
-        }
-      }
-    ];
-
     let queue = [];
     let activeItem = null;
     let viewerMode = 'slider';
@@ -555,14 +614,124 @@
     let isDragging = false;
     const DEFAULT_SERVER_URL = 'https://enhacepics.onrender.com';
     let serverUrl = localStorage.getItem('CHURCHPHOTO_SERVER_URL') || DEFAULT_SERVER_URL;
-    let isAccordionOpen = false;
+    let currentTab = 1;
+    let focalPoint = { x: 0.50, y: 0.40 };
+    let currentFStop = 2.8;
+
+    // Default Curated Fallback Presets
+    let currentPresets = [
+      {
+        id: "luz_quente_natural",
+        name: "Luz Quente Natural",
+        icon: "fa-sun text-amber-400",
+        description: "Tons de pele acolhedores e calor orgânico para louvor e palavra.",
+        params: {
+          exposure_compensation: 0.20,
+          temperature_kelvin: 5700,
+          tint: -2.0,
+          contrast: 1.06,
+          highlights_recovery: 0.45,
+          shadows_lift: 0.40,
+          saturation: 1.04,
+          vibrance: 1.08,
+          chromatic_aberration_fix: 0.50,
+          vignette_correction: 0.35,
+          lens_distortion_correction: 0.20,
+          led_clipping_restoration: 0.60,
+          stage_led_tint_suppression: 0.45,
+          selective_denoise: 0.28,
+          skin_tone_protection_strength: 0.92,
+          f_stop_simulation: 2.4,
+          bokeh_smoothness: 0.75,
+          subject_microcontrast: 0.80
+        }
+      },
+      {
+        id: "clean_moderno_neutro",
+        name: "Clean / Moderno Neutro",
+        icon: "fa-wand-magic text-blue-400",
+        description: "Balanço de estúdio limpo com atenuação precisa de reflexos de LED.",
+        params: {
+          exposure_compensation: 0.10,
+          temperature_kelvin: 5400,
+          tint: 0.0,
+          contrast: 1.10,
+          highlights_recovery: 0.55,
+          shadows_lift: 0.35,
+          saturation: 0.98,
+          vibrance: 1.02,
+          chromatic_aberration_fix: 0.65,
+          vignette_correction: 0.40,
+          lens_distortion_correction: 0.20,
+          led_clipping_restoration: 0.70,
+          stage_led_tint_suppression: 0.55,
+          selective_denoise: 0.35,
+          skin_tone_protection_strength: 0.88,
+          f_stop_simulation: 2.8,
+          bokeh_smoothness: 0.75,
+          subject_microcontrast: 0.75
+        }
+      },
+      {
+        id: "moody_contraste_cenico",
+        name: "Moody / Contraste Cênico",
+        icon: "fa-film text-purple-400",
+        description: "Visual cinematográfico com sombras profundas e isolamento cênico.",
+        params: {
+          exposure_compensation: -0.05,
+          temperature_kelvin: 5100,
+          tint: 4.0,
+          contrast: 1.22,
+          highlights_recovery: 0.65,
+          shadows_lift: 0.25,
+          saturation: 1.06,
+          vibrance: 1.12,
+          chromatic_aberration_fix: 0.55,
+          vignette_correction: 0.20,
+          lens_distortion_correction: 0.20,
+          led_clipping_restoration: 0.60,
+          stage_led_tint_suppression: 0.40,
+          selective_denoise: 0.25,
+          skin_tone_protection_strength: 0.85,
+          f_stop_simulation: 1.8,
+          bokeh_smoothness: 0.85,
+          subject_microcontrast: 0.90
+        }
+      },
+      {
+        id: "culto_geral_amplo",
+        name: "Culto Geral / Grande Angular",
+        icon: "fa-church text-emerald-400",
+        description: "Plano aberto nítido de ponta a ponta sem desfoque de fundo excessivo.",
+        params: {
+          exposure_compensation: 0.20,
+          temperature_kelvin: 5500,
+          tint: 0.0,
+          contrast: 1.08,
+          highlights_recovery: 0.40,
+          shadows_lift: 0.50,
+          saturation: 1.02,
+          vibrance: 1.05,
+          chromatic_aberration_fix: 0.45,
+          vignette_correction: 0.50,
+          lens_distortion_correction: 0.35,
+          led_clipping_restoration: 0.50,
+          stage_led_tint_suppression: 0.35,
+          selective_denoise: 0.30,
+          skin_tone_protection_strength: 0.85,
+          f_stop_simulation: 5.6,
+          bokeh_smoothness: 0.40,
+          subject_microcontrast: 0.60
+        }
+      }
+    ];
 
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('serverUrlInput').value = serverUrl;
       const savedKey = localStorage.getItem('CHURCHPHOTO_GEMINI_KEY') || '';
       document.getElementById('geminiKeyInput').value = savedKey;
 
-      renderPresets();
+      renderPresets(currentPresets);
       setupFileInputs();
       setupSliderEvents();
     });
@@ -613,20 +782,25 @@
       const banner = document.getElementById('queueStatsBanner');
       const text = document.getElementById('queueStatsText');
       if (queue.length > 1) {
+        banner.style.display = 'flex';
         banner.classList.remove('hidden');
         text.textContent = `${queue.length} fotos carregadas`;
       } else {
+        banner.style.display = 'none';
         banner.classList.add('hidden');
       }
     }
 
-    function renderPresets() {
+    function renderPresets(presetsList) {
       const container = document.getElementById('presetsContainer');
-      container.innerHTML = PRESETS.map(p => `
-        <button onclick="applyPreset('${p.id}')" class="shrink-0 p-3 rounded-2xl bg-church-900 border border-church-800 hover:border-blue-500/60 active:bg-church-800 text-left transition-all w-[180px] sm:w-[220px]">
-          <div class="flex items-center gap-1.5 text-xs font-bold text-white mb-1">
-            <i class="fa-solid ${p.icon} text-xs"></i>
-            <span class="truncate">${p.name}</span>
+      container.innerHTML = presetsList.map((p, idx) => `
+        <button onclick="applyPresetObj('${p.id}')" class="shrink-0 p-3 rounded-2xl bg-church-900 border ${idx === 0 ? 'border-amber-400/80 shadow-md shadow-amber-500/10' : 'border-church-800'} hover:border-blue-500/60 active:scale-95 active:bg-church-800 text-left transition-all w-[180px] sm:w-[220px]">
+          <div class="flex items-center justify-between gap-1 mb-1">
+            <div class="flex items-center gap-1.5 text-xs font-bold text-white truncate">
+              <i class="fa-solid ${p.icon || 'fa-wand-magic-sparkles'} text-xs"></i>
+              <span class="truncate">${p.name}</span>
+            </div>
+            ${idx === 0 ? '<span class="px-1.5 py-0.2 rounded bg-amber-400/20 text-amber-300 text-[8px] font-mono font-bold shrink-0">IA</span>' : ''}
           </div>
           <p class="text-[11px] text-slate-400 line-clamp-2 leading-tight">${p.description}</p>
         </button>
@@ -638,10 +812,12 @@
       const container = document.getElementById('thumbnailsList');
 
       if (queue.length <= 1) {
+        strip.style.display = 'none';
         strip.classList.add('hidden');
         return;
       }
 
+      strip.style.display = 'flex';
       strip.classList.remove('hidden');
       container.innerHTML = queue.map(item => {
         const isSelected = activeItem && activeItem.id === item.id;
@@ -667,22 +843,32 @@
       if (activeItem.status === 'completed' && activeItem.processedBase64) {
         showProcessedViewer(activeItem);
       } else if (activeItem.status === 'analyzing') {
-        showLoaderState("Tratando com IA Gemini 2.5 Pro...", "Calibrando exposição, tons de pele e LEDs");
+        showLoaderState("Tratando com Motor DSLR 3.0...", "Analisando cena, iluminação cênica e profundidade de campo");
       } else {
+        document.getElementById('emptyPrompt').style.display = 'flex';
         document.getElementById('emptyPrompt').classList.remove('hidden');
+        document.getElementById('sliderWrapper').style.display = 'none';
         document.getElementById('sliderWrapper').classList.add('hidden');
+        document.getElementById('sideBySideWrapper').style.display = 'none';
         document.getElementById('sideBySideWrapper').classList.add('hidden');
+        document.getElementById('parametersPanel').style.display = 'none';
         document.getElementById('parametersPanel').classList.add('hidden');
+        document.getElementById('processingLoader').style.display = 'none';
         document.getElementById('processingLoader').classList.add('hidden');
         document.getElementById('downloadBtn').disabled = true;
+        document.getElementById('mobileBottomBar').style.display = 'none';
         document.getElementById('mobileBottomBar').classList.add('hidden');
       }
     }
 
     function showLoaderState(title, subtitle) {
+      document.getElementById('emptyPrompt').style.display = 'none';
       document.getElementById('emptyPrompt').classList.add('hidden');
+      document.getElementById('sliderWrapper').style.display = 'none';
       document.getElementById('sliderWrapper').classList.add('hidden');
+      document.getElementById('sideBySideWrapper').style.display = 'none';
       document.getElementById('sideBySideWrapper').classList.add('hidden');
+      document.getElementById('processingLoader').style.display = 'flex';
       document.getElementById('processingLoader').classList.remove('hidden');
       document.getElementById('loaderTitle').textContent = title;
       document.getElementById('loaderSubtitle').textContent = subtitle;
@@ -690,10 +876,14 @@
     }
 
     function showProcessedViewer(item) {
+      document.getElementById('emptyPrompt').style.display = 'none';
       document.getElementById('emptyPrompt').classList.add('hidden');
+      document.getElementById('processingLoader').style.display = 'none';
       document.getElementById('processingLoader').classList.add('hidden');
+      document.getElementById('parametersPanel').style.display = 'block';
       document.getElementById('parametersPanel').classList.remove('hidden');
       document.getElementById('downloadBtn').disabled = false;
+      document.getElementById('mobileBottomBar').style.display = 'flex';
       document.getElementById('mobileBottomBar').classList.remove('hidden');
 
       document.getElementById('imgAfter').src = item.processedBase64;
@@ -702,10 +892,14 @@
       document.getElementById('imgSideAfter').src = item.processedBase64;
 
       if (viewerMode === 'slider') {
+        document.getElementById('sliderWrapper').style.display = 'block';
         document.getElementById('sliderWrapper').classList.remove('hidden');
+        document.getElementById('sideBySideWrapper').style.display = 'none';
         document.getElementById('sideBySideWrapper').classList.add('hidden');
       } else {
+        document.getElementById('sliderWrapper').style.display = 'none';
         document.getElementById('sliderWrapper').classList.add('hidden');
+        document.getElementById('sideBySideWrapper').style.display = 'grid';
         document.getElementById('sideBySideWrapper').classList.remove('hidden');
       }
 
@@ -715,15 +909,31 @@
 
       const p = item.currentParams || item.analysis;
       if (p) {
-        document.getElementById('analysisSummary').textContent = p.analysis_summary || 'Calibração realizada com sucesso.';
-        document.getElementById('lightingTag').textContent = p.detected_lighting_condition || 'Palco';
-        document.getElementById('sceneTag').textContent = p.detected_scene_type || 'Culto';
+        // Sync diagnostic tags
+        document.getElementById('analysisSummary').textContent = p.analysis_summary || 'Calibração DSLR concluída com sucesso.';
+        document.getElementById('lightingTag').textContent = p.detected_lighting_condition || 'Iluminação de Palco';
+        document.getElementById('sceneTag').textContent = p.scene_moment || p.detected_scene_type || 'Culto / Palco';
+        document.getElementById('sceneMomentBadge').textContent = p.scene_moment || 'Culto / Palco';
+        document.getElementById('fStopTag').textContent = `f/${p.f_stop_simulation || 2.8} Bokeh`;
 
+        focalPoint.x = p.focal_point_x || 0.50;
+        focalPoint.y = p.focal_point_y || 0.40;
+        currentFStop = p.f_stop_simulation || 2.8;
+
+        updateFocusReticleUI();
+
+        // TAB 1 Sliders
         document.getElementById('param_exposure').value = p.exposure_compensation;
         document.getElementById('val_exposure').textContent = `${p.exposure_compensation > 0 ? '+' : ''}${p.exposure_compensation} EV`;
 
         document.getElementById('param_kelvin').value = p.temperature_kelvin;
         document.getElementById('val_kelvin').textContent = `${p.temperature_kelvin}K`;
+
+        document.getElementById('param_tint').value = p.tint || 0.0;
+        document.getElementById('val_tint').textContent = `${p.tint || 0.0}`;
+
+        document.getElementById('param_contrast').value = p.contrast || 1.10;
+        document.getElementById('val_contrast').textContent = `${(p.contrast || 1.10).toFixed(2)}x`;
 
         document.getElementById('param_highlights').value = p.highlights_recovery;
         document.getElementById('val_highlights').textContent = `${Math.round(p.highlights_recovery*100)}%`;
@@ -731,11 +941,55 @@
         document.getElementById('param_shadows').value = p.shadows_lift;
         document.getElementById('val_shadows').textContent = `${Math.round(p.shadows_lift*100)}%`;
 
-        document.getElementById('param_led').value = p.stage_led_tint_suppression;
-        document.getElementById('val_led').textContent = `${Math.round(p.stage_led_tint_suppression*100)}%`;
+        document.getElementById('param_saturation').value = p.saturation || 1.0;
+        document.getElementById('val_saturation').textContent = `${Math.round((p.saturation||1.0)*100)}%`;
 
-        document.getElementById('param_skin').value = p.skin_tone_protection_strength;
-        document.getElementById('val_skin').textContent = `${Math.round(p.skin_tone_protection_strength*100)}%`;
+        document.getElementById('param_vibrance').value = p.vibrance || 1.05;
+        document.getElementById('val_vibrance').textContent = `${Math.round((p.vibrance||1.05)*100)}%`;
+
+        // TAB 2 Sliders
+        document.getElementById('param_chromatic').value = p.chromatic_aberration_fix || 0.50;
+        document.getElementById('val_chromatic').textContent = `${Math.round((p.chromatic_aberration_fix||0.50)*100)}%`;
+
+        document.getElementById('param_led_clip').value = p.led_clipping_restoration || 0.60;
+        document.getElementById('val_led_clip').textContent = `${Math.round((p.led_clipping_restoration||0.60)*100)}%`;
+
+        document.getElementById('param_led').value = p.stage_led_tint_suppression || 0.45;
+        document.getElementById('val_led').textContent = `${Math.round((p.stage_led_tint_suppression||0.45)*100)}%`;
+
+        document.getElementById('param_vignette').value = p.vignette_correction || 0.35;
+        document.getElementById('val_vignette').textContent = `${Math.round((p.vignette_correction||0.35)*100)}%`;
+
+        document.getElementById('param_denoise').value = p.selective_denoise || 0.30;
+        document.getElementById('val_denoise').textContent = `${Math.round((p.selective_denoise||0.30)*100)}%`;
+
+        document.getElementById('param_skin').value = p.skin_tone_protection_strength || 0.88;
+        document.getElementById('val_skin').textContent = `${Math.round((p.skin_tone_protection_strength||0.88)*100)}%`;
+
+        // TAB 3 Sliders & Buttons
+        document.getElementById('param_bokeh').value = p.bokeh_smoothness || 0.75;
+        document.getElementById('val_bokeh').textContent = `${Math.round((p.bokeh_smoothness||0.75)*100)}%`;
+
+        document.getElementById('param_microcontrast').value = p.subject_microcontrast || 0.75;
+        document.getElementById('val_microcontrast').textContent = `${Math.round((p.subject_microcontrast||0.75)*100)}%`;
+
+        highlightActiveFStopBtn(currentFStop);
+
+        // Update Alternative Presets if returned from AI
+        if (p.alternative_presets && p.alternative_presets.length > 0) {
+          const combined = [
+            {
+              id: "ai_recommended",
+              name: p.suggested_preset || "Recomendado pela IA",
+              icon: "fa-sparkles text-amber-400",
+              description: p.analysis_summary,
+              params: p
+            },
+            ...p.alternative_presets
+          ];
+          currentPresets = combined;
+          renderPresets(combined);
+        }
       }
     }
 
@@ -746,7 +1000,7 @@
       item.status = 'analyzing';
       renderThumbnails();
       if (activeItem && activeItem.id === id) {
-        showLoaderState("Tratando com IA Gemini 2.5 Pro...", "Analisando iluminação cênica e tons de pele");
+        showLoaderState("Tratando com Motor DSLR 3.0...", "Analisando cena, aberrações e profundidade de campo");
       }
 
       // Route 1: Try Render Backend Server Proxy
@@ -780,7 +1034,7 @@
         }
       }
 
-      // Route 2: Fast Client-side fallback
+      // Route 2: Fast Client-side DSLR fallback
       const img = new Image();
       img.src = item.previewUrl;
       await new Promise(resolve => { img.onload = resolve; });
@@ -809,7 +1063,8 @@
       }
     }
 
-    // Mathematical deterministic color processing
+    // ================= CLIENT-SIDE PROCESSING ENGINE =================
+
     function kelvinToRGBMultipliers(kelvin) {
       let temp = Math.max(2500, Math.min(9000, kelvin)) / 100;
       let r, g, b;
@@ -854,8 +1109,16 @@
       const hRec = params.highlights_recovery || 0.0;
       const sLift = params.shadows_lift || 0.0;
       const contrast = params.contrast || 1.10;
-      const ledSupp = params.stage_led_tint_suppression || 0.5;
-      const skinProt = params.skin_tone_protection_strength || 0.85;
+      const sat = params.saturation || 1.0;
+      const vib = params.vibrance || 1.05;
+      const ledClip = params.led_clipping_restoration || 0.5;
+      const chromFix = params.chromatic_aberration_fix || 0.5;
+      const skinProt = params.skin_tone_protection_strength || 0.88;
+      const vignette = params.vignette_correction || 0.35;
+
+      const centerX = width * (params.focal_point_x || 0.50);
+      const centerY = height * (params.focal_point_y || 0.40);
+      const maxRadius = Math.sqrt(width*width + height*height) / 2.0;
 
       for (let i = 0; i < data.length; i += 4) {
         let r = data[i] / 255.0;
@@ -864,10 +1127,24 @@
 
         let lum = 0.299 * r + 0.587 * g + 0.114 * b;
 
+        // 1. Extreme LED clipping reconstruction
+        if (ledClip > 0.1) {
+          if (b > 0.80 && b > r * 1.35) {
+            let diff = (b - r * 1.35) * ledClip * 0.45;
+            r += diff * 0.35; g += diff * 0.35; b -= diff * 0.45;
+          }
+          if (r > 0.82 && r > g * 1.45) {
+            let diffR = (r - g * 1.45) * ledClip * 0.40;
+            g += diffR * 0.30; r -= diffR * 0.35;
+          }
+        }
+
+        // 2. Exposure & Kelvin White Balance
         r *= expMult * wb.r;
         g *= expMult * wb.g;
         b *= expMult * wb.b;
 
+        // 3. Highlights & Shadows
         if (hRec > 0 && lum > 0.45) {
           let hWeight = Math.pow((lum - 0.45) / 0.55, 1.8);
           let comp = hRec * 0.25 * hWeight;
@@ -880,22 +1157,34 @@
           r += boost; g += boost; b += boost;
         }
 
+        // 4. Contrast S-Curve
         if (Math.abs(contrast - 1.0) > 0.02) {
           r = Math.pow(Math.max(0, Math.min(1, r)), contrast);
           g = Math.pow(Math.max(0, Math.min(1, g)), contrast);
           b = Math.pow(Math.max(0, Math.min(1, b)), contrast);
         }
 
-        if (ledSupp > 0.05) {
-          if (b > r * 1.35 && b > 0.45) b -= (b - r * 1.35) * ledSupp * 0.65;
-          if (r > g * 1.6 && r > 0.65) r -= (r - g * 1.6) * ledSupp * 0.45;
+        // 5. Saturation & Vibrance
+        let maxC = Math.max(r, Math.max(g, b));
+        let minC = Math.min(r, Math.min(g, b));
+        let saturationCurrent = maxC === 0 ? 0 : (maxC - minC) / maxC;
+        
+        let satFactor = sat;
+        if (vib > 1.0) {
+          satFactor *= (1.0 + (vib - 1.0) * (1.0 - saturationCurrent * 0.6));
         }
 
-        let isSkin = (r > g && g > b && (r - g) > 0.05 && (g - b) > 0.02 && r > 0.3);
+        let meanRGB = (r + g + b) / 3.0;
+        r = meanRGB + (r - meanRGB) * satFactor;
+        g = meanRGB + (g - meanRGB) * satFactor;
+        b = meanRGB + (b - meanRGB) * satFactor;
+
+        // 6. Skin Tone Melanin Protection
+        let isSkin = (r > g && g > b && (r - g) > 0.04 && (g - b) > 0.02 && r > 0.25);
         if (isSkin && skinProt > 0.1) {
-          r = r * (1.0 + 0.05 * skinProt);
-          g = g * (1.0 + 0.03 * skinProt);
-          b = b * (1.0 - 0.04 * skinProt);
+          r = r * (1.0 + 0.04 * skinProt);
+          g = g * (1.0 + 0.02 * skinProt);
+          b = b * (1.0 - 0.03 * skinProt);
         }
 
         data[i] = Math.max(0, Math.min(255, Math.round(r * 255)));
@@ -904,6 +1193,41 @@
       }
 
       ctx.putImageData(imgData, 0, 0);
+
+      // 7. Vertente 3: Simulated Progressive Optical Bokeh & Depth of Field
+      const fStop = params.f_stop_simulation || 2.8;
+      if (fStop < 7.0) {
+        // Create blurred background layer
+        const blurCanvas = document.createElement('canvas');
+        blurCanvas.width = width;
+        blurCanvas.height = height;
+        const blurCtx = blurCanvas.getContext('2d');
+        
+        const blurRadius = Math.max(2, Math.round((8.0 / fStop) * (width / 250.0) * (params.bokeh_smoothness || 0.75)));
+        blurCtx.filter = `blur(${blurRadius}px)`;
+        blurCtx.drawImage(canvas, 0, 0);
+
+        // Radial mask from focal point
+        const maskCanvas = document.createElement('canvas');
+        maskCanvas.width = width;
+        maskCanvas.height = height;
+        const maskCtx = maskCanvas.getContext('2d');
+
+        const gradRadius = Math.max(width, height) * 0.35;
+        const gradient = maskCtx.createRadialGradient(centerX, centerY, 0, centerX, centerY, gradRadius);
+        gradient.addColorStop(0, 'rgba(0, 0, 0, 1)');
+        gradient.addColorStop(0.5, 'rgba(0, 0, 0, 0.7)');
+        gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+        maskCtx.fillStyle = gradient;
+        maskCtx.fillRect(0, 0, width, height);
+
+        // Composite: Blur background where mask is 0
+        blurCtx.globalCompositeOperation = 'destination-out';
+        blurCtx.drawImage(maskCanvas, 0, 0);
+
+        ctx.drawImage(blurCanvas, 0, 0);
+      }
 
       const executionTime = Math.round(performance.now() - startTime);
       return {
@@ -949,44 +1273,167 @@
       const darkPct = darkPixels / count;
       const brightPct = brightPixels / count;
 
-      const ledSupp = Math.max(0.3, Math.min(0.85, (bluePct + redPct) * 3.0 + 0.3));
+      const ledClip = Math.max(0.35, Math.min(0.85, (bluePct + redPct) * 3.0 + 0.35));
       const sLift = Math.max(0.2, Math.min(0.75, darkPct * 1.6 + 0.25));
       const hRec = Math.max(0.25, Math.min(0.85, brightPct * 2.2 + 0.35));
+
+      let sceneMoment = "Louvor / Palco";
+      let suggestedFStop = 2.8;
+      if (darkPct > 0.35) {
+        sceneMoment = "Louvor Intimista / Pouca Luz";
+        suggestedFStop = 1.8;
+      } else if (bluePct > 0.05 || redPct > 0.05) {
+        sceneMoment = "Celebração / LEDs Cênicos";
+        suggestedFStop = 2.8;
+      } else if (meanLum > 140) {
+        sceneMoment = "Pregação / Palavra";
+        suggestedFStop = 2.8;
+      }
 
       return {
         exposure_compensation: Math.round(expComp * 100) / 100,
         temperature_kelvin: Math.max(2500, Math.min(9000, kelvin)),
+        tint: 0.0,
         contrast: 1.10,
         highlights_recovery: Math.round(hRec * 100) / 100,
         shadows_lift: Math.round(sLift * 100) / 100,
-        saturation: 1.04,
-        stage_led_tint_suppression: Math.round(ledSupp * 100) / 100,
+        saturation: 1.03,
+        vibrance: 1.07,
+        chromatic_aberration_fix: 0.50,
+        vignette_correction: 0.35,
+        lens_distortion_correction: 0.20,
+        led_clipping_restoration: Math.round(ledClip * 100) / 100,
+        stage_led_tint_suppression: Math.round(ledClip * 0.8 * 100) / 100,
+        selective_denoise: 0.30,
         skin_tone_protection_strength: 0.88,
-        denoise_strength: 0.28,
-        unsharp_mask_amount: 0.70,
-        detected_lighting_condition: bluePct > 0.05 ? "Luz cênica de LED Azul" : "Iluminação mista de palco",
+        focal_point_x: 0.50,
+        focal_point_y: 0.40,
+        f_stop_simulation: suggestedFStop,
+        bokeh_smoothness: 0.75,
+        subject_microcontrast: 0.75,
+        scene_moment: sceneMoment,
+        detected_lighting_condition: `Iluminação cênica de culto com compensação de LEDs`,
         detected_scene_type: "Culto / Palco",
-        analysis_summary: `Calibração automática: Exposição ${expComp > 0 ? '+' : ''}${expComp.toFixed(2)} EV, ${kelvin}K e proteção de pele.`
+        analysis_summary: `Diagnóstico DSLR (${sceneMoment}): ${kelvin}K, exp ${expComp > 0 ? '+' : ''}${expComp.toFixed(2)} EV, restauração de LEDs e profundidade f/${suggestedFStop}.`
       };
     }
 
-    function applyManualSliders() {
+    // ================= INTERACTION & TAB CONTROL =================
+
+    function switchControlTab(tabIdx) {
+      currentTab = tabIdx;
+      for (let i = 1; i <= 3; i++) {
+        const btn = document.getElementById(`tabBtn${i}`);
+        const content = document.getElementById(`tabContent${i}`);
+        if (i === tabIdx) {
+          btn.className = 'px-3 sm:px-4 py-2 text-xs font-bold border-b-2 border-blue-500 text-blue-400 flex items-center gap-1.5 transition-all';
+          content.style.display = 'flex';
+          content.classList.remove('hidden');
+        } else {
+          btn.className = 'px-3 sm:px-4 py-2 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-1.5 transition-all';
+          content.style.display = 'none';
+          content.classList.add('hidden');
+        }
+      }
+    }
+
+    function handleViewportClick(event) {
+      if (!activeItem || activeItem.status !== 'completed') return;
+      if (isDragging) return;
+
+      const viewport = document.getElementById('viewport');
+      const rect = viewport.getBoundingClientRect();
+      const clickX = event.clientX - rect.left;
+      const clickY = event.clientY - rect.top;
+
+      focalPoint.x = Math.max(0.1, Math.min(0.9, clickX / rect.width));
+      focalPoint.y = Math.max(0.1, Math.min(0.9, clickY / rect.height));
+
+      updateFocusReticleUI();
+      applyCurrentManualParams();
+    }
+
+    function updateFocusReticleUI() {
+      const reticle = document.getElementById('focusReticle');
+      const badge = document.getElementById('focalPointDisplayBadge');
+      const reticleBadge = document.getElementById('focusReticleBadge');
+
+      if (reticle) {
+        reticle.style.display = 'block';
+        reticle.classList.remove('hidden');
+        reticle.style.left = `${(focalPoint.x * 100).toFixed(1)}%`;
+        reticle.style.top = `${(focalPoint.y * 100).toFixed(1)}%`;
+      }
+      if (badge) {
+        badge.textContent = `Foco: [${Math.round(focalPoint.x*100)}%, ${Math.round(focalPoint.y*100)}%]`;
+      }
+      if (reticleBadge) {
+        reticleBadge.textContent = `f/${currentFStop} · Foco Ativo`;
+      }
+    }
+
+    function resetFocalCenter() {
+      focalPoint.x = 0.50;
+      focalPoint.y = 0.40;
+      updateFocusReticleUI();
+      applyCurrentManualParams();
+    }
+
+    function setFStop(val) {
+      currentFStop = val;
+      highlightActiveFStopBtn(val);
+      document.getElementById('fStopTag').textContent = `f/${val} Bokeh`;
+      updateFocusReticleUI();
+      applyCurrentManualParams();
+    }
+
+    function highlightActiveFStopBtn(fVal) {
+      document.querySelectorAll('.fstop-btn').forEach(btn => {
+        const val = parseFloat(btn.getAttribute('data-fstop'));
+        if (Math.abs(val - fVal) < 0.05) {
+          btn.className = 'fstop-btn py-1.5 rounded-lg bg-blue-600 border border-blue-500 text-white font-bold';
+        } else {
+          btn.className = 'fstop-btn py-1.5 rounded-lg bg-church-950 border border-church-800 text-slate-300 hover:text-white font-bold';
+        }
+      });
+    }
+
+    function updateSliderAndReprocess(id, val, suffix) {
+      document.getElementById(`val_${id}`).textContent = `${val}${suffix}`;
+      // Instant debounce re-processing for 60fps responsiveness
+      clearTimeout(window._reprocessTimeout);
+      window._reprocessTimeout = setTimeout(() => {
+        applyCurrentManualParams();
+      }, 40);
+    }
+
+    function applyCurrentManualParams() {
       if (!activeItem) return;
 
       const params = {
         exposure_compensation: parseFloat(document.getElementById('param_exposure').value),
         temperature_kelvin: parseInt(document.getElementById('param_kelvin').value),
-        contrast: 1.10,
+        tint: parseFloat(document.getElementById('param_tint').value),
+        contrast: parseFloat(document.getElementById('param_contrast').value),
         highlights_recovery: parseFloat(document.getElementById('param_highlights').value),
         shadows_lift: parseFloat(document.getElementById('param_shadows').value),
-        saturation: 1.04,
+        saturation: parseFloat(document.getElementById('param_saturation').value),
+        vibrance: parseFloat(document.getElementById('param_vibrance').value),
+        chromatic_aberration_fix: parseFloat(document.getElementById('param_chromatic').value),
+        led_clipping_restoration: parseFloat(document.getElementById('param_led_clip').value),
         stage_led_tint_suppression: parseFloat(document.getElementById('param_led').value),
+        vignette_correction: parseFloat(document.getElementById('param_vignette').value),
+        selective_denoise: parseFloat(document.getElementById('param_denoise').value),
         skin_tone_protection_strength: parseFloat(document.getElementById('param_skin').value),
-        denoise_strength: 0.25,
-        unsharp_mask_amount: 0.70,
+        focal_point_x: focalPoint.x,
+        focal_point_y: focalPoint.y,
+        f_stop_simulation: currentFStop,
+        bokeh_smoothness: parseFloat(document.getElementById('param_bokeh').value),
+        subject_microcontrast: parseFloat(document.getElementById('param_microcontrast').value),
+        scene_moment: activeItem.analysis?.scene_moment || 'Culto / Palco',
         detected_lighting_condition: activeItem.analysis?.detected_lighting_condition || 'Palco',
         detected_scene_type: activeItem.analysis?.detected_scene_type || 'Culto',
-        analysis_summary: 'Ajuste manual personalizado aplicado.'
+        analysis_summary: 'Ajuste manual personalizado DSLR aplicado.'
       };
 
       const img = new Image();
@@ -1000,23 +1447,30 @@
       };
     }
 
-    function applyPreset(presetId) {
-      const p = PRESETS.find(x => x.id === presetId);
+    function applyPresetObj(presetId) {
+      const p = currentPresets.find(x => x.id === presetId);
       if (!p || !activeItem || activeItem.status !== 'completed') return;
 
       const par = p.params;
-      document.getElementById('param_exposure').value = par.exposure_compensation;
-      document.getElementById('param_kelvin').value = par.temperature_kelvin;
-      document.getElementById('param_highlights').value = par.highlights_recovery;
-      document.getElementById('param_shadows').value = par.shadows_lift;
-      document.getElementById('param_led').value = par.stage_led_tint_suppression;
-      document.getElementById('param_skin').value = par.skin_tone_protection_strength;
+      if (par.exposure_compensation !== undefined) document.getElementById('param_exposure').value = par.exposure_compensation;
+      if (par.temperature_kelvin !== undefined) document.getElementById('param_kelvin').value = par.temperature_kelvin;
+      if (par.tint !== undefined) document.getElementById('param_tint').value = par.tint;
+      if (par.contrast !== undefined) document.getElementById('param_contrast').value = par.contrast;
+      if (par.highlights_recovery !== undefined) document.getElementById('param_highlights').value = par.highlights_recovery;
+      if (par.shadows_lift !== undefined) document.getElementById('param_shadows').value = par.shadows_lift;
+      if (par.saturation !== undefined) document.getElementById('param_saturation').value = par.saturation;
+      if (par.vibrance !== undefined) document.getElementById('param_vibrance').value = par.vibrance;
+      if (par.chromatic_aberration_fix !== undefined) document.getElementById('param_chromatic').value = par.chromatic_aberration_fix;
+      if (par.led_clipping_restoration !== undefined) document.getElementById('param_led_clip').value = par.led_clipping_restoration;
+      if (par.stage_led_tint_suppression !== undefined) document.getElementById('param_led').value = par.stage_led_tint_suppression;
+      if (par.vignette_correction !== undefined) document.getElementById('param_vignette').value = par.vignette_correction;
+      if (par.selective_denoise !== undefined) document.getElementById('param_denoise').value = par.selective_denoise;
+      if (par.skin_tone_protection_strength !== undefined) document.getElementById('param_skin').value = par.skin_tone_protection_strength;
+      if (par.f_stop_simulation !== undefined) setFStop(par.f_stop_simulation);
+      if (par.bokeh_smoothness !== undefined) document.getElementById('param_bokeh').value = par.bokeh_smoothness;
+      if (par.subject_microcontrast !== undefined) document.getElementById('param_microcontrast').value = par.subject_microcontrast;
 
-      applyManualSliders();
-    }
-
-    function updateSliderVal(id, val, suffix) {
-      document.getElementById(`val_${id}`).textContent = `${val}${suffix}`;
+      applyCurrentManualParams();
     }
 
     function setViewerMode(mode) {
@@ -1026,19 +1480,6 @@
 
       if (activeItem && activeItem.status === 'completed') {
         showProcessedViewer(activeItem);
-      }
-    }
-
-    function toggleSlidersAccordion() {
-      isAccordionOpen = !isAccordionOpen;
-      const body = document.getElementById('slidersBody');
-      const arrow = document.getElementById('accordionArrow');
-      if (isAccordionOpen) {
-        body.classList.remove('hidden');
-        arrow.style.transform = 'rotate(180deg)';
-      } else {
-        body.classList.add('hidden');
-        arrow.style.transform = 'rotate(0deg)';
       }
     }
 
@@ -1060,8 +1501,8 @@
 
       window.onmousemove = (e) => { if (isDragging) move(e.clientX); };
       window.ontouchmove = (e) => { if (isDragging && e.touches[0]) move(e.touches[0].clientX); };
-      window.onmouseup = () => isDragging = false;
-      window.ontouchend = () => isDragging = false;
+      window.onmouseup = () => { setTimeout(() => isDragging = false, 50); };
+      window.ontouchend = () => { setTimeout(() => isDragging = false, 50); };
     }
 
     function toggleServerModal() {
@@ -1103,7 +1544,7 @@
       if (!activeItem || !activeItem.processedBase64) return;
       const a = document.createElement('a');
       a.href = activeItem.processedBase64;
-      a.download = `enhanced_${activeItem.file.name}`;
+      a.download = `enhanced_dslr_${activeItem.file.name}`;
       a.click();
     }
   </script>

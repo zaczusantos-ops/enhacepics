@@ -1,6 +1,9 @@
 """
-ChurchPhoto Pro - Unified Deterministic Image Processor Pipeline
-Orchestrates the deterministic transformation steps and generates high-resolution output with metadata.
+ChurchPhoto Pro - Unified 3-Stage Deterministic DSLR Image Processor Pipeline
+Orchestrates:
+- Vertente 1: Cor, Iluminação & Estilo (Look Cinematográfico)
+- Vertente 2: Correção de Falhas, Anomalias de Lente & Luz Extrema
+- Vertente 3: Foco Óptico Profissional & Profundidade de Campo (Bokeh)
 """
 
 import time
@@ -18,15 +21,24 @@ from .color_curves import (
     apply_s_curve_contrast,
     apply_saturation,
 )
+from .optical_corrections import (
+    correct_chromatic_aberration,
+    restore_extreme_led_clipping,
+    correct_lens_vignetting_and_distortion,
+    apply_selective_denoise,
+)
+from .depth_bokeh import (
+    apply_optical_bokeh_and_dof,
+    apply_subject_microcontrast,
+)
 from .stage_lighting import attenuate_stage_led_spill
 from .skin_tones import protect_and_restore_skin_tones
-from .denoise_sharpen import apply_bilateral_denoise, apply_adaptive_unsharp_mask
 from .raw_loader import load_image_to_rgb_array
 
 
 class ChurchPhotoProcessor:
     """
-    High-performance deterministic post-processing pipeline for church event photography.
+    High-performance deterministic post-processing pipeline for church & event photography.
     """
 
     def process(
@@ -39,49 +51,47 @@ class ChurchPhotoProcessor:
         include_original_preview: bool = True
     ) -> Tuple[bytes, str, ProcessedImageMetadata, Optional[str]]:
         """
-        Executes the entire deterministic pipeline.
+        Executes the 3-stage DSLR processing pipeline.
         Returns:
             (processed_bytes, processed_base64, metadata, original_base64)
         """
         start_time = time.time()
 
-        # Step 1: Decode input image / RAW format to float32 [0..1]
+        # Step 0: Decode input image / RAW format to float32 [0..1]
         original_rgb, detected_format = load_image_to_rgb_array(image_bytes, filename)
         height, width, _ = original_rgb.shape
+        current = original_rgb.copy()
 
-        # Step 2: Denoise High-ISO noise (done early to prevent noise propagation)
-        current = apply_bilateral_denoise(
-            original_rgb,
-            denoise_strength=params.denoise_strength
-        )
-
-        # Step 3: Exposure Compensation
-        current = apply_exposure_compensation(
+        # =========================================================================
+        # VERTENTE 2: Correção de Falhas, Anomalias de Lente & Luz Extrema
+        # =========================================================================
+        
+        # Step 1: Selective Edge-preserving Denoising (High-ISO thermal noise reduction)
+        current = apply_selective_denoise(
             current,
-            ev=params.exposure_compensation
+            strength=params.selective_denoise
         )
 
-        # Step 4: White Balance (Kelvin) & Tint
-        current = apply_white_balance_and_tint(
+        # Step 2: Chromatic Aberration Fringe Suppression (Purple/Green halos around stage lights)
+        current = correct_chromatic_aberration(
             current,
-            kelvin=params.temperature_kelvin,
-            tint=params.tint
+            strength=params.chromatic_aberration_fix
         )
 
-        # Step 5: Highlights Recovery & Shadows Lift
-        current = apply_highlights_and_shadows(
+        # Step 3: Extreme Stage LED Highlight Clipping Reconstruction
+        current = restore_extreme_led_clipping(
             current,
-            highlights_recovery=params.highlights_recovery,
-            shadows_lift=params.shadows_lift
+            strength=params.led_clipping_restoration
         )
 
-        # Step 6: Contrast S-Curve
-        current = apply_s_curve_contrast(
+        # Step 4: Smartphone Lens Vignetting & Barrel Distortion Compensation
+        current = correct_lens_vignetting_and_distortion(
             current,
-            contrast=params.contrast
+            vignette_strength=params.vignette_correction,
+            distortion_strength=params.lens_distortion_correction
         )
 
-        # Step 7: Stage Lighting & LED Spill Mitigation
+        # Step 5: Stage LED Spill Mitigation on Ambient Atmosphere
         current = attenuate_stage_led_spill(
             current,
             stage_led_suppression=params.stage_led_tint_suppression,
@@ -89,27 +99,67 @@ class ChurchPhotoProcessor:
             red_magenta_attenuation=params.red_magenta_attenuation
         )
 
-        # Step 8: Saturation & Vibrance
-        current = apply_saturation(
+        # =========================================================================
+        # VERTENTE 1: Cor, Iluminação & Estilo (Look Cinematográfico/Culto)
+        # =========================================================================
+
+        # Step 6: Exposure Compensation with Soft Knee Rolloff
+        current = apply_exposure_compensation(
             current,
-            saturation=params.saturation
+            ev=params.exposure_compensation
         )
 
-        # Step 9: Skin Tone Melanin Protection & Restoration
+        # Step 7: White Balance (Kelvin) & Tint Balance
+        current = apply_white_balance_and_tint(
+            current,
+            kelvin=params.temperature_kelvin,
+            tint=params.tint
+        )
+
+        # Step 8: Highlights Recovery & Shadows Lift
+        current = apply_highlights_and_shadows(
+            current,
+            highlights_recovery=params.highlights_recovery,
+            shadows_lift=params.shadows_lift
+        )
+
+        # Step 9: Contrast S-Curve
+        current = apply_s_curve_contrast(
+            current,
+            contrast=params.contrast
+        )
+
+        # Step 10: Saturation & Vibrance
+        current = apply_saturation(
+            current,
+            saturation=params.saturation,
+            vibrance=params.vibrance
+        )
+
+        # Step 11: Skin Tone Melanin Protection & Natural Warmth
         current = protect_and_restore_skin_tones(
             processed_rgb=current,
             original_rgb=original_rgb,
             protection_strength=params.skin_tone_protection_strength
         )
 
-        # Step 10: Adaptive Unsharp Masking
-        current = apply_adaptive_unsharp_mask(
+        # =========================================================================
+        # VERTENTE 3: Foco Óptico Profissional & Profundidade de Campo (Bokeh)
+        # =========================================================================
+
+        # Step 12: Optical Bokeh Simulation & Subject Microcontrast Sharpening
+        current = apply_optical_bokeh_and_dof(
             current,
-            amount=params.unsharp_mask_amount,
-            radius=params.unsharp_mask_radius
+            focal_x=params.focal_point_x,
+            focal_y=params.focal_point_y,
+            f_stop=params.f_stop_simulation,
+            bokeh_smoothness=params.bokeh_smoothness,
+            subject_microcontrast=params.subject_microcontrast
         )
 
-        # Step 11: Export to output buffer
+        # =========================================================================
+        # EXPORTAÇÃO E METADADOS
+        # =========================================================================
         final_uint8 = np.clip(current * 255.0, 0, 255).astype(np.uint8)
         out_pil = Image.fromarray(final_uint8)
 
@@ -124,7 +174,7 @@ class ChurchPhotoProcessor:
         processed_bytes = out_buffer.getvalue()
         processed_base64 = f"data:image/{save_fmt.lower()};base64,{base64.b64encode(processed_bytes).decode('utf-8')}"
 
-        # Generate original preview base64 for before/after comparison
+        # Original preview base64
         original_base64 = None
         if include_original_preview:
             orig_pil = Image.fromarray((original_rgb * 255.0).astype(np.uint8))
@@ -132,7 +182,7 @@ class ChurchPhotoProcessor:
             orig_pil.save(orig_buffer, format="JPEG", quality=85)
             original_base64 = f"data:image/jpeg;base64,{base64.b64encode(orig_buffer.getvalue()).decode('utf-8')}"
 
-        # Calculate RGB Histogram
+        # RGB Histogram
         histogram = self._calculate_histogram(final_uint8)
 
         execution_time = (time.time() - start_time) * 1000.0

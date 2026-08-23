@@ -19,6 +19,9 @@ interface BeforeAfterSliderProps {
   filename?: string;
   aspectRatio?: string;
   className?: string;
+  focalPoint?: { x: number; y: number };
+  fStop?: number;
+  onFocalPointChange?: (x: number, y: number) => void;
 }
 
 export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
@@ -27,6 +30,9 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
   filename = "culto_processado.jpg",
   aspectRatio = "16/9",
   className = "",
+  focalPoint = { x: 0.5, y: 0.4 },
+  fStop = 2.8,
+  onFocalPointChange,
 }) => {
   const [sliderPosition, setSliderPosition] = useState<number>(50);
   const [isDragging, setIsDragging] = useState<boolean>(false);
@@ -194,6 +200,13 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
       <div
         ref={containerRef}
         className="relative w-full h-[520px] bg-church-950 select-none overflow-hidden cursor-crosshair flex items-center justify-center"
+        onClick={(e) => {
+          if (!containerRef.current || isDragging || !onFocalPointChange) return;
+          const rect = containerRef.current.getBoundingClientRect();
+          const clickX = Math.max(0.1, Math.min(0.9, (e.clientX - rect.left) / rect.width));
+          const clickY = Math.max(0.1, Math.min(0.9, (e.clientY - rect.top) / rect.height));
+          onFocalPointChange(clickX, clickY);
+        }}
         onMouseDown={(e) => {
           if (zoomLevel > 1) {
             setIsPanning(true);
@@ -231,9 +244,26 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
               />
             </div>
 
+            {/* Interactive Focal Reticle */}
+            <div
+              className="absolute z-20 pointer-events-none transition-all duration-200"
+              style={{
+                left: `${(focalPoint.x * 100).toFixed(1)}%`,
+                top: `${(focalPoint.y * 100).toFixed(1)}%`,
+                transform: "translate(-50%, -50%)",
+              }}
+            >
+              <div className="w-10 h-10 rounded-full border-2 border-amber-400 bg-amber-400/10 shadow-[0_0_15px_rgba(245,158,11,0.6)] flex items-center justify-center animate-pulse">
+                <div className="w-1.5 h-1.5 rounded-full bg-amber-300" />
+              </div>
+              <span className="absolute top-11 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-md bg-black/80 border border-amber-400/40 text-[9px] font-mono text-amber-300 whitespace-nowrap shadow-lg">
+                f/{fStop} · Foco DSLR
+              </span>
+            </div>
+
             {/* Draggable Divider Handle */}
             <div
-              className="absolute top-0 bottom-0 z-20 cursor-ew-resize flex items-center justify-center group"
+              className="absolute top-0 bottom-0 z-30 cursor-ew-resize flex items-center justify-center group"
               style={{ left: `${sliderPosition}%`, transform: "translateX(-50%)" }}
               onMouseDown={(e) => {
                 e.stopPropagation();
