@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChurchPhoto Pro - Pós-Processamento Fotográfico para Cultos e Eventos</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            church: {
+              950: '#090B10',
+              900: '#0F141C',
+              850: '#161D28',
+              800: '#1E2736',
+              700: '#2B374A',
+              600: '#3E4E68',
+              accent: '#3B82F6',
+              gold: '#F59E0B',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { background-color: #090B10; color: #F1F5F9; font-family: system-ui, -apple-system, sans-serif; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0F141C; }
+    ::-webkit-scrollbar-thumb { background: #2B374A; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3B82F6; }
+    .slider-divider { touch-action: none; user-select: none; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-blue-600 selection:text-white">
+
+  <!-- Header -->
+  <header class="sticky top-0 z-50 bg-church-950/90 backdrop-blur-md border-b border-church-800">
+    <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/25">
+          <i class="fa-solid fa-camera-retro text-lg"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base font-bold tracking-tight text-white">ChurchPhoto <span class="text-blue-400">Pro</span></h1>
+            <span class="px-2 py-0.5 rounded-full bg-blue-900/50 text-blue-300 text-[10px] font-mono border border-blue-700/50">v1.0</span>
+          </div>
+          <p class="text-[11px] text-slate-400">Pós-Processamento Fotográfico Eclesiástico Híbrido (IA Gemini + OpenCV)</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <div id="statusBadge" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-church-900 border border-church-800 text-xs">
+          <i class="fa-solid fa-wand-magic-sparkles text-amber-400 text-xs"></i>
+          <span class="text-slate-300">Gemini Vision:</span>
+          <span id="modelLabel" class="text-emerald-400 font-mono text-[11px] flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            gemini-2.5-flash
+          </span>
+        </div>
+
+        <button onclick="toggleKeyModal()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-church-900 hover:bg-church-850 border border-church-800 text-xs font-medium text-slate-300 hover:text-white transition-all">
+          <i class="fa-solid fa-key text-blue-400"></i>
+          <span class="hidden md:inline">Chave Gemini</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 py-6 flex-1 flex flex-col gap-6 w-full">
+
+    <!-- Presets Bar -->
+    <div class="p-4 rounded-2xl bg-church-900 border border-church-800 shadow-xl">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+          <i class="fa-solid fa-sparkles text-amber-400"></i> Presets de Culto & Eventos
+        </span>
+        <span class="text-[11px] text-slate-500">1-Clique para calibrar</span>
+      </div>
+      <div id="presetsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+        <!-- Injected via JS -->
+      </div>
+    </div>
+
+    <!-- Workspace Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+      <!-- Left Column: Upload & Queue -->
+      <div class="lg:col-span-4 flex flex-col gap-5">
+
+        <!-- Dropzone -->
+        <div id="dropzone" class="relative group cursor-pointer rounded-2xl border-2 border-dashed border-church-700 hover:border-blue-500/60 bg-church-900/60 hover:bg-church-850 p-6 flex flex-col items-center justify-center text-center transition-all">
+          <input type="file" id="fileInput" multiple accept="image/jpeg,image/png,image/webp,image/tiff,.cr2,.cr3,.nef,.arw,.dng" class="hidden">
+          <div class="w-14 h-14 mb-3 rounded-2xl bg-church-800 border border-church-700 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-all shadow-lg">
+            <i class="fa-solid fa-cloud-arrow-up text-2xl"></i>
+          </div>
+          <h3 class="text-sm font-semibold text-white mb-1">Arraste as fotos do culto aqui</h3>
+          <p class="text-xs text-slate-400 mb-3">Suporte a JPEG, PNG e RAW de câmeras</p>
+          <div class="flex flex-wrap gap-1.5 justify-center">
+            <span class="px-2 py-0.5 rounded bg-church-800 text-[10px] text-slate-400 font-mono border border-church-700">JPEG / PNG</span>
+            <span class="px-2 py-0.5 rounded bg-church-800 text-[10px] text-slate-400 font-mono border border-church-700">RAW DSLR</span>
+            <span class="px-2 py-0.5 rounded bg-blue-900/40 text-[10px] text-blue-300 font-mono border border-blue-800">IA Gemini</span>
+          </div>
+        </div>
+
+        <!-- Queue List -->
+        <div class="rounded-2xl bg-church-900 border border-church-800 p-4 shadow-xl">
+          <div class="flex items-center justify-between pb-3 border-b border-church-800">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300">
+              Fila de Fotos (<span id="queueCount">0</span>)
+            </h3>
+            <button id="processAllBtn" onclick="processAllInQueue()" disabled class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-semibold shadow-md transition-all flex items-center gap-1.5">
+              <i class="fa-solid fa-wand-magic-sparkles text-amber-300 text-xs"></i>
+              <span>Processar Todas</span>
+            </button>
+          </div>
+          <div id="queueList" class="flex flex-col gap-2 mt-3 max-h-72 overflow-y-auto pr-1">
+            <div class="text-center py-6 text-xs text-slate-500">Nenhuma foto carregada</div>
+          </div>
+        </div>
+
+        <!-- Rules Box -->
+        <div class="rounded-2xl bg-church-900/60 border border-church-800 p-4 text-xs text-slate-400">
+          <div class="font-semibold text-slate-200 flex items-center gap-1.5 mb-2">
+            <i class="fa-solid fa-shield-halved text-blue-400"></i> Diretrizes Fotográficas
+          </div>
+          <ul class="space-y-1.5 list-disc list-inside text-[11px] leading-relaxed text-slate-400">
+            <li>Preservação física de tons de pele humana (melanina).</li>
+            <li>Atenuação seletiva de contaminação de LEDs cênicos.</li>
+            <li>Sem distorções generativas faciais artificiais.</li>
+            <li>Renderização matemática com curvas determinísticas.</li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Inspector & Viewer -->
+      <div class="lg:col-span-8 flex flex-col gap-5">
+
+        <!-- Viewer Container -->
+        <div id="viewerContainer" class="flex flex-col rounded-2xl bg-church-900 border border-church-800 shadow-2xl overflow-hidden min-h-[520px]">
+          
+          <!-- Viewer Toolbar -->
+          <div class="flex items-center justify-between px-4 py-2.5 bg-church-950/80 border-b border-church-800">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span class="text-xs font-semibold uppercase tracking-wider text-slate-300">Comparador Antes / Depois</span>
+              <span id="activePhotoTitle" class="text-xs text-slate-500 font-mono hidden sm:inline"></span>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <div class="flex bg-church-900 p-1 rounded-xl border border-church-800 text-xs">
+                <button id="modeSliderBtn" onclick="setViewerMode('slider')" class="px-2.5 py-1 rounded-lg bg-blue-600 text-white font-medium">Divisão</button>
+                <button id="modeSideBtn" onclick="setViewerMode('side')" class="px-2.5 py-1 rounded-lg text-slate-400 hover:text-white font-medium">Lado a Lado</button>
+              </div>
+              <button id="downloadBtn" onclick="downloadCurrentProcessed()" disabled class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white text-xs font-semibold shadow-md flex items-center gap-1.5 transition-all">
+                <i class="fa-solid fa-download"></i>
+                <span class="hidden sm:inline">Baixar HD</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Main Viewport Canvas/Image Area -->
+          <div id="viewport" class="relative w-full h-[480px] bg-church-950 flex items-center justify-center overflow-hidden select-none">
+            <div id="emptyPrompt" class="flex flex-col items-center justify-center p-8 text-center text-slate-500">
+              <i class="fa-solid fa-images text-4xl mb-3 text-slate-700"></i>
+              <span class="text-sm font-semibold text-slate-400">Selecione uma foto da fila</span>
+              <p class="text-xs text-slate-600 mt-1">O comparador interativo Antes/Depois será exibido aqui.</p>
+            </div>
+
+            <!-- Slider Comparison Area -->
+            <div id="sliderWrapper" class="relative w-full h-full hidden">
+              <!-- After (Processed) -->
+              <img id="imgAfter" class="absolute inset-0 w-full h-full object-contain pointer-events-none" src="" alt="Depois">
+
+              <!-- Before (Original) with Clip Path -->
+              <div id="clipContainer" class="absolute inset-0 overflow-hidden pointer-events-none" style="clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);">
+                <img id="imgBefore" class="absolute inset-0 w-full h-full object-contain" src="" alt="Antes">
+              </div>
+
+              <!-- Draggable Divider Line -->
+              <div id="dividerLine" class="slider-divider absolute top-0 bottom-0 z-20 cursor-ew-resize flex items-center justify-center group" style="left: 50%; transform: translateX(-50%);">
+                <div class="w-[2px] h-full bg-white/80 group-hover:bg-blue-400 shadow-[0_0_10px_rgba(0,0,0,0.8)]"></div>
+                <div class="absolute w-8 h-8 rounded-full bg-church-900 border-2 border-white flex items-center justify-center text-white shadow-xl group-hover:scale-110 transition-all">
+                  <i class="fa-solid fa-arrows-left-right text-[10px]"></i>
+                </div>
+              </div>
+
+              <!-- Badges -->
+              <span class="absolute bottom-4 left-4 z-10 px-2.5 py-1 rounded bg-black/70 border border-white/10 text-[10px] font-mono text-slate-300 uppercase">Antes (Original)</span>
+              <span class="absolute bottom-4 right-4 z-10 px-2.5 py-1 rounded bg-blue-600/80 border border-blue-400/30 text-[10px] font-mono text-white uppercase flex items-center gap-1">
+                <i class="fa-solid fa-sparkles text-amber-300"></i> Depois (ChurchPhoto Pro)
+              </span>
+            </div>
+
+            <!-- Side by Side Area -->
+            <div id="sideBySideWrapper" class="grid grid-cols-2 w-full h-full gap-2 p-2 hidden">
+              <div class="relative rounded-xl overflow-hidden bg-church-900 border border-church-800 flex items-center justify-center">
+                <img id="imgSideBefore" class="w-full h-full object-contain" src="" alt="Antes">
+                <span class="absolute bottom-3 left-3 px-2 py-0.5 rounded bg-black/70 text-[10px] font-mono text-slate-300">Antes (Original)</span>
+              </div>
+              <div class="relative rounded-xl overflow-hidden bg-church-900 border border-church-800 flex items-center justify-center">
+                <img id="imgSideAfter" class="w-full h-full object-contain" src="" alt="Depois">
+                <span class="absolute bottom-3 right-3 px-2 py-0.5 rounded bg-blue-600/80 text-[10px] font-mono text-white">Depois (Tratada)</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Footer Telemetry -->
+          <div id="telemetryFooter" class="px-4 py-2 bg-church-950 border-t border-church-800 flex items-center justify-between text-[11px] text-slate-400">
+            <span id="telemetryText">Arraste o divisor para comparar os detalhes da foto.</span>
+            <span id="resolutionBadge" class="font-mono text-slate-500"></span>
+          </div>
+        </div>
+
+        <!-- Telemetry & Parameters Panel -->
+        <div id="parametersPanel" class="rounded-2xl bg-church-900 border border-church-800 p-5 shadow-xl hidden">
+          <div class="flex items-center justify-between pb-3 border-b border-church-800">
+            <div class="flex items-center gap-2">
+              <i class="fa-solid fa-sliders text-blue-400 text-sm"></i>
+              <h3 class="text-xs font-bold uppercase tracking-wider text-white">Telemetria & Ajuste Fino dos Pixels</h3>
+            </div>
+            <button onclick="reprocessActivePhoto()" class="px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-md flex items-center gap-1.5 transition-all">
+              <i class="fa-solid fa-rotate text-xs"></i>
+              <span>Aplicar Ajustes</span>
+            </button>
+          </div>
+
+          <!-- Diagnostic Summary -->
+          <div class="mt-4 p-3 rounded-xl bg-church-950 border border-church-800 text-xs">
+            <div class="flex items-center gap-1.5 text-blue-400 font-semibold mb-1">
+              <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i> Diagnóstico Colorimétrico do Gemini:
+            </div>
+            <p id="analysisSummary" class="text-slate-300 font-mono text-[11px] leading-relaxed"></p>
+            <div class="mt-2 flex flex-wrap gap-1.5">
+              <span id="lightingTag" class="px-2 py-0.5 rounded bg-blue-900/40 text-blue-300 border border-blue-800/40 text-[10px]"></span>
+              <span id="sceneTag" class="px-2 py-0.5 rounded bg-purple-900/40 text-purple-300 border border-purple-800/40 text-[10px]"></span>
+            </div>
+          </div>
+
+          <!-- Real-Time Sliders -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 text-xs">
+            
+            <!-- Exposure -->
+            <div>
+              <div class="flex justify-between text-slate-300 mb-1">
+                <span>Compensação de Exposição (EV)</span>
+                <span id="val_exposure" class="font-mono text-blue-400 font-bold">0.0 EV</span>
+              </div>
+              <input type="range" id="param_exposure" min="-2.0" max="2.0" step="0.05" oninput="updateSliderVal('exposure', this.value, ' EV')" class="w-full accent-blue-500">
+            </div>
+
+            <!-- Temperature Kelvin -->
+            <div>
+              <div class="flex justify-between text-slate-300 mb-1">
+                <span>Temperatura de Cor (Kelvin)</span>
+                <span id="val_kelvin" class="font-mono text-amber-400 font-bold">5500K</span>
+              </div>
+              <input type="range" id="param_kelvin" min="2500" max="9000" step="50" oninput="updateSliderVal('kelvin', this.value, 'K')" class="w-full accent-amber-500">
+            </div>
+
+            <!-- Highlights -->
+            <div>
+              <div class="flex justify-between text-slate-300 mb-1">
+                <span>Recuperação de Realces (Telões)</span>
+                <span id="val_highlights" class="font-mono text-blue-400 font-bold">40%</span>
+              </div>
+              <input type="range" id="param_highlights" min="0.0" max="1.0" step="0.05" oninput="updateSliderVal('highlights', Math.round(this.value*100), '%')" class="w-full accent-blue-500">
+            </div>
+
+            <!-- Shadows -->
+            <div>
+              <div class="flex justify-between text-slate-300 mb-1">
+                <span>Abertura de Sombras</span>
+                <span id="val_shadows" class="font-mono text-blue-400 font-bold">35%</span>
+              </div>
+              <input type="range" id="param_shadows" min="0.0" max="1.0" step="0.05" oninput="updateSliderVal('shadows', Math.round(this.value*100), '%')" class="w-full accent-blue-500">
+            </div>
+
+            <!-- Stage LED Suppression -->
+            <div>
+              <div class="flex justify-between text-purple-300 font-semibold mb-1">
+                <span>Atenuação de LEDs de Palco</span>
+                <span id="val_led" class="font-mono text-purple-400 font-bold">50%</span>
+              </div>
+              <input type="range" id="param_led" min="0.0" max="1.0" step="0.05" oninput="updateSliderVal('led', Math.round(this.value*100), '%')" class="w-full accent-purple-500">
+            </div>
+
+            <!-- Skin Protection -->
+            <div>
+              <div class="flex justify-between text-amber-300 font-semibold mb-1">
+                <span>Proteção de Tom de Pele (Melanina)</span>
+                <span id="val_skin" class="font-mono text-amber-400 font-bold">85%</span>
+              </div>
+              <input type="range" id="param_skin" min="0.0" max="1.0" step="0.05" oninput="updateSliderVal('skin', Math.round(this.value*100), '%')" class="w-full accent-amber-500">
+            </div>
+
+            <!-- Denoise -->
+            <div>
+              <div class="flex justify-between text-slate-300 mb-1">
+                <span>Redução de Ruído Alto-ISO</span>
+                <span id="val_denoise" class="font-mono text-blue-400 font-bold">25%</span>
+              </div>
+              <input type="range" id="param_denoise" min="0.0" max="1.0" step="0.05" oninput="updateSliderVal('denoise', Math.round(this.value*100), '%')" class="w-full accent-blue-500">
+            </div>
+
+            <!-- Sharpening -->
+            <div>
+              <div class="flex justify-between text-slate-300 mb-1">
+                <span>Nitidez Facial (Unsharp Mask)</span>
+                <span id="val_sharpen" class="font-mono text-blue-400 font-bold">0.6x</span>
+              </div>
+              <input type="range" id="param_sharpen" min="0.0" max="2.0" step="0.1" oninput="updateSliderVal('sharpen', this.value, 'x')" class="w-full accent-blue-500">
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Key Modal -->
+  <div id="keyModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm hidden">
+    <div class="w-full max-w-md bg-church-900 border border-church-800 rounded-2xl p-6 shadow-2xl">
+      <div class="flex items-center gap-2 mb-3">
+        <i class="fa-solid fa-key text-blue-400 text-lg"></i>
+        <h3 class="text-base font-bold text-white">Chave Gemini API (Google AI Studio)</h3>
+      </div>
+      <p class="text-xs text-slate-400 mb-4 leading-relaxed">
+        Insira sua chave de API para habilitar a análise estruturada em tempo real. A chave fica salva no seu navegador.
+      </p>
+      <input type="password" id="geminiKeyInput" placeholder="Cole sua chave AIzaSy..." class="w-full px-3.5 py-2.5 rounded-xl bg-church-950 border border-church-800 text-white font-mono text-xs focus:outline-none focus:border-blue-500 mb-5">
+      <div class="flex items-center justify-end gap-2">
+        <button onclick="toggleKeyModal()" class="px-4 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-church-800">Cancelar</button>
+        <button onclick="saveGeminiKey()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white shadow-lg">Salvar Chave</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Application Logic JS -->
+  <script>
+    let queue = [];
+    let activeItem = null;
+    let presets = [];
+    let viewerMode = 'slider';
+    let sliderPercent = 50;
+    let isDragging = false;
+
+    // Load initial health & presets
+    window.addEventListener('DOMContentLoaded', async () => {
+      const savedKey = localStorage.getItem('CHURCHPHOTO_GEMINI_KEY') || '';
+      document.getElementById('geminiKeyInput').value = savedKey;
+
+      try {
+        const resHealth = await fetch('/api/health');
+        if (resHealth.ok) {
+          const data = await resHealth.json();
+          document.getElementById('modelLabel').textContent = data.model;
+        }
+      } catch (e) {}
+
+      try {
+        const resPresets = await fetch('/api/presets');
+        if (resPresets.ok) {
+          const data = await resPresets.json();
+          presets = data.presets || [];
+          renderPresets();
+        }
+      } catch (e) {}
+
+      setupDropzone();
+      setupSliderEvents();
+    });
+
+    function toggleKeyModal() {
+      const modal = document.getElementById('keyModal');
+      modal.classList.toggle('hidden');
+    }
+
+    function saveGeminiKey() {
+      const key = document.getElementById('geminiKeyInput').value.trim();
+      localStorage.setItem('CHURCHPHOTO_GEMINI_KEY', key);
+      toggleKeyModal();
+    }
+
+    function renderPresets() {
+      const container = document.getElementById('presetsContainer');
+      container.innerHTML = presets.map(p => `
+        <button onclick="applyPreset('${p.id}')" class="p-3 rounded-xl bg-church-950/80 border border-church-800 hover:border-blue-500/60 hover:bg-church-850 text-left transition-all">
+          <div class="flex items-center gap-1.5 text-xs font-bold text-white mb-1">
+            <i class="fa-solid fa-sparkles text-amber-400 text-[10px]"></i> ${p.name}
+          </div>
+          <p class="text-[11px] text-slate-400 line-clamp-2">${p.description}</p>
+        </button>
+      `).join('');
+    }
+
+    function setupDropzone() {
+      const dropzone = document.getElementById('dropzone');
+      const fileInput = document.getElementById('fileInput');
+
+      dropzone.onclick = () => fileInput.click();
+      fileInput.onchange = (e) => handleFiles(e.target.files);
+
+      dropzone.ondragover = (e) => { e.preventDefault(); dropzone.classList.add('border-blue-500', 'bg-blue-500/10'); };
+      dropzone.ondragleave = () => { dropzone.classList.remove('border-blue-500', 'bg-blue-500/10'); };
+      dropzone.ondrop = (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('border-blue-500', 'bg-blue-500/10');
+        if (e.dataTransfer.files) handleFiles(e.dataTransfer.files);
+      };
+    }
+
+    function handleFiles(files) {
+      if (!files || files.length === 0) return;
+      Array.from(files).forEach(file => {
+        const item = {
+          id: Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+          file: file,
+          previewUrl: URL.createObjectURL(file),
+          status: 'idle',
+          processedBase64: null,
+          originalBase64: null,
+          metadata: null,
+          analysis: null,
+          currentParams: null
+        };
+        queue.push(item);
+      });
+      renderQueue();
+      if (!activeItem && queue.length > 0) {
+        selectQueueItem(queue[0].id);
+      }
+    }
+
+    function renderQueue() {
+      document.getElementById('queueCount').textContent = queue.length;
+      document.getElementById('processAllBtn').disabled = queue.length === 0;
+
+      const container = document.getElementById('queueList');
+      if (queue.length === 0) {
+        container.innerHTML = '<div class="text-center py-6 text-xs text-slate-500">Nenhuma foto carregada</div>';
+        return;
+      }
+
+      container.innerHTML = queue.map(item => {
+        const isSelected = activeItem && activeItem.id === item.id;
+        return `
+          <div onclick="selectQueueItem('${item.id}')" class="flex items-center justify-between p-2.5 rounded-xl border transition-all cursor-pointer ${
+            isSelected ? 'bg-blue-950/50 border-blue-500/80' : 'bg-church-950/60 border-church-800 hover:bg-church-850'
+          }">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <img src="${item.processedBase64 || item.previewUrl}" class="w-10 h-10 rounded-lg object-cover bg-church-800 shrink-0">
+              <div class="flex flex-col min-w-0">
+                <span class="text-xs font-semibold text-white truncate max-w-[140px]">${item.file.name}</span>
+                <span class="text-[10px] text-slate-400">${(item.file.size/(1024*1024)).toFixed(1)} MB</span>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-1.5">
+              ${item.status === 'idle' ? `<button onclick="event.stopPropagation(); processItem('${item.id}')" class="px-2 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-semibold">Processar</button>` : ''}
+              ${item.status === 'analyzing' ? `<span class="px-2 py-0.5 rounded bg-blue-900/60 text-blue-300 text-[10px] animate-pulse">Analisando...</span>` : ''}
+              ${item.status === 'completed' ? `<span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800 text-[10px]"><i class="fa-solid fa-check text-emerald-400"></i> HD</span>` : ''}
+              ${item.status === 'error' ? `<span class="px-2 py-0.5 rounded bg-red-950 text-red-300 text-[10px]">Erro</span>` : ''}
+              <button onclick="event.stopPropagation(); removeQueueItem('${item.id}')" class="p-1 text-slate-500 hover:text-red-400"><i class="fa-solid fa-trash-can text-xs"></i></button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function selectQueueItem(id) {
+      activeItem = queue.find(i => i.id === id);
+      renderQueue();
+      if (!activeItem) return;
+
+      document.getElementById('activePhotoTitle').textContent = `(${activeItem.file.name})`;
+
+      if (activeItem.status === 'completed' && activeItem.processedBase64) {
+        showProcessedViewer(activeItem);
+      } else {
+        document.getElementById('emptyPrompt').classList.remove('hidden');
+        document.getElementById('sliderWrapper').classList.add('hidden');
+        document.getElementById('sideBySideWrapper').classList.add('hidden');
+        document.getElementById('parametersPanel').classList.add('hidden');
+        document.getElementById('downloadBtn').disabled = true;
+      }
+    }
+
+    function showProcessedViewer(item) {
+      document.getElementById('emptyPrompt').classList.add('hidden');
+      document.getElementById('parametersPanel').classList.remove('hidden');
+      document.getElementById('downloadBtn').disabled = false;
+
+      document.getElementById('imgAfter').src = item.processedBase64;
+      document.getElementById('imgBefore').src = item.originalBase64 || item.previewUrl;
+      document.getElementById('imgSideBefore').src = item.originalBase64 || item.previewUrl;
+      document.getElementById('imgSideAfter').src = item.processedBase64;
+
+      if (viewerMode === 'slider') {
+        document.getElementById('sliderWrapper').classList.remove('hidden');
+        document.getElementById('sideBySideWrapper').classList.add('hidden');
+      } else {
+        document.getElementById('sliderWrapper').classList.add('hidden');
+        document.getElementById('sideBySideWrapper').classList.remove('hidden');
+      }
+
+      if (item.metadata) {
+        document.getElementById('resolutionBadge').textContent = `${item.metadata.width}x${item.metadata.height}px | ${item.metadata.execution_time_ms}ms`;
+      }
+
+      const p = item.currentParams || item.analysis;
+      if (p) {
+        document.getElementById('analysisSummary').textContent = p.analysis_summary || 'Calibração efetuada.';
+        document.getElementById('lightingTag').textContent = p.detected_lighting_condition || 'Palco';
+        document.getElementById('sceneTag').textContent = p.detected_scene_type || 'Culto';
+
+        document.getElementById('param_exposure').value = p.exposure_compensation;
+        document.getElementById('val_exposure').textContent = `${p.exposure_compensation > 0 ? '+' : ''}${p.exposure_compensation} EV`;
+
+        document.getElementById('param_kelvin').value = p.temperature_kelvin;
+        document.getElementById('val_kelvin').textContent = `${p.temperature_kelvin}K`;
+
+        document.getElementById('param_highlights').value = p.highlights_recovery;
+        document.getElementById('val_highlights').textContent = `${Math.round(p.highlights_recovery*100)}%`;
+
+        document.getElementById('param_shadows').value = p.shadows_lift;
+        document.getElementById('val_shadows').textContent = `${Math.round(p.shadows_lift*100)}%`;
+
+        document.getElementById('param_led').value = p.stage_led_tint_suppression;
+        document.getElementById('val_led').textContent = `${Math.round(p.stage_led_tint_suppression*100)}%`;
+
+        document.getElementById('param_skin').value = p.skin_tone_protection_strength;
+        document.getElementById('val_skin').textContent = `${Math.round(p.skin_tone_protection_strength*100)}%`;
+
+        document.getElementById('param_denoise').value = p.denoise_strength;
+        document.getElementById('val_denoise').textContent = `${Math.round(p.denoise_strength*100)}%`;
+
+        document.getElementById('param_sharpen').value = p.unsharp_mask_amount;
+        document.getElementById('val_sharpen').textContent = `${p.unsharp_mask_amount}x`;
+      }
+    }
+
+    async function processItem(id) {
+      const item = queue.find(i => i.id === id);
+      if (!item) return;
+
+      item.status = 'analyzing';
+      renderQueue();
+
+      const formData = new FormData();
+      formData.append('file', item.file);
+      formData.append('output_format', 'JPEG');
+      formData.append('output_quality', '92');
+
+      const headers = {};
+      const key = localStorage.getItem('CHURCHPHOTO_GEMINI_KEY');
+      if (key) headers['X-Gemini-Key'] = key;
+
+      try {
+        const response = await fetch('/api/analyze-and-process', {
+          method: 'POST',
+          body: formData,
+          headers
+        });
+
+        if (!response.ok) throw new Error('Falha no processamento');
+        const data = await response.json();
+
+        item.status = 'completed';
+        item.processedBase64 = data.image_base64;
+        item.originalBase64 = data.original_base64 || item.previewUrl;
+        item.metadata = data.metadata;
+        item.analysis = data.analysis;
+        item.currentParams = data.analysis;
+
+        renderQueue();
+        if (activeItem && activeItem.id === id) {
+          selectQueueItem(id);
+        }
+      } catch (err) {
+        item.status = 'error';
+        renderQueue();
+      }
+    }
+
+    async function processAllInQueue() {
+      for (const item of queue) {
+        if (item.status === 'idle' || item.status === 'error') {
+          await processItem(item.id);
+        }
+      }
+    }
+
+    function removeQueueItem(id) {
+      queue = queue.filter(i => i.id !== id);
+      if (activeItem && activeItem.id === id) {
+        activeItem = queue.length > 0 ? queue[0] : null;
+      }
+      renderQueue();
+      if (activeItem) selectQueueItem(activeItem.id);
+    }
+
+    async function reprocessActivePhoto() {
+      if (!activeItem || !activeItem.file) return;
+
+      const params = {
+        exposure_compensation: parseFloat(document.getElementById('param_exposure').value),
+        temperature_kelvin: parseInt(document.getElementById('param_kelvin').value),
+        tint: 0.0,
+        contrast: 1.1,
+        highlights_recovery: parseFloat(document.getElementById('param_highlights').value),
+        shadows_lift: parseFloat(document.getElementById('param_shadows').value),
+        saturation: 1.04,
+        stage_led_tint_suppression: parseFloat(document.getElementById('param_led').value),
+        blue_led_attenuation: parseFloat(document.getElementById('param_led').value) * 0.9,
+        red_magenta_attenuation: parseFloat(document.getElementById('param_led').value) * 0.8,
+        skin_tone_protection_strength: parseFloat(document.getElementById('param_skin').value),
+        denoise_strength: parseFloat(document.getElementById('param_denoise').value),
+        unsharp_mask_amount: parseFloat(document.getElementById('param_sharpen').value),
+        unsharp_mask_radius: 1.2,
+        detected_lighting_condition: activeItem.analysis?.detected_lighting_condition || 'Palco',
+        detected_scene_type: activeItem.analysis?.detected_scene_type || 'Culto',
+        analysis_summary: 'Ajuste manual aplicado.',
+        suggested_preset: 'Custom'
+      };
+
+      const formData = new FormData();
+      formData.append('file', activeItem.file);
+      formData.append('parameters_json', JSON.stringify(params));
+      formData.append('output_format', 'JPEG');
+      formData.append('output_quality', '92');
+
+      try {
+        const response = await fetch('/api/process-manual', { method: 'POST', body: formData });
+        if (!response.ok) throw new Error('Erro ao reprocessar');
+        const data = await response.json();
+
+        activeItem.processedBase64 = data.image_base64;
+        activeItem.metadata = data.metadata;
+        activeItem.currentParams = params;
+        showProcessedViewer(activeItem);
+      } catch (e) {
+        alert('Erro ao aplicar ajustes manuais.');
+      }
+    }
+
+    function applyPreset(presetId) {
+      const p = presets.find(x => x.id === presetId);
+      if (!p || !activeItem || activeItem.status !== 'completed') return;
+
+      const par = p.params;
+      document.getElementById('param_exposure').value = par.exposure_compensation;
+      document.getElementById('param_kelvin').value = par.temperature_kelvin;
+      document.getElementById('param_highlights').value = par.highlights_recovery;
+      document.getElementById('param_shadows').value = par.shadows_lift;
+      document.getElementById('param_led').value = par.stage_led_tint_suppression;
+      document.getElementById('param_skin').value = par.skin_tone_protection_strength;
+      document.getElementById('param_denoise').value = par.denoise_strength;
+      document.getElementById('param_sharpen').value = par.unsharp_mask_amount;
+
+      reprocessActivePhoto();
+    }
+
+    function updateSliderVal(id, val, suffix) {
+      document.getElementById(`val_${id}`).textContent = `${val}${suffix}`;
+    }
+
+    function setViewerMode(mode) {
+      viewerMode = mode;
+      document.getElementById('modeSliderBtn').className = mode === 'slider' ? 'px-2.5 py-1 rounded-lg bg-blue-600 text-white font-medium' : 'px-2.5 py-1 rounded-lg text-slate-400 hover:text-white font-medium';
+      document.getElementById('modeSideBtn').className = mode === 'side' ? 'px-2.5 py-1 rounded-lg bg-blue-600 text-white font-medium' : 'px-2.5 py-1 rounded-lg text-slate-400 hover:text-white font-medium';
+
+      if (activeItem && activeItem.status === 'completed') {
+        showProcessedViewer(activeItem);
+      }
+    }
+
+    function setupSliderEvents() {
+      const divider = document.getElementById('dividerLine');
+      const clip = document.getElementById('clipContainer');
+      const wrapper = document.getElementById('sliderWrapper');
+
+      const move = (clientX) => {
+        const rect = wrapper.getBoundingClientRect();
+        const x = clientX - rect.left;
+        sliderPercent = Math.max(0, Math.min(100, (x / rect.width) * 100));
+        divider.style.left = `${sliderPercent}%`;
+        clip.style.clipPath = `polygon(0 0, ${sliderPercent}% 0, ${sliderPercent}% 100%, 0 100%)`;
+      };
+
+      divider.onmousedown = () => isDragging = true;
+      divider.ontouchstart = () => isDragging = true;
+
+      window.onmousemove = (e) => { if (isDragging) move(e.clientX); };
+      window.ontouchmove = (e) => { if (isDragging && e.touches[0]) move(e.touches[0].clientX); };
+      window.onmouseup = () => isDragging = false;
+      window.ontouchend = () => isDragging = false;
+    }
+
+    function downloadCurrentProcessed() {
+      if (!activeItem || !activeItem.processedBase64) return;
+      const a = document.createElement('a');
+      a.href = activeItem.processedBase64;
+      a.download = `enhanced_${activeItem.file.name}`;
+      a.click();
+    }
+  </script>
+</body>
+</html>
