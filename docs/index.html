@@ -2,7 +2,7 @@
 <html lang="pt-BR" class="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>ChurchPhoto Pro - Pós-Processamento Fotográfico para Cultos e Eventos</title>
   
   <!-- Tailwind CSS CDN -->
@@ -14,383 +14,418 @@
         extend: {
           colors: {
             church: {
-              950: '#090B10',
-              900: '#0F141C',
-              850: '#161D28',
-              800: '#1E2736',
-              700: '#2B374A',
-              600: '#3E4E68',
+              950: '#07090E',
+              900: '#0E131F',
+              850: '#151C2C',
+              800: '#1D263B',
+              700: '#2A3753',
+              600: '#3D4F75',
               accent: '#3B82F6',
               gold: '#F59E0B',
             }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
           }
         }
       }
     }
   </script>
-  <!-- FontAwesome Icons -->
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- FontAwesome 6 Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
-    body { background-color: #090B10; color: #F1F5F9; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #0F141C; }
-    ::-webkit-scrollbar-thumb { background: #2B374A; border-radius: 4px; }
+    * { -webkit-tap-highlight-color: transparent; }
+    body { background-color: #07090E; color: #F1F5F9; font-family: 'Inter', sans-serif; }
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: #0E131F; }
+    ::-webkit-scrollbar-thumb { background: #2A3753; border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: #3B82F6; }
     .slider-divider { touch-action: none; user-select: none; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
-<body class="min-h-screen flex flex-col selection:bg-blue-600 selection:text-white">
+<body class="min-h-screen flex flex-col selection:bg-blue-600 selection:text-white pb-24 md:pb-8">
 
-  <!-- Top Header Navigation -->
-  <header class="sticky top-0 z-50 bg-church-950/90 backdrop-blur-xl border-b border-church-800">
-    <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/25">
-          <i class="fa-solid fa-camera-retro text-lg"></i>
+  <!-- Mobile-First Sticky Header -->
+  <header class="sticky top-0 z-50 bg-church-950/95 backdrop-blur-xl border-b border-church-800/80 px-4 py-3">
+    <div class="max-w-6xl mx-auto flex items-center justify-between">
+      <!-- Logo & Title -->
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-600/30">
+          <i class="fa-solid fa-camera-retro text-base sm:text-lg"></i>
         </div>
         <div>
-          <div class="flex items-center gap-2">
-            <h1 class="text-base font-bold tracking-tight text-white">ChurchPhoto <span class="text-blue-400">Pro</span></h1>
-            <span class="px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 text-[10px] font-mono border border-emerald-800 flex items-center gap-1">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-              Live GitHub Pages
+          <div class="flex items-center gap-1.5">
+            <h1 class="text-sm sm:text-base font-bold tracking-tight text-white">ChurchPhoto <span class="text-blue-400">Pro</span></h1>
+            <span class="px-1.5 py-0.2 bg-emerald-950 text-emerald-400 border border-emerald-800/80 text-[9px] font-mono rounded-full flex items-center gap-1">
+              <span class="w-1 h-1 rounded-full bg-emerald-400 animate-ping"></span>
+              IA Pro
             </span>
           </div>
-          <p class="text-[11px] text-slate-400">Pós-Processamento Eclesiástico 100% Client-Side (IA Gemini + Engine Matemática de Pixels)</p>
+          <p class="text-[10px] sm:text-[11px] text-slate-400 truncate max-w-[200px] sm:max-w-none">
+            Tratamento fotográfico para cultos e eventos
+          </p>
         </div>
       </div>
 
-      <div class="flex items-center gap-2 sm:gap-3">
-        <div id="aiStatusPill" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-church-900 border border-church-800 text-xs">
-          <i class="fa-solid fa-brain text-purple-400 text-xs"></i>
-          <span class="text-slate-300 font-medium">Modelo IA:</span>
-          <select id="modelSelector" onchange="changeModel(this.value)" class="bg-church-950 border border-church-700 rounded-lg px-2 py-0.5 text-[11px] font-mono text-emerald-400 focus:outline-none">
-            <option value="gemini-2.5-pro">Gemini 2.5 Pro (Máximo Raciocínio)</option>
-            <option value="gemini-1.5-pro">Gemini 1.5 Pro (Avançado)</option>
-            <option value="gemini-2.5-flash">Gemini 2.5 Flash (Ultra Rápido)</option>
-          </select>
-        </div>
-
-        <button onclick="toggleServerModal()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-church-900 hover:bg-church-850 border border-church-800 text-xs font-medium text-slate-300 hover:text-white transition-all shadow-sm">
-          <i class="fa-solid fa-server text-emerald-400"></i>
-          <span class="hidden md:inline">Servidor Seguro</span>
+      <!-- Quick Action Buttons -->
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        <button onclick="toggleServerModal()" class="px-2.5 py-1.5 rounded-xl bg-church-900 hover:bg-church-850 border border-church-800 text-[11px] font-medium text-slate-300 hover:text-white transition-all flex items-center gap-1.5 shadow-sm" title="Status do Servidor">
+          <i class="fa-solid fa-circle-check text-emerald-400 text-xs"></i>
+          <span class="hidden sm:inline">Servidor Ativo</span>
         </button>
 
-        <button onclick="toggleKeyModal()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-church-900 hover:bg-church-850 border border-church-800 text-xs font-medium text-slate-300 hover:text-white transition-all shadow-sm">
-          <i class="fa-solid fa-key text-blue-400"></i>
-          <span class="hidden md:inline">Chave Gemini</span>
+        <button onclick="toggleKeyModal()" class="p-2 sm:px-2.5 sm:py-1.5 rounded-xl bg-church-900 hover:bg-church-850 border border-church-800 text-xs text-slate-400 hover:text-white transition-all" title="Configurações de Chave">
+          <i class="fa-solid fa-gear"></i>
         </button>
-
-        <a href="https://github.com/zaczusantos-ops/enhacepics" target="_blank" rel="noopener noreferrer" class="p-2 rounded-xl bg-church-900 hover:bg-church-850 border border-church-800 text-slate-400 hover:text-white transition-all" title="Ver no GitHub">
-          <i class="fa-brands fa-github text-base"></i>
-        </a>
       </div>
     </div>
   </header>
 
-  <!-- Main Content Layout -->
-  <main class="max-w-7xl mx-auto px-4 py-6 flex-1 flex flex-col gap-6 w-full">
+  <!-- Main Container -->
+  <main class="max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-6 flex-1 flex flex-col gap-4 sm:gap-6 w-full">
 
-    <!-- Church Presets Bar -->
-    <div class="p-4 rounded-2xl bg-church-900 border border-church-800 shadow-xl">
-      <div class="flex items-center justify-between mb-2">
-        <span class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-          <i class="fa-solid fa-sparkles text-amber-400"></i> Presets de Culto & Eventos (1-Clique)
-        </span>
-        <span class="text-[11px] text-slate-500">Calibração instantânea</span>
+    <!-- STEP 1: MOBILE HERO UPLOAD ACTION -->
+    <div class="rounded-2xl sm:rounded-3xl bg-gradient-to-b from-church-900 to-church-950 border border-church-800 p-4 sm:p-6 shadow-2xl relative overflow-hidden">
+      <!-- Glow Effect -->
+      <div class="absolute -top-20 right-0 w-64 h-32 bg-blue-500/10 blur-3xl pointer-events-none"></div>
+
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="text-center sm:text-left">
+          <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-950/70 border border-blue-800/60 text-blue-300 text-[10px] sm:text-xs font-semibold mb-2">
+            <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i>
+            Análise Inteligente com Gemini 2.5 Pro
+          </div>
+          <h2 class="text-lg sm:text-xl font-bold text-white leading-tight">
+            Envie a foto do culto e receba em padrão profissional
+          </h2>
+          <p class="text-xs text-slate-400 mt-1 max-w-md">
+            Correção de luzes de palco (LEDs azuis/magentas), preservação de pele e redução de ruído.
+          </p>
+        </div>
+
+        <!-- Big Dedicated Mobile Upload Buttons -->
+        <div class="w-full sm:w-auto flex flex-col sm:flex-row items-center gap-2.5 shrink-0">
+          <input type="file" id="fileInput" multiple accept="image/*,.cr2,.cr3,.nef,.arw,.dng" class="hidden">
+          
+          <!-- Primary Upload Button -->
+          <button
+            onclick="document.getElementById('fileInput').click()"
+            class="w-full sm:w-auto px-6 py-3.5 sm:py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold text-sm shadow-xl shadow-blue-600/30 active:scale-95 transition-all flex items-center justify-center gap-2.5 cursor-pointer"
+          >
+            <i class="fa-solid fa-image text-base"></i>
+            <span>Escolher da Galeria</span>
+          </button>
+
+          <!-- Native Camera Capture Button for Mobile -->
+          <button
+            onclick="triggerCamera()"
+            class="w-full sm:w-auto px-5 py-3.5 sm:py-3 rounded-xl bg-church-800 hover:bg-church-700 border border-church-700 text-slate-200 font-semibold text-sm active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <i class="fa-solid fa-camera text-blue-400"></i>
+            <span class="sm:hidden">Tirar Foto com a Câmera</span>
+            <span class="hidden sm:inline">Câmera</span>
+          </button>
+          <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden">
+        </div>
       </div>
-      <div id="presetsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+
+      <!-- Quick Upload Queue Counter Pill (if items exist) -->
+      <div id="queueStatsBanner" class="mt-4 pt-3 border-t border-church-800/80 flex items-center justify-between text-xs hidden">
+        <span class="text-slate-300 font-medium flex items-center gap-1.5">
+          <i class="fa-solid fa-layer-group text-blue-400"></i>
+          <span id="queueStatsText">0 fotos na fila</span>
+        </span>
+        <button id="batchProcessBtn" onclick="processAllInQueue()" class="px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-semibold text-[11px] flex items-center gap-1 shadow transition-all">
+          <i class="fa-solid fa-play text-[10px]"></i> Processar Lote
+        </button>
+      </div>
+    </div>
+
+    <!-- PRESETS CAROUSEL (Touch Scrollable on Mobile) -->
+    <div class="flex flex-col gap-2">
+      <div class="flex items-center justify-between px-1">
+        <span class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+          <i class="fa-solid fa-sliders text-amber-400"></i> Presets de Culto
+        </span>
+        <span class="text-[10px] text-slate-500 font-mono">Deslize para ver mais ➔</span>
+      </div>
+
+      <!-- Scrollable Presets List -->
+      <div id="presetsContainer" class="flex gap-2.5 overflow-x-auto pb-1.5 pt-0.5 no-scrollbar scroll-smooth">
         <!-- Injected via JS -->
       </div>
     </div>
 
-    <!-- Main Workspace Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+    <!-- QUEUE HORIZONTAL THUMBNAIL STRIP (When files loaded) -->
+    <div id="thumbnailsStrip" class="flex flex-col gap-2 hidden">
+      <span class="text-xs font-bold uppercase tracking-wider text-slate-400 px-1">Fotos Carregadas</span>
+      <div id="thumbnailsList" class="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+        <!-- Injected thumbnails via JS -->
+      </div>
+    </div>
 
-      <!-- Left Column: Upload, Batch Queue & Guidelines -->
-      <div class="lg:col-span-4 flex flex-col gap-5">
-
-        <!-- Drag & Drop Zone -->
-        <div id="dropzone" class="relative group cursor-pointer rounded-2xl border-2 border-dashed border-church-700 hover:border-blue-500/60 bg-church-900/60 hover:bg-church-850 p-6 flex flex-col items-center justify-center text-center transition-all">
-          <input type="file" id="fileInput" multiple accept="image/jpeg,image/png,image/webp,image/tiff" class="hidden">
-          <div class="w-14 h-14 mb-3 rounded-2xl bg-church-800 border border-church-700 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-all shadow-lg shadow-black/40">
-            <i class="fa-solid fa-cloud-arrow-up text-2xl"></i>
-          </div>
-          <h3 class="text-sm font-semibold text-white mb-1">Arraste fotos do culto ou clique</h3>
-          <p class="text-xs text-slate-400 mb-3">Upload múltiplo (JPEG, PNG, WebP, TIFF)</p>
-          <div class="flex flex-wrap gap-1.5 justify-center">
-            <span class="px-2 py-0.5 rounded bg-church-800 text-[10px] text-slate-300 font-mono border border-church-700">JPEG / PNG</span>
-            <span class="px-2 py-0.5 rounded bg-blue-900/40 text-[10px] text-blue-300 font-mono border border-blue-800">IA Gemini</span>
-            <span class="px-2 py-0.5 rounded bg-emerald-900/40 text-[10px] text-emerald-300 font-mono border border-emerald-800">100% no Navegador</span>
-          </div>
+    <!-- STEP 2: INTERACTIVE BEFORE / AFTER VIEWER -->
+    <div id="viewerContainer" class="flex flex-col rounded-2xl sm:rounded-3xl bg-church-900 border border-church-800 shadow-2xl overflow-hidden min-h-[420px] sm:min-h-[500px]">
+      
+      <!-- Viewer Top Bar -->
+      <div class="flex items-center justify-between px-3.5 py-2.5 bg-church-950 border-b border-church-800">
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+          <span id="activePhotoTitle" class="text-xs font-semibold text-white truncate max-w-[150px] sm:max-w-xs">
+            Comparador Interativo
+          </span>
         </div>
 
-        <!-- Processing Queue -->
-        <div class="rounded-2xl bg-church-900 border border-church-800 p-4 shadow-xl">
-          <div class="flex items-center justify-between pb-3 border-b border-church-800">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-              <i class="fa-solid fa-layer-group text-blue-400"></i> Fila de Fotos (<span id="queueCount">0</span>)
-            </h3>
-            <button id="processAllBtn" onclick="processAllInQueue()" disabled class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-semibold shadow-md transition-all flex items-center gap-1.5">
-              <i class="fa-solid fa-wand-magic-sparkles text-amber-300 text-xs"></i>
-              <span>Processar Lote</span>
-            </button>
+        <div class="flex items-center gap-2">
+          <!-- Switch mode -->
+          <div class="flex bg-church-950 p-0.5 rounded-lg border border-church-800 text-xs">
+            <button id="modeSliderBtn" onclick="setViewerMode('slider')" class="px-2 py-1 rounded-md bg-blue-600 text-white font-medium text-[11px]">Divisão</button>
+            <button id="modeSideBtn" onclick="setViewerMode('side')" class="px-2 py-1 rounded-md text-slate-400 hover:text-white font-medium text-[11px]">Lado a Lado</button>
           </div>
-          <div id="queueList" class="flex flex-col gap-2 mt-3 max-h-72 overflow-y-auto pr-1">
-            <div class="text-center py-6 text-xs text-slate-500">Nenhuma foto carregada</div>
+
+          <!-- Download Button -->
+          <button id="downloadBtn" onclick="downloadCurrentProcessed()" disabled class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-30 disabled:cursor-not-allowed text-white text-xs font-semibold shadow-md flex items-center gap-1.5 transition-all">
+            <i class="fa-solid fa-download"></i>
+            <span class="hidden sm:inline">Baixar HD</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Image Viewport Area -->
+      <div id="viewport" class="relative w-full h-[360px] sm:h-[480px] bg-church-950 flex items-center justify-center overflow-hidden select-none touch-none">
+        
+        <!-- Empty State -->
+        <div id="emptyPrompt" class="flex flex-col items-center justify-center p-6 text-center text-slate-500">
+          <div class="w-16 h-16 rounded-2xl bg-church-900 border border-church-800 flex items-center justify-center text-slate-600 mb-3 shadow-inner">
+            <i class="fa-solid fa-images text-2xl"></i>
           </div>
+          <span class="text-sm font-semibold text-slate-300">Nenhuma foto selecionada</span>
+          <p class="text-xs text-slate-500 mt-1 max-w-xs">
+            Clique no botão acima para escolher ou tirar uma foto do culto.
+          </p>
         </div>
 
-        <!-- Protection Rules -->
-        <div class="rounded-2xl bg-church-900/60 border border-church-800 p-4 text-xs text-slate-400">
-          <div class="font-semibold text-slate-200 flex items-center gap-1.5 mb-2">
-            <i class="fa-solid fa-shield-halved text-blue-400"></i> Diretrizes Fotográficas
+        <!-- Processing Loader State -->
+        <div id="processingLoader" class="flex flex-col items-center justify-center p-6 text-center text-blue-400 hidden">
+          <div class="relative w-16 h-16 mb-3">
+            <div class="w-16 h-16 rounded-full border-4 border-blue-600/30 border-t-blue-500 animate-spin"></div>
+            <div class="absolute inset-0 flex items-center justify-center">
+              <i class="fa-solid fa-wand-magic-sparkles text-amber-400 text-lg animate-pulse"></i>
+            </div>
           </div>
-          <ul class="space-y-1.5 list-disc list-inside text-[11px] leading-relaxed text-slate-400">
-            <li>Preservação matemática de tons de pele humana (melanina).</li>
-            <li>Atenuação seletiva de contaminação de LEDs cênicos (Azul/Magenta).</li>
-            <li>Sem distorções generativas faciais artificiais.</li>
-            <li>Renderização de alta fidelidade sem perda de resolução.</li>
-          </ul>
+          <span class="text-sm font-bold text-white" id="loaderTitle">Tratando com Gemini 2.5 Pro...</span>
+          <p class="text-xs text-slate-400 mt-1" id="loaderSubtitle">Analisando iluminação cênica e tons de pele</p>
+        </div>
+
+        <!-- Slider Comparison View (Processed & Original) -->
+        <div id="sliderWrapper" class="relative w-full h-full hidden">
+          <!-- After (Processed) -->
+          <img id="imgAfter" class="absolute inset-0 w-full h-full object-contain pointer-events-none" src="" alt="Depois">
+
+          <!-- Before (Original) with Clip Path -->
+          <div id="clipContainer" class="absolute inset-0 overflow-hidden pointer-events-none" style="clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);">
+            <img id="imgBefore" class="absolute inset-0 w-full h-full object-contain" src="" alt="Antes">
+          </div>
+
+          <!-- Draggable Divider Line & Touch Knob -->
+          <div id="dividerLine" class="slider-divider absolute top-0 bottom-0 z-20 cursor-ew-resize flex items-center justify-center group" style="left: 50%; transform: translateX(-50%);">
+            <div class="w-[2.5px] h-full bg-white group-hover:bg-blue-400 shadow-[0_0_12px_rgba(0,0,0,0.9)]"></div>
+            <div class="absolute w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-church-900/90 border-2 border-white flex items-center justify-center text-white shadow-2xl group-hover:scale-110 active:scale-95 transition-all backdrop-blur-sm">
+              <i class="fa-solid fa-arrows-left-right text-xs"></i>
+            </div>
+          </div>
+
+          <!-- Floating Comparison Tags -->
+          <span class="absolute bottom-3 left-3 z-10 px-2 py-0.5 rounded-md bg-black/75 border border-white/10 text-[10px] font-mono text-slate-300 uppercase">
+            Antes
+          </span>
+          <span class="absolute bottom-3 right-3 z-10 px-2 py-0.5 rounded-md bg-blue-600/90 border border-blue-400/30 text-[10px] font-mono text-white uppercase flex items-center gap-1">
+            <i class="fa-solid fa-sparkles text-amber-300 text-[9px]"></i> Depois (HD)
+          </span>
+        </div>
+
+        <!-- Side by Side View -->
+        <div id="sideBySideWrapper" class="grid grid-cols-2 w-full h-full gap-1.5 p-1.5 hidden">
+          <div class="relative rounded-xl overflow-hidden bg-church-900 border border-church-800 flex items-center justify-center">
+            <img id="imgSideBefore" class="w-full h-full object-contain" src="" alt="Antes">
+            <span class="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/75 text-[9px] font-mono text-slate-300">Antes</span>
+          </div>
+          <div class="relative rounded-xl overflow-hidden bg-church-900 border border-church-800 flex items-center justify-center">
+            <img id="imgSideAfter" class="w-full h-full object-contain" src="" alt="Depois">
+            <span class="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-blue-600/90 text-[9px] font-mono text-white">Depois</span>
+          </div>
         </div>
 
       </div>
 
-      <!-- Right Column: Interactive Inspector, Before/After Slider & Real-time Sliders -->
-      <div class="lg:col-span-8 flex flex-col gap-5">
+      <!-- Telemetry Info -->
+      <div id="telemetryFooter" class="px-3.5 py-2 bg-church-950 border-t border-church-800 flex items-center justify-between text-[11px] text-slate-400">
+        <span id="telemetryText">Toque e arraste para comparar o acabamento</span>
+        <span id="resolutionBadge" class="font-mono text-slate-500 text-[10px]"></span>
+      </div>
+    </div>
 
-        <!-- Viewer Container -->
-        <div id="viewerContainer" class="flex flex-col rounded-2xl bg-church-900 border border-church-800 shadow-2xl overflow-hidden min-h-[520px]">
+    <!-- STEP 3: ADVANCED FINE-TUNING ACCORDION (Clean & Collapsible for Mobile) -->
+    <div id="parametersPanel" class="rounded-2xl sm:rounded-3xl bg-church-900 border border-church-800 p-4 sm:p-5 shadow-xl hidden">
+      <div class="flex items-center justify-between cursor-pointer" onclick="toggleSlidersAccordion()">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-sliders text-blue-400 text-sm"></i>
+          <h3 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-white">
+            Ajustes Manuais & Telemetria
+          </h3>
+        </div>
+        <div class="flex items-center gap-2">
+          <span id="accordionArrow" class="text-slate-400 text-xs transition-transform duration-200">
+            <i class="fa-solid fa-chevron-down"></i>
+          </span>
+        </div>
+      </div>
+
+      <!-- Accordion Body -->
+      <div id="slidersBody" class="mt-4 flex flex-col gap-4">
+        
+        <!-- Gemini Diagnostic Summary -->
+        <div class="p-3 rounded-xl bg-church-950 border border-church-800 text-xs">
+          <div class="flex items-center gap-1.5 text-blue-400 font-semibold mb-1">
+            <i class="fa-solid fa-brain text-amber-400"></i> Diagnóstico da Cena (Gemini 2.5 Pro):
+          </div>
+          <p id="analysisSummary" class="text-slate-300 font-mono text-[11px] leading-relaxed"></p>
+          <div class="mt-2 flex flex-wrap gap-1.5">
+            <span id="lightingTag" class="px-2 py-0.5 rounded bg-blue-900/40 text-blue-300 border border-blue-800/40 text-[10px]"></span>
+            <span id="sceneTag" class="px-2 py-0.5 rounded bg-purple-900/40 text-purple-300 border border-purple-800/40 text-[10px]"></span>
+          </div>
+        </div>
+
+        <!-- Sliders Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs pt-1">
           
-          <!-- Viewer Toolbar -->
-          <div class="flex items-center justify-between px-4 py-2.5 bg-church-950/80 border-b border-church-800">
-            <div class="flex items-center gap-2">
-              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span class="text-xs font-semibold uppercase tracking-wider text-slate-300">Comparador Antes / Depois</span>
-              <span id="activePhotoTitle" class="text-xs text-slate-500 font-mono hidden sm:inline"></span>
+          <!-- Exposure -->
+          <div>
+            <div class="flex justify-between text-slate-300 mb-1">
+              <span>Compensação de Exposição</span>
+              <span id="val_exposure" class="font-mono text-blue-400 font-bold">0.0 EV</span>
             </div>
-
-            <div class="flex items-center gap-2">
-              <div class="flex bg-church-900 p-1 rounded-xl border border-church-800 text-xs">
-                <button id="modeSliderBtn" onclick="setViewerMode('slider')" class="px-2.5 py-1 rounded-lg bg-blue-600 text-white font-medium">Divisão</button>
-                <button id="modeSideBtn" onclick="setViewerMode('side')" class="px-2.5 py-1 rounded-lg text-slate-400 hover:text-white font-medium">Lado a Lado</button>
-              </div>
-              <button id="downloadBtn" onclick="downloadCurrentProcessed()" disabled class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white text-xs font-semibold shadow-md flex items-center gap-1.5 transition-all">
-                <i class="fa-solid fa-download"></i>
-                <span class="hidden sm:inline">Baixar HD</span>
-              </button>
-            </div>
+            <input type="range" id="param_exposure" min="-2.0" max="2.0" step="0.05" oninput="updateSliderVal('exposure', this.value, ' EV')" class="w-full accent-blue-500 h-2 bg-church-950 rounded-lg">
           </div>
 
-          <!-- Main Viewport Canvas / Image Area -->
-          <div id="viewport" class="relative w-full h-[480px] bg-church-950 flex items-center justify-center overflow-hidden select-none">
-            <div id="emptyPrompt" class="flex flex-col items-center justify-center p-8 text-center text-slate-500">
-              <i class="fa-solid fa-images text-4xl mb-3 text-slate-700"></i>
-              <span class="text-sm font-semibold text-slate-400">Carregue ou selecione uma foto</span>
-              <p class="text-xs text-slate-600 mt-1">O comparador interativo Antes / Depois será renderizado aqui.</p>
+          <!-- Temperature Kelvin -->
+          <div>
+            <div class="flex justify-between text-slate-300 mb-1">
+              <span>Temperatura de Cor (Kelvin)</span>
+              <span id="val_kelvin" class="font-mono text-amber-400 font-bold">5500K</span>
             </div>
-
-            <!-- Slider Comparison Area -->
-            <div id="sliderWrapper" class="relative w-full h-full hidden">
-              <!-- After (Processed) -->
-              <img id="imgAfter" class="absolute inset-0 w-full h-full object-contain pointer-events-none" src="" alt="Depois">
-
-              <!-- Before (Original) with Clip Path -->
-              <div id="clipContainer" class="absolute inset-0 overflow-hidden pointer-events-none" style="clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);">
-                <img id="imgBefore" class="absolute inset-0 w-full h-full object-contain" src="" alt="Antes">
-              </div>
-
-              <!-- Draggable Divider Line -->
-              <div id="dividerLine" class="slider-divider absolute top-0 bottom-0 z-20 cursor-ew-resize flex items-center justify-center group" style="left: 50%; transform: translateX(-50%);">
-                <div class="w-[2px] h-full bg-white/90 group-hover:bg-blue-400 shadow-[0_0_10px_rgba(0,0,0,0.8)]"></div>
-                <div class="absolute w-8 h-8 rounded-full bg-church-900 border-2 border-white flex items-center justify-center text-white shadow-xl group-hover:scale-110 transition-all">
-                  <i class="fa-solid fa-arrows-left-right text-[10px]"></i>
-                </div>
-              </div>
-
-              <!-- Floating Labels -->
-              <span class="absolute bottom-4 left-4 z-10 px-2.5 py-1 rounded bg-black/70 border border-white/10 text-[10px] font-mono text-slate-300 uppercase">Antes (Original)</span>
-              <span class="absolute bottom-4 right-4 z-10 px-2.5 py-1 rounded bg-blue-600/80 border border-blue-400/30 text-[10px] font-mono text-white uppercase flex items-center gap-1">
-                <i class="fa-solid fa-sparkles text-amber-300"></i> Depois (ChurchPhoto Pro)
-              </span>
-            </div>
-
-            <!-- Side by Side Area -->
-            <div id="sideBySideWrapper" class="grid grid-cols-2 w-full h-full gap-2 p-2 hidden">
-              <div class="relative rounded-xl overflow-hidden bg-church-900 border border-church-800 flex items-center justify-center">
-                <img id="imgSideBefore" class="w-full h-full object-contain" src="" alt="Antes">
-                <span class="absolute bottom-3 left-3 px-2 py-0.5 rounded bg-black/70 text-[10px] font-mono text-slate-300">Antes (Original)</span>
-              </div>
-              <div class="relative rounded-xl overflow-hidden bg-church-900 border border-church-800 flex items-center justify-center">
-                <img id="imgSideAfter" class="w-full h-full object-contain" src="" alt="Depois">
-                <span class="absolute bottom-3 right-3 px-2 py-0.5 rounded bg-blue-600/80 text-[10px] font-mono text-white">Depois (Tratada)</span>
-              </div>
-            </div>
-
+            <input type="range" id="param_kelvin" min="2500" max="9000" step="50" oninput="updateSliderVal('kelvin', this.value, 'K')" class="w-full accent-amber-500 h-2 bg-church-950 rounded-lg">
           </div>
 
-          <!-- Footer Telemetry -->
-          <div id="telemetryFooter" class="px-4 py-2 bg-church-950 border-t border-church-800 flex items-center justify-between text-[11px] text-slate-400">
-            <span id="telemetryText">Arraste a linha para inspecionar os detalhes corrigidos.</span>
-            <span id="resolutionBadge" class="font-mono text-slate-500"></span>
+          <!-- Highlights -->
+          <div>
+            <div class="flex justify-between text-slate-300 mb-1">
+              <span>Recuperação de Realces (Telões)</span>
+              <span id="val_highlights" class="font-mono text-blue-400 font-bold">40%</span>
+            </div>
+            <input type="range" id="param_highlights" min="0.0" max="1.0" step="0.05" oninput="updateSliderVal('highlights', Math.round(this.value*100), '%')" class="w-full accent-blue-500 h-2 bg-church-950 rounded-lg">
           </div>
+
+          <!-- Shadows -->
+          <div>
+            <div class="flex justify-between text-slate-300 mb-1">
+              <span>Abertura de Sombras</span>
+              <span id="val_shadows" class="font-mono text-blue-400 font-bold">35%</span>
+            </div>
+            <input type="range" id="param_shadows" min="0.0" max="1.0" step="0.05" oninput="updateSliderVal('shadows', Math.round(this.value*100), '%')" class="w-full accent-blue-500 h-2 bg-church-950 rounded-lg">
+          </div>
+
+          <!-- Stage LED Suppression -->
+          <div>
+            <div class="flex justify-between text-purple-300 font-semibold mb-1">
+              <span>Atenuação de LEDs de Palco</span>
+              <span id="val_led" class="font-mono text-purple-400 font-bold">50%</span>
+            </div>
+            <input type="range" id="param_led" min="0.0" max="1.0" step="0.05" oninput="updateSliderVal('led', Math.round(this.value*100), '%')" class="w-full accent-purple-500 h-2 bg-church-950 rounded-lg">
+          </div>
+
+          <!-- Skin Protection -->
+          <div>
+            <div class="flex justify-between text-amber-300 font-semibold mb-1">
+              <span>Proteção de Tom de Pele (Melanina)</span>
+              <span id="val_skin" class="font-mono text-amber-400 font-bold">85%</span>
+            </div>
+            <input type="range" id="param_skin" min="0.0" max="1.0" step="0.05" oninput="updateSliderVal('skin', Math.round(this.value*100), '%')" class="w-full accent-amber-500 h-2 bg-church-950 rounded-lg">
+          </div>
+
         </div>
 
-        <!-- Telemetry & Parameters Panel -->
-        <div id="parametersPanel" class="rounded-2xl bg-church-900 border border-church-800 p-5 shadow-xl hidden">
-          <div class="flex items-center justify-between pb-3 border-b border-church-800">
-            <div class="flex items-center gap-2">
-              <i class="fa-solid fa-sliders text-blue-400 text-sm"></i>
-              <h3 class="text-xs font-bold uppercase tracking-wider text-white">Telemetria & Calibração dos Pixels</h3>
-            </div>
-            <button onclick="applyManualSliders()" class="px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-md flex items-center gap-1.5 transition-all">
-              <i class="fa-solid fa-rotate text-xs"></i>
-              <span>Aplicar Ajustes</span>
-            </button>
-          </div>
-
-          <!-- Diagnostic Summary -->
-          <div class="mt-4 p-3 rounded-xl bg-church-950 border border-church-800 text-xs">
-            <div class="flex items-center gap-1.5 text-blue-400 font-semibold mb-1">
-              <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i> Diagnóstico da Cena (IA Gemini):
-            </div>
-            <p id="analysisSummary" class="text-slate-300 font-mono text-[11px] leading-relaxed"></p>
-            <div class="mt-2 flex flex-wrap gap-1.5">
-              <span id="lightingTag" class="px-2 py-0.5 rounded bg-blue-900/40 text-blue-300 border border-blue-800/40 text-[10px]"></span>
-              <span id="sceneTag" class="px-2 py-0.5 rounded bg-purple-900/40 text-purple-300 border border-purple-800/40 text-[10px]"></span>
-            </div>
-          </div>
-
-          <!-- Real-Time Sliders -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 text-xs">
-            
-            <!-- Exposure -->
-            <div>
-              <div class="flex justify-between text-slate-300 mb-1">
-                <span>Compensação de Exposição (EV)</span>
-                <span id="val_exposure" class="font-mono text-blue-400 font-bold">0.0 EV</span>
-              </div>
-              <input type="range" id="param_exposure" min="-2.0" max="2.0" step="0.05" oninput="updateSliderVal('exposure', this.value, ' EV')" class="w-full accent-blue-500">
-            </div>
-
-            <!-- Temperature Kelvin -->
-            <div>
-              <div class="flex justify-between text-slate-300 mb-1">
-                <span>Temperatura de Cor (Kelvin)</span>
-                <span id="val_kelvin" class="font-mono text-amber-400 font-bold">5500K</span>
-              </div>
-              <input type="range" id="param_kelvin" min="2500" max="9000" step="50" oninput="updateSliderVal('kelvin', this.value, 'K')" class="w-full accent-amber-500">
-            </div>
-
-            <!-- Highlights -->
-            <div>
-              <div class="flex justify-between text-slate-300 mb-1">
-                <span>Recuperação de Realces (Telões)</span>
-                <span id="val_highlights" class="font-mono text-blue-400 font-bold">40%</span>
-              </div>
-              <input type="range" id="param_highlights" min="0.0" max="1.0" step="0.05" oninput="updateSliderVal('highlights', Math.round(this.value*100), '%')" class="w-full accent-blue-500">
-            </div>
-
-            <!-- Shadows -->
-            <div>
-              <div class="flex justify-between text-slate-300 mb-1">
-                <span>Abertura de Sombras</span>
-                <span id="val_shadows" class="font-mono text-blue-400 font-bold">35%</span>
-              </div>
-              <input type="range" id="param_shadows" min="0.0" max="1.0" step="0.05" oninput="updateSliderVal('shadows', Math.round(this.value*100), '%')" class="w-full accent-blue-500">
-            </div>
-
-            <!-- Stage LED Suppression -->
-            <div>
-              <div class="flex justify-between text-purple-300 font-semibold mb-1">
-                <span>Atenuação de LEDs de Palco</span>
-                <span id="val_led" class="font-mono text-purple-400 font-bold">50%</span>
-              </div>
-              <input type="range" id="param_led" min="0.0" max="1.0" step="0.05" oninput="updateSliderVal('led', Math.round(this.value*100), '%')" class="w-full accent-purple-500">
-            </div>
-
-            <!-- Skin Protection -->
-            <div>
-              <div class="flex justify-between text-amber-300 font-semibold mb-1">
-                <span>Proteção de Tom de Pele (Melanina)</span>
-                <span id="val_skin" class="font-mono text-amber-400 font-bold">85%</span>
-              </div>
-              <input type="range" id="param_skin" min="0.0" max="1.0" step="0.05" oninput="updateSliderVal('skin', Math.round(this.value*100), '%')" class="w-full accent-amber-500">
-            </div>
-
-            <!-- Denoise -->
-            <div>
-              <div class="flex justify-between text-slate-300 mb-1">
-                <span>Redução de Ruído Alto-ISO</span>
-                <span id="val_denoise" class="font-mono text-blue-400 font-bold">25%</span>
-              </div>
-              <input type="range" id="param_denoise" min="0.0" max="1.0" step="0.05" oninput="updateSliderVal('denoise', Math.round(this.value*100), '%')" class="w-full accent-blue-500">
-            </div>
-
-            <!-- Sharpening -->
-            <div>
-              <div class="flex justify-between text-slate-300 mb-1">
-                <span>Nitidez Facial (Unsharp Mask)</span>
-                <span id="val_sharpen" class="font-mono text-blue-400 font-bold">0.6x</span>
-              </div>
-              <input type="range" id="param_sharpen" min="0.0" max="2.0" step="0.1" oninput="updateSliderVal('sharpen', this.value, 'x')" class="w-full accent-blue-500">
-            </div>
-
-          </div>
-        </div>
+        <button onclick="applyManualSliders()" class="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-md flex items-center justify-center gap-1.5 transition-all mt-1 cursor-pointer active:scale-98">
+          <i class="fa-solid fa-rotate text-xs"></i>
+          <span>Aplicar Ajustes Manuais</span>
+        </button>
 
       </div>
     </div>
+
   </main>
+
+  <!-- MOBILE STICKY FLOATING ACTION BAR (When photo is processed) -->
+  <div id="mobileBottomBar" class="fixed bottom-0 left-0 right-0 z-40 bg-church-950/95 backdrop-blur-lg border-t border-church-800 p-3 flex items-center justify-between sm:hidden hidden">
+    <button onclick="document.getElementById('fileInput').click()" class="px-4 py-2.5 rounded-xl bg-church-800 border border-church-700 text-xs font-semibold text-slate-200 flex items-center gap-1.5">
+      <i class="fa-solid fa-plus text-blue-400"></i> Outra Foto
+    </button>
+    <button onclick="downloadCurrentProcessed()" class="px-5 py-2.5 rounded-xl bg-emerald-600 active:bg-emerald-500 text-xs font-bold text-white flex items-center gap-1.5 shadow-lg shadow-emerald-600/30">
+      <i class="fa-solid fa-download"></i> Baixar Foto HD
+    </button>
+  </div>
 
   <!-- Server Backend Proxy Modal -->
   <div id="serverModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm hidden">
-    <div class="w-full max-w-md bg-church-900 border border-church-800 rounded-2xl p-6 shadow-2xl">
-      <div class="flex items-center gap-2 mb-3">
-        <i class="fa-solid fa-server text-emerald-400 text-lg"></i>
-        <h3 class="text-base font-bold text-white">Servidor Backend Proxy (Seguro)</h3>
+    <div class="w-full max-w-md bg-church-900 border border-church-800 rounded-2xl p-5 shadow-2xl">
+      <div class="flex items-center gap-2 mb-2">
+        <i class="fa-solid fa-server text-emerald-400 text-base"></i>
+        <h3 class="text-base font-bold text-white">Servidor Backend Seguro</h3>
       </div>
-      <p class="text-xs text-slate-400 mb-4 leading-relaxed">
-        Conecte a um servidor seguro (ex: Render, Railway, Vercel ou Localhost). A sua chave de API fica protegida no servidor e todos os voluntários usam automaticamente sem digitar chave!
+      <p class="text-xs text-slate-400 mb-3 leading-relaxed">
+        Seu servidor no Render está conectado e ativo. Todos os voluntários usam o Gemini 2.5 Pro automaticamente!
       </p>
-      <input type="text" id="serverUrlInput" placeholder="Ex: https://churchphoto-api.onrender.com ou http://localhost:8000" class="w-full px-3.5 py-2.5 rounded-xl bg-church-950 border border-church-800 text-white font-mono text-xs focus:outline-none focus:border-emerald-500 mb-5">
+      <input type="text" id="serverUrlInput" value="https://enhacepics.onrender.com" class="w-full px-3 py-2 rounded-xl bg-church-950 border border-church-800 text-white font-mono text-xs focus:outline-none focus:border-emerald-500 mb-4">
       <div class="flex items-center justify-end gap-2">
-        <button onclick="toggleServerModal()" class="px-4 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-church-800">Cancelar</button>
-        <button onclick="saveServerUrl()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg">Salvar Servidor</button>
+        <button onclick="toggleServerModal()" class="px-3.5 py-1.5 rounded-xl text-xs font-medium text-slate-400 hover:text-white">Fechar</button>
+        <button onclick="saveServerUrl()" class="px-4 py-1.5 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md">Salvar</button>
       </div>
     </div>
   </div>
 
-  <!-- Gemini Key Modal -->
+  <!-- Key Modal -->
   <div id="keyModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm hidden">
-    <div class="w-full max-w-md bg-church-900 border border-church-800 rounded-2xl p-6 shadow-2xl">
-      <div class="flex items-center gap-2 mb-3">
-        <i class="fa-solid fa-key text-blue-400 text-lg"></i>
-        <h3 class="text-base font-bold text-white">Chave Gemini API (Google AI Studio)</h3>
+    <div class="w-full max-w-md bg-church-900 border border-church-800 rounded-2xl p-5 shadow-2xl">
+      <div class="flex items-center gap-2 mb-2">
+        <i class="fa-solid fa-key text-blue-400 text-base"></i>
+        <h3 class="text-base font-bold text-white">Chave Gemini API (Opcional)</h3>
       </div>
-      <p class="text-xs text-slate-400 mb-4 leading-relaxed">
-        Insira sua chave de API para habilitar a análise em tempo real com os modelos Pro ou Flash. A chave fica salva no seu navegador.
+      <p class="text-xs text-slate-400 mb-3 leading-relaxed">
+        Como o servidor Render já está configurado, você não precisa inserir chave aqui, a menos que queira processar offline no navegador.
       </p>
-      <input type="password" id="geminiKeyInput" placeholder="Cole sua chave AIzaSy..." class="w-full px-3.5 py-2.5 rounded-xl bg-church-950 border border-church-800 text-white font-mono text-xs focus:outline-none focus:border-blue-500 mb-5">
+      <input type="password" id="geminiKeyInput" placeholder="Cole sua chave AIzaSy..." class="w-full px-3 py-2 rounded-xl bg-church-950 border border-church-800 text-white font-mono text-xs focus:outline-none focus:border-blue-500 mb-4">
       <div class="flex items-center justify-end gap-2">
-        <button onclick="toggleKeyModal()" class="px-4 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-church-800">Cancelar</button>
-        <button onclick="saveGeminiKey()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white shadow-lg">Salvar Chave</button>
+        <button onclick="toggleKeyModal()" class="px-3.5 py-1.5 rounded-xl text-xs font-medium text-slate-400 hover:text-white">Fechar</button>
+        <button onclick="saveGeminiKey()" class="px-4 py-1.5 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white shadow-md">Salvar</button>
       </div>
     </div>
   </div>
 
-  <!-- Offscreen canvas for deterministic pixel processing -->
-  <canvas id="offscreenCanvas" class="hidden"></canvas>
-
-  <!-- Core JavaScript: Deterministic Math Engine + Gemini API Client -->
+  <!-- CORE LOGIC JS -->
   <script>
-    // Church Presets Database
     const PRESETS = [
       {
         id: "culto_contemporaneo",
-        name: "Culto Contemporâneo (LEDs de Palco)",
-        description: "Atenua LEDs azuis/magentas, preserva calor de pele e recupera realces dos telões.",
+        name: "Louvor / LEDs de Palco",
+        icon: "fa-bolt text-amber-400",
+        description: "Atenua luzes azuis e magentas, mantendo o calor da pele.",
         params: {
           exposure_compensation: 0.25,
           temperature_kelvin: 5400,
@@ -405,15 +440,16 @@
           skin_tone_protection_strength: 0.90,
           denoise_strength: 0.30,
           unsharp_mask_amount: 0.75,
-          detected_lighting_condition: "Palco contemporâneo com refletores LED e contraluz",
+          detected_lighting_condition: "Palco com iluminação cênica de LED",
           detected_scene_type: "Louvor / Palco",
-          analysis_summary: "Equilíbrio de iluminação de palco com atenuação de LEDs cênicos e proteção de pele."
+          analysis_summary: "Atenuação de LEDs de palco e preservação natural de tom de pele."
         }
       },
       {
         id: "culto_tradicional",
-        name: "Culto Tradicional (Madeira & Luz Quente)",
-        description: "Corrige sombras do púlpito, equilibra tons tungstênio/madeira e dá acabamento nítido.",
+        name: "Púlpito / Palavra",
+        icon: "fa-church text-blue-400",
+        description: "Equilibra sombras no rosto do pregador e tons quentes.",
         params: {
           exposure_compensation: 0.15,
           temperature_kelvin: 5100,
@@ -428,15 +464,16 @@
           skin_tone_protection_strength: 0.85,
           denoise_strength: 0.20,
           unsharp_mask_amount: 0.60,
-          detected_lighting_condition: "Iluminação incandescente e madeira com sombras suaves",
+          detected_lighting_condition: "Luz de púlpito e ambiente",
           detected_scene_type: "Púlpito / Pregador",
-          analysis_summary: "Balanço tonal suave para púlpito tradicional sem saturação excessiva."
+          analysis_summary: "Balanço suave para o púlpito com alta nitidez facial."
         }
       },
       {
         id: "louvor_adoracao",
-        name: "Louvor & Adoração (Baixa Luz / Intimista)",
-        description: "Forte redução de ruído de alto ISO, realce de sombras do público e suavização de contraste.",
+        name: "Baixa Luz / Adoração",
+        icon: "fa-moon text-purple-400",
+        description: "Reduz ruído de celular escuro e ilumina a congregação.",
         params: {
           exposure_compensation: 0.50,
           temperature_kelvin: 5600,
@@ -451,15 +488,16 @@
           skin_tone_protection_strength: 0.92,
           denoise_strength: 0.50,
           unsharp_mask_amount: 0.80,
-          detected_lighting_condition: "Ambiente de adoração em penumbra com focos de luz",
-          detected_scene_type: "Congregação / Público",
-          analysis_summary: "Ganho de exposição e redução de ruído ISO para momentos de adoração."
+          detected_lighting_condition: "Ambiente de adoração em penumbra",
+          detected_scene_type: "Congregação",
+          analysis_summary: "Abertura de sombras e redução de ruído ISO de baixa luz."
         }
       },
       {
         id: "evento_externo",
-        name: "Batismo & Evento Externo (Luz Natural)",
-        description: "Cores naturais, céu equilibrado e tons de pele radiantes para eventos diurnos.",
+        name: "Batismo / Área Aberta",
+        icon: "fa-sun text-amber-400",
+        description: "Cores vivas e céu nítido para eventos diurnos.",
         params: {
           exposure_compensation: 0.0,
           temperature_kelvin: 5800,
@@ -474,9 +512,9 @@
           skin_tone_protection_strength: 0.80,
           denoise_strength: 0.10,
           unsharp_mask_amount: 0.50,
-          detected_lighting_condition: "Luz natural do dia / Área aberta",
+          detected_lighting_condition: "Luz natural do dia",
           detected_scene_type: "Batismo / Cerimônia",
-          analysis_summary: "Fotografia diurna nítida com preservação de céu e folhagens."
+          analysis_summary: "Calibração de luz solar com realce de cores naturais."
         }
       }
     ];
@@ -486,86 +524,30 @@
     let viewerMode = 'slider';
     let sliderPercent = 50;
     let isDragging = false;
-    let selectedModel = localStorage.getItem('CHURCHPHOTO_GEMINI_MODEL') || 'gemini-2.5-pro';
     const DEFAULT_SERVER_URL = 'https://enhacepics.onrender.com';
     let serverUrl = localStorage.getItem('CHURCHPHOTO_SERVER_URL') || DEFAULT_SERVER_URL;
+    let isAccordionOpen = false;
 
-    // Initialization
     window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('serverUrlInput').value = serverUrl;
       const savedKey = localStorage.getItem('CHURCHPHOTO_GEMINI_KEY') || '';
       document.getElementById('geminiKeyInput').value = savedKey;
-      document.getElementById('serverUrlInput').value = serverUrl;
-      document.getElementById('modelSelector').value = selectedModel;
-      
-      updateStatusBadges();
+
       renderPresets();
-      setupDropzone();
+      setupFileInputs();
       setupSliderEvents();
     });
 
-    function changeModel(newModel) {
-      selectedModel = newModel;
-      localStorage.setItem('CHURCHPHOTO_GEMINI_MODEL', newModel);
+    function triggerCamera() {
+      document.getElementById('cameraInput').click();
     }
 
-    function toggleServerModal() {
-      const modal = document.getElementById('serverModal');
-      modal.classList.toggle('hidden');
-    }
-
-    function saveServerUrl() {
-      const url = document.getElementById('serverUrlInput').value.trim();
-      serverUrl = url;
-      localStorage.setItem('CHURCHPHOTO_SERVER_URL', url);
-      updateStatusBadges();
-      toggleServerModal();
-    }
-
-    function toggleKeyModal() {
-      const modal = document.getElementById('keyModal');
-      modal.classList.toggle('hidden');
-    }
-
-    function saveGeminiKey() {
-      const key = document.getElementById('geminiKeyInput').value.trim();
-      localStorage.setItem('CHURCHPHOTO_GEMINI_KEY', key);
-      updateStatusBadges();
-      toggleKeyModal();
-    }
-
-    function updateStatusBadges() {
-      const el = document.getElementById('modelSelector');
-      if (serverUrl && serverUrl.length > 5) {
-        el.className = 'bg-emerald-950 border border-emerald-700 rounded-lg px-2 py-0.5 text-[11px] font-mono text-emerald-300 focus:outline-none';
-      }
-    }
-
-    function renderPresets() {
-      const container = document.getElementById('presetsContainer');
-      container.innerHTML = PRESETS.map(p => `
-        <button onclick="applyPreset('${p.id}')" class="p-3 rounded-xl bg-church-950/80 border border-church-800 hover:border-blue-500/60 hover:bg-church-850 text-left transition-all">
-          <div class="flex items-center gap-1.5 text-xs font-bold text-white mb-1">
-            <i class="fa-solid fa-sparkles text-amber-400 text-[10px]"></i> ${p.name}
-          </div>
-          <p class="text-[11px] text-slate-400 line-clamp-2">${p.description}</p>
-        </button>
-      `).join('');
-    }
-
-    function setupDropzone() {
-      const dropzone = document.getElementById('dropzone');
+    function setupFileInputs() {
       const fileInput = document.getElementById('fileInput');
+      const cameraInput = document.getElementById('cameraInput');
 
-      dropzone.onclick = () => fileInput.click();
       fileInput.onchange = (e) => handleFiles(e.target.files);
-
-      dropzone.ondragover = (e) => { e.preventDefault(); dropzone.classList.add('border-blue-500', 'bg-blue-500/10'); };
-      dropzone.ondragleave = () => { dropzone.classList.remove('border-blue-500', 'bg-blue-500/10'); };
-      dropzone.ondrop = (e) => {
-        e.preventDefault();
-        dropzone.classList.remove('border-blue-500', 'bg-blue-500/10');
-        if (e.dataTransfer.files) handleFiles(e.dataTransfer.files);
-      };
+      cameraInput.onchange = (e) => handleFiles(e.target.files);
     }
 
     function handleFiles(files) {
@@ -584,43 +566,58 @@
         };
         queue.push(item);
       });
-      renderQueue();
-      if (!activeItem && queue.length > 0) {
-        selectQueueItem(queue[0].id);
+
+      renderThumbnails();
+      updateQueueStats();
+      if (queue.length > 0) {
+        selectQueueItem(queue[queue.length - 1].id);
+        processItem(queue[queue.length - 1].id);
       }
     }
 
-    function renderQueue() {
-      document.getElementById('queueCount').textContent = queue.length;
-      document.getElementById('processAllBtn').disabled = queue.length === 0;
+    function updateQueueStats() {
+      const banner = document.getElementById('queueStatsBanner');
+      const text = document.getElementById('queueStatsText');
+      if (queue.length > 1) {
+        banner.classList.remove('hidden');
+        text.textContent = `${queue.length} fotos carregadas`;
+      } else {
+        banner.classList.add('hidden');
+      }
+    }
 
-      const container = document.getElementById('queueList');
-      if (queue.length === 0) {
-        container.innerHTML = '<div class="text-center py-6 text-xs text-slate-500">Nenhuma foto carregada</div>';
+    function renderPresets() {
+      const container = document.getElementById('presetsContainer');
+      container.innerHTML = PRESETS.map(p => `
+        <button onclick="applyPreset('${p.id}')" class="shrink-0 p-3 rounded-2xl bg-church-900 border border-church-800 hover:border-blue-500/60 active:bg-church-800 text-left transition-all w-[180px] sm:w-[220px]">
+          <div class="flex items-center gap-1.5 text-xs font-bold text-white mb-1">
+            <i class="fa-solid ${p.icon} text-xs"></i>
+            <span class="truncate">${p.name}</span>
+          </div>
+          <p class="text-[11px] text-slate-400 line-clamp-2 leading-tight">${p.description}</p>
+        </button>
+      `).join('');
+    }
+
+    function renderThumbnails() {
+      const strip = document.getElementById('thumbnailsStrip');
+      const container = document.getElementById('thumbnailsList');
+
+      if (queue.length <= 1) {
+        strip.classList.add('hidden');
         return;
       }
 
+      strip.classList.remove('hidden');
       container.innerHTML = queue.map(item => {
         const isSelected = activeItem && activeItem.id === item.id;
         return `
-          <div onclick="selectQueueItem('${item.id}')" class="flex items-center justify-between p-2.5 rounded-xl border transition-all cursor-pointer ${
-            isSelected ? 'bg-blue-950/50 border-blue-500/80' : 'bg-church-950/60 border-church-800 hover:bg-church-850'
+          <div onclick="selectQueueItem('${item.id}')" class="relative shrink-0 w-14 h-14 rounded-xl overflow-hidden cursor-pointer border-2 transition-all ${
+            isSelected ? 'border-blue-500 scale-105 shadow-md shadow-blue-500/30' : 'border-church-800 opacity-70 hover:opacity-100'
           }">
-            <div class="flex items-center gap-2.5 min-w-0">
-              <img src="${item.processedBase64 || item.previewUrl}" class="w-10 h-10 rounded-lg object-cover bg-church-800 shrink-0">
-              <div class="flex flex-col min-w-0">
-                <span class="text-xs font-semibold text-white truncate max-w-[140px]">${item.file.name}</span>
-                <span class="text-[10px] text-slate-400">${(item.file.size/(1024*1024)).toFixed(1)} MB</span>
-              </div>
-            </div>
-
-            <div class="flex items-center gap-1.5">
-              ${item.status === 'idle' ? `<button onclick="event.stopPropagation(); processItem('${item.id}')" class="px-2 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-semibold">Processar</button>` : ''}
-              ${item.status === 'analyzing' ? `<span class="px-2 py-0.5 rounded bg-blue-900/60 text-blue-300 text-[10px] animate-pulse">Analisando...</span>` : ''}
-              ${item.status === 'completed' ? `<span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800 text-[10px]"><i class="fa-solid fa-check text-emerald-400"></i> HD</span>` : ''}
-              ${item.status === 'error' ? `<span class="px-2 py-0.5 rounded bg-red-950 text-red-300 text-[10px]">Erro</span>` : ''}
-              <button onclick="event.stopPropagation(); removeQueueItem('${item.id}')" class="p-1 text-slate-500 hover:text-red-400"><i class="fa-solid fa-trash-can text-xs"></i></button>
-            </div>
+            <img src="${item.processedBase64 || item.previewUrl}" class="w-full h-full object-cover">
+            ${item.status === 'completed' ? '<span class="absolute top-0.5 right-0.5 w-2 h-2 rounded-full bg-emerald-400"></span>' : ''}
+            ${item.status === 'analyzing' ? '<span class="absolute inset-0 bg-blue-900/60 flex items-center justify-center"><i class="fa-solid fa-spinner animate-spin text-white text-xs"></i></span>' : ''}
           </div>
         `;
       }).join('');
@@ -628,26 +625,42 @@
 
     function selectQueueItem(id) {
       activeItem = queue.find(i => i.id === id);
-      renderQueue();
+      renderThumbnails();
       if (!activeItem) return;
 
-      document.getElementById('activePhotoTitle').textContent = `(${activeItem.file.name})`;
+      document.getElementById('activePhotoTitle').textContent = activeItem.file.name;
 
       if (activeItem.status === 'completed' && activeItem.processedBase64) {
         showProcessedViewer(activeItem);
+      } else if (activeItem.status === 'analyzing') {
+        showLoaderState("Tratando com IA Gemini 2.5 Pro...", "Calibrando exposição, tons de pele e LEDs");
       } else {
         document.getElementById('emptyPrompt').classList.remove('hidden');
         document.getElementById('sliderWrapper').classList.add('hidden');
         document.getElementById('sideBySideWrapper').classList.add('hidden');
         document.getElementById('parametersPanel').classList.add('hidden');
+        document.getElementById('processingLoader').classList.add('hidden');
         document.getElementById('downloadBtn').disabled = true;
+        document.getElementById('mobileBottomBar').classList.add('hidden');
       }
+    }
+
+    function showLoaderState(title, subtitle) {
+      document.getElementById('emptyPrompt').classList.add('hidden');
+      document.getElementById('sliderWrapper').classList.add('hidden');
+      document.getElementById('sideBySideWrapper').classList.add('hidden');
+      document.getElementById('processingLoader').classList.remove('hidden');
+      document.getElementById('loaderTitle').textContent = title;
+      document.getElementById('loaderSubtitle').textContent = subtitle;
+      document.getElementById('downloadBtn').disabled = true;
     }
 
     function showProcessedViewer(item) {
       document.getElementById('emptyPrompt').classList.add('hidden');
+      document.getElementById('processingLoader').classList.add('hidden');
       document.getElementById('parametersPanel').classList.remove('hidden');
       document.getElementById('downloadBtn').disabled = false;
+      document.getElementById('mobileBottomBar').classList.remove('hidden');
 
       document.getElementById('imgAfter').src = item.processedBase64;
       document.getElementById('imgBefore').src = item.originalBase64 || item.previewUrl;
@@ -668,7 +681,7 @@
 
       const p = item.currentParams || item.analysis;
       if (p) {
-        document.getElementById('analysisSummary').textContent = p.analysis_summary || 'Calibração efetuada.';
+        document.getElementById('analysisSummary').textContent = p.analysis_summary || 'Calibração realizada com sucesso.';
         document.getElementById('lightingTag').textContent = p.detected_lighting_condition || 'Palco';
         document.getElementById('sceneTag').textContent = p.detected_scene_type || 'Culto';
 
@@ -689,94 +702,7 @@
 
         document.getElementById('param_skin').value = p.skin_tone_protection_strength;
         document.getElementById('val_skin').textContent = `${Math.round(p.skin_tone_protection_strength*100)}%`;
-
-        document.getElementById('param_denoise').value = p.denoise_strength;
-        document.getElementById('val_denoise').textContent = `${Math.round(p.denoise_strength*100)}%`;
-
-        document.getElementById('param_sharpen').value = p.unsharp_mask_amount;
-        document.getElementById('val_sharpen').textContent = `${p.unsharp_mask_amount}x`;
       }
-    }
-
-    // Call Gemini API via Google AI Studio or Client-Side Heuristic Fallback
-    async function analyzeWithGeminiOrHeuristic(imgElement) {
-      const apiKey = localStorage.getItem('CHURCHPHOTO_GEMINI_KEY') || '';
-      const model = selectedModel || 'gemini-2.5-pro';
-
-      if (apiKey && apiKey.length > 10) {
-        try {
-          const thumbCanvas = document.createElement('canvas');
-          const thumbCtx = thumbCanvas.getContext('2d');
-          const maxDim = 800;
-          let w = imgElement.naturalWidth || imgElement.width;
-          let h = imgElement.naturalHeight || imgElement.height;
-          if (w > maxDim || h > maxDim) {
-            if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
-            else { w = Math.round((w * maxDim) / h); h = maxDim; }
-          }
-          thumbCanvas.width = w;
-          thumbCanvas.height = h;
-          thumbCtx.drawImage(imgElement, 0, 0, w, h);
-          const base64Data = thumbCanvas.toDataURL('image/jpeg', 0.8).split(',')[1];
-
-          const prompt = `Você é um Engenheiro de Colorimetria Fotográfica Sênior especializado em cultos e eventos. Analise esta foto e responda ESTRITAMENTE em JSON com o formato:
-          {
-            "exposure_compensation": 0.2,
-            "temperature_kelvin": 5400,
-            "highlights_recovery": 0.5,
-            "shadows_lift": 0.4,
-            "stage_led_tint_suppression": 0.6,
-            "skin_tone_protection_strength": 0.9,
-            "denoise_strength": 0.3,
-            "unsharp_mask_amount": 0.7,
-            "detected_lighting_condition": "Luz mista de palco",
-            "detected_scene_type": "Culto / Palco",
-            "analysis_summary": "Calibração com modelo avançado ${model}."
-          }`;
-
-          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{
-                parts: [
-                  { inline_data: { mime_type: "image/jpeg", data: base64Data } },
-                  { text: prompt }
-                ]
-              }],
-              generationConfig: {
-                response_mime_type: "application/json",
-                temperature: 0.2
-              }
-            })
-          });
-
-          if (response.ok) {
-            const result = await response.json();
-            const rawText = result.candidates[0].content.parts[0].text;
-            const parsed = JSON.parse(rawText);
-            return {
-              exposure_compensation: parsed.exposure_compensation ?? 0.2,
-              temperature_kelvin: parsed.temperature_kelvin ?? 5400,
-              contrast: 1.10,
-              highlights_recovery: parsed.highlights_recovery ?? 0.5,
-              shadows_lift: parsed.shadows_lift ?? 0.4,
-              saturation: 1.04,
-              stage_led_tint_suppression: parsed.stage_led_tint_suppression ?? 0.6,
-              skin_tone_protection_strength: parsed.skin_tone_protection_strength ?? 0.88,
-              denoise_strength: parsed.denoise_strength ?? 0.25,
-              unsharp_mask_amount: parsed.unsharp_mask_amount ?? 0.7,
-              detected_lighting_condition: parsed.detected_lighting_condition || "Iluminação cênica de culto",
-              detected_scene_type: parsed.detected_scene_type || "Culto / Palco",
-              analysis_summary: parsed.analysis_summary || `Calibração avançada (${model}).`
-            };
-          }
-        } catch (err) {
-          console.warn("Gemini API call failed, using heuristic fallback:", err);
-        }
-      }
-
-      return analyzeImageHeuristic(imgElement);
     }
 
     async function processItem(id) {
@@ -784,9 +710,12 @@
       if (!item) return;
 
       item.status = 'analyzing';
-      renderQueue();
+      renderThumbnails();
+      if (activeItem && activeItem.id === id) {
+        showLoaderState("Tratando com IA Gemini 2.5 Pro...", "Analisando iluminação cênica e tons de pele");
+      }
 
-      // Check if Backend Server Proxy is configured
+      // Route 1: Try Render Backend Server Proxy
       if (serverUrl && serverUrl.length > 5) {
         try {
           const formData = new FormData();
@@ -807,21 +736,22 @@
             item.metadata = data.metadata;
             item.analysis = data.analysis;
             item.currentParams = data.analysis;
-            renderQueue();
+
+            renderThumbnails();
             if (activeItem && activeItem.id === id) selectQueueItem(id);
             return;
           }
         } catch (serverErr) {
-          console.warn("Server proxy unreachable, switching to browser processing:", serverErr);
+          console.warn("Backend proxy offline, using client-side engine:", serverErr);
         }
       }
 
-      // Browser Client-side processing
+      // Route 2: Fast Client-side fallback
       const img = new Image();
       img.src = item.previewUrl;
       await new Promise(resolve => { img.onload = resolve; });
 
-      const params = await analyzeWithGeminiOrHeuristic(img);
+      const params = analyzeImageHeuristic(img);
       item.analysis = params;
       item.currentParams = params;
 
@@ -829,50 +759,45 @@
       item.status = 'completed';
       item.processedBase64 = result.base64;
       item.originalBase64 = item.previewUrl;
-      item.metadata = {
-        width: result.width,
-        height: result.height,
-        executionTime: result.executionTime
-      };
+      item.metadata = { width: result.width, height: result.height, executionTime: result.executionTime };
 
-      renderQueue();
+      renderThumbnails();
       if (activeItem && activeItem.id === id) {
         selectQueueItem(id);
       }
     }
 
-    // ==========================================
-    // DETERMINISTIC COLORIMETRY ENGINE IN JS
-    // ==========================================
+    async function processAllInQueue() {
+      for (const item of queue) {
+        if (item.status === 'idle' || item.status === 'error') {
+          await processItem(item.id);
+        }
+      }
+    }
 
+    // Mathematical deterministic color processing
     function kelvinToRGBMultipliers(kelvin) {
       let temp = Math.max(2500, Math.min(9000, kelvin)) / 100;
       let r, g, b;
       if (temp <= 66) {
         r = 255;
-        g = temp;
-        g = 99.4708025861 * Math.log(g) - 161.1195681661;
+        g = 99.4708025861 * Math.log(temp) - 161.1195681661;
       } else {
-        r = temp - 60;
-        r = 329.698727446 * Math.pow(r, -0.1332047592);
-        g = temp - 60;
-        g = 288.1221695283 * Math.pow(g, -0.0755148492);
+        r = 329.698727446 * Math.pow(temp - 60, -0.1332047592);
+        g = 288.1221695283 * Math.pow(temp - 60, -0.0755148492);
       }
       if (temp >= 66) b = 255;
       else if (temp <= 19) b = 0;
-      else {
-        b = temp - 10;
-        b = 138.5177312231 * Math.log(b) - 305.0447927307;
-      }
+      else b = 138.5177312231 * Math.log(temp - 10) - 305.0447927307;
+
       r = Math.max(0, Math.min(255, r));
       g = Math.max(0, Math.min(255, g));
       b = Math.max(0, Math.min(255, b));
 
-      let strength = 0.55;
       return {
-        r: 1.0 + ((r / 255.0) - 1.0) * strength,
-        g: 1.0 + ((g / 243.6) - 1.0) * strength,
-        b: 1.0 + ((b / 232.4) - 1.0) * strength,
+        r: 1.0 + ((r / 255.0) - 1.0) * 0.55,
+        g: 1.0 + ((g / 243.6) - 1.0) * 0.55,
+        b: 1.0 + ((b / 232.4) - 1.0) * 0.55,
       };
     }
 
@@ -890,86 +815,50 @@
       const imgData = ctx.getImageData(0, 0, width, height);
       const data = imgData.data;
 
-      // 1. Exposure multiplier
       const expMult = Math.pow(2.0, params.exposure_compensation || 0.0);
-
-      // 2. Kelvin multipliers
       const wb = kelvinToRGBMultipliers(params.temperature_kelvin || 5500);
-
-      // 3. Highlight recovery & shadow lift factors
       const hRec = params.highlights_recovery || 0.0;
       const sLift = params.shadows_lift || 0.0;
-      const contrast = params.contrast || 1.08;
+      const contrast = params.contrast || 1.10;
       const ledSupp = params.stage_led_tint_suppression || 0.5;
       const skinProt = params.skin_tone_protection_strength || 0.85;
-
-      const numPixels = data.length / 4;
 
       for (let i = 0; i < data.length; i += 4) {
         let r = data[i] / 255.0;
         let g = data[i + 1] / 255.0;
         let b = data[i + 2] / 255.0;
 
-        // Luminance
         let lum = 0.299 * r + 0.587 * g + 0.114 * b;
 
-        // Apply Exposure
-        r *= expMult;
-        g *= expMult;
-        b *= expMult;
+        r *= expMult * wb.r;
+        g *= expMult * wb.g;
+        b *= expMult * wb.b;
 
-        // Apply Kelvin WB
-        r *= wb.r;
-        g *= wb.g;
-        b *= wb.b;
-
-        // Highlights recovery (compress bright areas smoothly)
         if (hRec > 0 && lum > 0.45) {
           let hWeight = Math.pow((lum - 0.45) / 0.55, 1.8);
           let comp = hRec * 0.25 * hWeight;
-          r -= r * comp;
-          g -= g * comp;
-          b -= b * comp;
+          r -= r * comp; g -= g * comp; b -= b * comp;
         }
 
-        // Shadows lift (lift dark areas smoothly)
         if (sLift > 0 && lum < 0.65) {
           let sWeight = Math.pow(1.0 - (lum / 0.65), 1.5);
           let boost = sLift * 0.35 * sWeight * (1.0 - lum);
-          r += boost;
-          g += boost;
-          b += boost;
+          r += boost; g += boost; b += boost;
         }
 
-        // S-Curve Contrast
         if (Math.abs(contrast - 1.0) > 0.02) {
           r = Math.pow(Math.max(0, Math.min(1, r)), contrast);
           g = Math.pow(Math.max(0, Math.min(1, g)), contrast);
           b = Math.pow(Math.max(0, Math.min(1, b)), contrast);
         }
 
-        // Stage LED suppression: Target oversaturated blue/cyan & magenta
         if (ledSupp > 0.05) {
-          // Blue LED spill check
-          if (b > r * 1.35 && b > 0.45) {
-            let blueExcess = (b - r * 1.35) * ledSupp * 0.65;
-            b -= blueExcess;
-          }
-          // Red/Magenta wash check
-          if (r > g * 1.6 && r > 0.65) {
-            let redExcess = (r - g * 1.6) * ledSupp * 0.45;
-            r -= redExcess;
-          }
+          if (b > r * 1.35 && b > 0.45) b -= (b - r * 1.35) * ledSupp * 0.65;
+          if (r > g * 1.6 && r > 0.65) r -= (r - g * 1.6) * ledSupp * 0.45;
         }
 
-        // Skin Tone Protection: Check melanin cluster
-        let maxC = Math.max(r, g, b);
-        let minC = Math.min(r, g, b);
-        let d = maxC - minC;
         let isSkin = (r > g && g > b && (r - g) > 0.05 && (g - b) > 0.02 && r > 0.3);
-
         if (isSkin && skinProt > 0.1) {
-          // Gently warm and stabilize skin tones
           r = r * (1.0 + 0.05 * skinProt);
           g = g * (1.0 + 0.03 * skinProt);
           b = b * (1.0 - 0.04 * skinProt);
@@ -982,16 +871,6 @@
 
       ctx.putImageData(imgData, 0, 0);
 
-      // Adaptive Sharpening using high-pass blend
-      const unsharp = params.unsharp_mask_amount || 0.6;
-      if (unsharp > 0.1) {
-        ctx.globalAlpha = Math.min(0.35, unsharp * 0.25);
-        ctx.filter = 'contrast(120%) brightness(102%)';
-        ctx.drawImage(canvas, 0, 0);
-        ctx.globalAlpha = 1.0;
-        ctx.filter = 'none';
-      }
-
       const executionTime = Math.round(performance.now() - startTime);
       return {
         base64: canvas.toDataURL('image/jpeg', 0.93),
@@ -999,88 +878,6 @@
         height,
         executionTime
       };
-    }
-
-    // Call Gemini API via Google AI Studio or Client-Side Heuristic Fallback
-    async function analyzeWithGeminiOrHeuristic(imgElement) {
-      const apiKey = localStorage.getItem('CHURCHPHOTO_GEMINI_KEY') || '';
-
-      if (apiKey && apiKey.length > 10) {
-        try {
-          // Downsample image for fast API transport
-          const thumbCanvas = document.createElement('canvas');
-          const thumbCtx = thumbCanvas.getContext('2d');
-          const maxDim = 800;
-          let w = imgElement.naturalWidth || imgElement.width;
-          let h = imgElement.naturalHeight || imgElement.height;
-          if (w > maxDim || h > maxDim) {
-            if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
-            else { w = Math.round((w * maxDim) / h); h = maxDim; }
-          }
-          thumbCanvas.width = w;
-          thumbCanvas.height = h;
-          thumbCtx.drawImage(imgElement, 0, 0, w, h);
-          const base64Data = thumbCanvas.toDataURL('image/jpeg', 0.8).split(',')[1];
-
-          const prompt = `Você é um Engenheiro de Colorimetria Fotográfica especializado em cultos e eventos. Analise esta foto e responda ESTRITAMENTE em JSON com o formato:
-          {
-            "exposure_compensation": 0.2,
-            "temperature_kelvin": 5400,
-            "highlights_recovery": 0.5,
-            "shadows_lift": 0.4,
-            "stage_led_tint_suppression": 0.6,
-            "skin_tone_protection_strength": 0.9,
-            "denoise_strength": 0.3,
-            "unsharp_mask_amount": 0.7,
-            "detected_lighting_condition": "Luz mista de palco",
-            "detected_scene_type": "Culto / Palco",
-            "analysis_summary": "Calibração de iluminação cênica e preservação de pele."
-          }`;
-
-          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{
-                parts: [
-                  { inline_data: { mime_type: "image/jpeg", data: base64Data } },
-                  { text: prompt }
-                ]
-              }],
-              generationConfig: {
-                response_mime_type: "application/json",
-                temperature: 0.2
-              }
-            })
-          });
-
-          if (response.ok) {
-            const result = await response.json();
-            const rawText = result.candidates[0].content.parts[0].text;
-            const parsed = JSON.parse(rawText);
-            return {
-              exposure_compensation: parsed.exposure_compensation ?? 0.2,
-              temperature_kelvin: parsed.temperature_kelvin ?? 5400,
-              contrast: 1.10,
-              highlights_recovery: parsed.highlights_recovery ?? 0.5,
-              shadows_lift: parsed.shadows_lift ?? 0.4,
-              saturation: 1.04,
-              stage_led_tint_suppression: parsed.stage_led_tint_suppression ?? 0.6,
-              skin_tone_protection_strength: parsed.skin_tone_protection_strength ?? 0.88,
-              denoise_strength: parsed.denoise_strength ?? 0.25,
-              unsharp_mask_amount: parsed.unsharp_mask_amount ?? 0.7,
-              detected_lighting_condition: parsed.detected_lighting_condition || "Iluminação cênica detectada",
-              detected_scene_type: parsed.detected_scene_type || "Culto / Palco",
-              analysis_summary: parsed.analysis_summary || "Calibração calculada com sucesso pela Gemini Vision."
-            };
-          }
-        } catch (err) {
-          console.warn("Gemini API call failed or rate-limited, using intelligent heuristic fallback:", err);
-        }
-      }
-
-      // Fast Statistical Heuristic Analyzer directly from image pixels
-      return analyzeImageHeuristic(imgElement);
     }
 
     function analyzeImageHeuristic(imgElement) {
@@ -1091,16 +888,13 @@
       ctx.drawImage(imgElement, 0, 0, 100, 100);
       const data = ctx.getImageData(0, 0, 100, 100).data;
 
-      let totalLum = 0;
-      let totalR = 0, totalG = 0, totalB = 0;
-      let blueSpill = 0, redSpill = 0;
-      let darkPixels = 0, brightPixels = 0;
+      let totalLum = 0, totalR = 0, totalG = 0, totalB = 0;
+      let blueSpill = 0, redSpill = 0, darkPixels = 0, brightPixels = 0;
 
       for (let i = 0; i < data.length; i += 4) {
         let r = data[i], g = data[i+1], b = data[i+2];
         let lum = 0.299 * r + 0.587 * g + 0.114 * b;
-        totalLum += lum;
-        totalR += r; totalG += g; totalB += b;
+        totalLum += lum; totalR += r; totalG += g; totalB += b;
         if (lum < 40) darkPixels++;
         if (lum > 220) brightPixels++;
         if (b > 170 && b > r * 1.3) blueSpill++;
@@ -1125,76 +919,21 @@
       const sLift = Math.max(0.2, Math.min(0.75, darkPct * 1.6 + 0.25));
       const hRec = Math.max(0.25, Math.min(0.85, brightPct * 2.2 + 0.35));
 
-      let lightingCond = "Iluminação mista de palco";
-      if (bluePct > 0.05) lightingCond = "Forte presença de LEDs Azuis de palco";
-      else if (redPct > 0.05) lightingCond = "Canhões de LED Magenta/Vermelho";
-      else if (darkPct > 0.3) lightingCond = "Congregação em penumbra com focos de luz";
-
       return {
         exposure_compensation: Math.round(expComp * 100) / 100,
         temperature_kelvin: Math.max(2500, Math.min(9000, kelvin)),
-        contrast: 1.08,
+        contrast: 1.10,
         highlights_recovery: Math.round(hRec * 100) / 100,
         shadows_lift: Math.round(sLift * 100) / 100,
-        saturation: 1.03,
+        saturation: 1.04,
         stage_led_tint_suppression: Math.round(ledSupp * 100) / 100,
         skin_tone_protection_strength: 0.88,
         denoise_strength: 0.28,
-        unsharp_mask_amount: 0.65,
-        detected_lighting_condition: lightingCond,
+        unsharp_mask_amount: 0.70,
+        detected_lighting_condition: bluePct > 0.05 ? "Luz cênica de LED Azul" : "Iluminação mista de palco",
         detected_scene_type: "Culto / Palco",
-        analysis_summary: `Calibração automática: Exposição de ${expComp > 0 ? '+' : ''}${expComp.toFixed(2)} EV, ${kelvin}K, realce de sombras e atenuação de LEDs cênicos.`
+        analysis_summary: `Calibração automática: Exposição ${expComp > 0 ? '+' : ''}${expComp.toFixed(2)} EV, ${kelvin}K e proteção de pele.`
       };
-    }
-
-    async function processItem(id) {
-      const item = queue.find(i => i.id === id);
-      if (!item) return;
-
-      item.status = 'analyzing';
-      renderQueue();
-
-      const img = new Image();
-      img.src = item.previewUrl;
-      await new Promise(resolve => { img.onload = resolve; });
-
-      // Step 1: Analyze
-      const params = await analyzeWithGeminiOrHeuristic(img);
-      item.analysis = params;
-      item.currentParams = params;
-
-      // Step 2: Deterministic Pixel Processing
-      const result = processImageClientSide(img, params);
-      item.status = 'completed';
-      item.processedBase64 = result.base64;
-      item.originalBase64 = item.previewUrl;
-      item.metadata = {
-        width: result.width,
-        height: result.height,
-        executionTime: result.executionTime
-      };
-
-      renderQueue();
-      if (activeItem && activeItem.id === id) {
-        selectQueueItem(id);
-      }
-    }
-
-    async function processAllInQueue() {
-      for (const item of queue) {
-        if (item.status === 'idle' || item.status === 'error') {
-          await processItem(item.id);
-        }
-      }
-    }
-
-    function removeQueueItem(id) {
-      queue = queue.filter(i => i.id !== id);
-      if (activeItem && activeItem.id === id) {
-        activeItem = queue.length > 0 ? queue[0] : null;
-      }
-      renderQueue();
-      if (activeItem) selectQueueItem(activeItem.id);
     }
 
     function applyManualSliders() {
@@ -1203,17 +942,17 @@
       const params = {
         exposure_compensation: parseFloat(document.getElementById('param_exposure').value),
         temperature_kelvin: parseInt(document.getElementById('param_kelvin').value),
-        contrast: 1.08,
+        contrast: 1.10,
         highlights_recovery: parseFloat(document.getElementById('param_highlights').value),
         shadows_lift: parseFloat(document.getElementById('param_shadows').value),
         saturation: 1.04,
         stage_led_tint_suppression: parseFloat(document.getElementById('param_led').value),
         skin_tone_protection_strength: parseFloat(document.getElementById('param_skin').value),
-        denoise_strength: parseFloat(document.getElementById('param_denoise').value),
-        unsharp_mask_amount: parseFloat(document.getElementById('param_sharpen').value),
+        denoise_strength: 0.25,
+        unsharp_mask_amount: 0.70,
         detected_lighting_condition: activeItem.analysis?.detected_lighting_condition || 'Palco',
         detected_scene_type: activeItem.analysis?.detected_scene_type || 'Culto',
-        analysis_summary: 'Ajuste manual personalizado aplicado em tempo real.'
+        analysis_summary: 'Ajuste manual personalizado aplicado.'
       };
 
       const img = new Image();
@@ -1238,8 +977,6 @@
       document.getElementById('param_shadows').value = par.shadows_lift;
       document.getElementById('param_led').value = par.stage_led_tint_suppression;
       document.getElementById('param_skin').value = par.skin_tone_protection_strength;
-      document.getElementById('param_denoise').value = par.denoise_strength;
-      document.getElementById('param_sharpen').value = par.unsharp_mask_amount;
 
       applyManualSliders();
     }
@@ -1250,11 +987,24 @@
 
     function setViewerMode(mode) {
       viewerMode = mode;
-      document.getElementById('modeSliderBtn').className = mode === 'slider' ? 'px-2.5 py-1 rounded-lg bg-blue-600 text-white font-medium' : 'px-2.5 py-1 rounded-lg text-slate-400 hover:text-white font-medium';
-      document.getElementById('modeSideBtn').className = mode === 'side' ? 'px-2.5 py-1 rounded-lg bg-blue-600 text-white font-medium' : 'px-2.5 py-1 rounded-lg text-slate-400 hover:text-white font-medium';
+      document.getElementById('modeSliderBtn').className = mode === 'slider' ? 'px-2 py-1 rounded-md bg-blue-600 text-white font-medium text-[11px]' : 'px-2 py-1 rounded-md text-slate-400 hover:text-white font-medium text-[11px]';
+      document.getElementById('modeSideBtn').className = mode === 'side' ? 'px-2 py-1 rounded-md bg-blue-600 text-white font-medium text-[11px]' : 'px-2 py-1 rounded-md text-slate-400 hover:text-white font-medium text-[11px]';
 
       if (activeItem && activeItem.status === 'completed') {
         showProcessedViewer(activeItem);
+      }
+    }
+
+    function toggleSlidersAccordion() {
+      isAccordionOpen = !isAccordionOpen;
+      const body = document.getElementById('slidersBody');
+      const arrow = document.getElementById('accordionArrow');
+      if (isAccordionOpen) {
+        body.classList.remove('hidden');
+        arrow.style.transform = 'rotate(180deg)';
+      } else {
+        body.classList.add('hidden');
+        arrow.style.transform = 'rotate(0deg)';
       }
     }
 
@@ -1278,6 +1028,27 @@
       window.ontouchmove = (e) => { if (isDragging && e.touches[0]) move(e.touches[0].clientX); };
       window.onmouseup = () => isDragging = false;
       window.ontouchend = () => isDragging = false;
+    }
+
+    function toggleServerModal() {
+      document.getElementById('serverModal').classList.toggle('hidden');
+    }
+
+    function saveServerUrl() {
+      const url = document.getElementById('serverUrlInput').value.trim();
+      serverUrl = url;
+      localStorage.setItem('CHURCHPHOTO_SERVER_URL', url);
+      toggleServerModal();
+    }
+
+    function toggleKeyModal() {
+      document.getElementById('keyModal').classList.toggle('hidden');
+    }
+
+    function saveGeminiKey() {
+      const key = document.getElementById('geminiKeyInput').value.trim();
+      localStorage.setItem('CHURCHPHOTO_GEMINI_KEY', key);
+      toggleKeyModal();
     }
 
     function downloadCurrentProcessed() {
