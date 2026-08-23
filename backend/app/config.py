@@ -15,15 +15,21 @@ else:
 
 class Settings:
     PROJECT_NAME: str = "ChurchPhoto Pro - Pós-Processamento Fotográfico"
-    VERSION: str = "1.0.0"
+    VERSION: str = "1.1.0"
     API_V1_STR: str = "/api"
     
-    # Gemini API Key (Can be set via env, request header X-Gemini-Key, or passed in payload)
+    # Gemini API Key (Loaded securely from Server Environment Variables)
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
     
-    # Gemini Models (Will try in sequence: gemini-2.5-flash, gemini-2.0-flash, gemini-1.5-flash)
-    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
-    GEMINI_FALLBACK_MODELS: list = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
+    # Gemini Models: Default to the most advanced PRO model for supreme colorimetry reasoning
+    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-2.5-pro")
+    GEMINI_FALLBACK_MODELS: list = [
+        "gemini-2.5-pro",
+        "gemini-1.5-pro",
+        "gemini-2.5-flash",
+        "gemini-2.0-flash",
+        "gemini-1.5-flash"
+    ]
     
     # Upload limits
     MAX_UPLOAD_SIZE_MB: int = 50
