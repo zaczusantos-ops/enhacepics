@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>ChurchPhoto Pro - Pós-Processamento Fotográfico para Cultos e Eventos</title>
   
   <!-- Tailwind CSS CDN -->
@@ -113,45 +116,48 @@
           </p>
         </div>
 
-        <!-- Big Dedicated Mobile Upload Buttons -->
-        <div class="w-full sm:w-auto flex flex-col sm:flex-row items-center gap-2.5 shrink-0 relative z-10">
+        <!-- Big Dedicated Mobile Upload Buttons (Direct Overlay Inputs) -->
+        <div class="w-full sm:w-auto flex flex-col sm:flex-row items-center gap-2.5 shrink-0 relative z-20">
           
-          <!-- Standalone File Inputs -->
-          <input
-            type="file"
-            id="fileInput"
-            multiple
-            accept="image/*,image/jpeg,image/png,image/webp,image/heic"
-            style="position: fixed; top: -9999px; left: -9999px; opacity: 0; pointer-events: none;"
-          >
-          <input
-            type="file"
-            id="cameraInput"
-            accept="image/*"
-            capture="environment"
-            style="position: fixed; top: -9999px; left: -9999px; opacity: 0; pointer-events: none;"
-          >
+          <!-- Button 1: Escolher da Galeria (Transparent Input on Top) -->
+          <div class="relative w-full sm:w-auto">
+            <button
+              type="button"
+              class="w-full sm:w-auto px-6 py-3.5 sm:py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold text-sm shadow-xl shadow-blue-600/30 active:scale-95 transition-all flex items-center justify-center gap-2.5 pointer-events-none"
+            >
+              <i class="fa-solid fa-image text-base"></i>
+              <span>Escolher da Galeria</span>
+            </button>
+            <input
+              type="file"
+              id="fileInput"
+              multiple
+              accept="image/*"
+              class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-30"
+              style="font-size: 0;"
+            >
+          </div>
 
-          <!-- Primary Upload Button -->
-          <button
-            type="button"
-            onclick="openGallery()"
-            class="w-full sm:w-auto px-6 py-3.5 sm:py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold text-sm shadow-xl shadow-blue-600/30 active:scale-95 transition-all flex items-center justify-center gap-2.5 cursor-pointer select-none"
-          >
-            <i class="fa-solid fa-image text-base pointer-events-none"></i>
-            <span class="pointer-events-none">Escolher da Galeria</span>
-          </button>
+          <!-- Button 2: Tirar Foto com a Câmera (Transparent Input on Top) -->
+          <div class="relative w-full sm:w-auto">
+            <button
+              type="button"
+              class="w-full sm:w-auto px-5 py-3.5 sm:py-3 rounded-xl bg-church-800 hover:bg-church-700 border border-church-700 text-slate-200 font-semibold text-sm active:scale-95 transition-all flex items-center justify-center gap-2 pointer-events-none"
+            >
+              <i class="fa-solid fa-camera text-blue-400"></i>
+              <span class="sm:hidden">Tirar Foto com a Câmera</span>
+              <span class="hidden sm:inline">Câmera</span>
+            </button>
+            <input
+              type="file"
+              id="cameraInput"
+              accept="image/*"
+              capture="environment"
+              class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-30"
+              style="font-size: 0;"
+            >
+          </div>
 
-          <!-- Native Camera Capture Button for Mobile -->
-          <button
-            type="button"
-            onclick="openCamera()"
-            class="w-full sm:w-auto px-5 py-3.5 sm:py-3 rounded-xl bg-church-800 hover:bg-church-700 border border-church-700 text-slate-200 font-semibold text-sm active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer select-none"
-          >
-            <i class="fa-solid fa-camera text-blue-400 pointer-events-none"></i>
-            <span class="sm:hidden pointer-events-none">Tirar Foto com a Câmera</span>
-            <span class="hidden sm:inline pointer-events-none">Câmera</span>
-          </button>
         </div>
       </div>
 
@@ -392,10 +398,20 @@
   </main>
 
   <!-- MOBILE STICKY FLOATING ACTION BAR (When photo is processed) -->
-  <div id="mobileBottomBar" class="fixed bottom-0 left-0 right-0 z-40 bg-church-950/95 backdrop-blur-lg border-t border-church-800 p-3 flex items-center justify-between sm:hidden hidden">
-    <label for="fileInput" class="px-4 py-2.5 rounded-xl bg-church-800 border border-church-700 text-xs font-semibold text-slate-200 flex items-center gap-1.5 cursor-pointer select-none">
-      <i class="fa-solid fa-plus text-blue-400"></i> Outra Foto
-    </label>
+  <div id="mobileBottomBar" class="fixed bottom-0 left-0 right-0 z-40 bg-church-950/95 backdrop-blur-lg border-t border-church-800 p-3 flex items-center justify-between sm:hidden hidden" style="display: none;">
+    <div class="relative">
+      <button class="px-4 py-2.5 rounded-xl bg-church-800 border border-church-700 text-xs font-semibold text-slate-200 flex items-center gap-1.5 pointer-events-none">
+        <i class="fa-solid fa-plus text-blue-400"></i> Outra Foto
+      </button>
+      <input
+        type="file"
+        id="bottomFileInput"
+        multiple
+        accept="image/*"
+        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-30"
+        onchange="handleFiles(this.files)"
+      >
+    </div>
     <button onclick="downloadCurrentProcessed()" class="px-5 py-2.5 rounded-xl bg-emerald-600 active:bg-emerald-500 text-xs font-bold text-white flex items-center gap-1.5 shadow-lg shadow-emerald-600/30">
       <i class="fa-solid fa-download"></i> Baixar Foto HD
     </button>
