@@ -487,7 +487,8 @@
     let sliderPercent = 50;
     let isDragging = false;
     let selectedModel = localStorage.getItem('CHURCHPHOTO_GEMINI_MODEL') || 'gemini-2.5-pro';
-    let serverUrl = localStorage.getItem('CHURCHPHOTO_SERVER_URL') || '';
+    const DEFAULT_SERVER_URL = 'https://enhacepics.onrender.com';
+    let serverUrl = localStorage.getItem('CHURCHPHOTO_SERVER_URL') || DEFAULT_SERVER_URL;
 
     // Initialization
     window.addEventListener('DOMContentLoaded', () => {
