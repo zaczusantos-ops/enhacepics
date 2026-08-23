@@ -116,41 +116,41 @@
           </p>
         </div>
 
-        <!-- Big Dedicated Mobile Upload Buttons -->
+        <!-- Big Dedicated Mobile Upload Buttons (Native Inputs with Touch Press Animation) -->
         <div class="w-full sm:w-auto flex flex-col sm:flex-row items-center gap-2.5 shrink-0 relative z-20">
           
-          <!-- Primary Upload Button -->
-          <label
-            onclick=""
-            class="w-full sm:w-auto px-6 py-3.5 sm:py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-95 text-white font-semibold text-sm shadow-xl shadow-blue-600/30 transition-transform duration-75 flex items-center justify-center gap-2.5 cursor-pointer select-none"
-          >
-            <i class="fa-solid fa-image text-base"></i>
-            <span>Escolher da Galeria</span>
+          <!-- Primary Upload Button (Gallery) -->
+          <div class="relative w-full sm:w-auto overflow-hidden rounded-xl active:scale-95 transition-transform duration-75 shadow-xl shadow-blue-600/30">
+            <div class="w-full sm:w-auto px-6 py-3.5 sm:py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold text-sm flex items-center justify-center gap-2.5 pointer-events-none select-none">
+              <i class="fa-solid fa-image text-base"></i>
+              <span>Escolher da Galeria</span>
+            </div>
             <input
               type="file"
               id="fileInput"
               multiple
               accept="image/*"
-              class="hidden"
+              class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              style="font-size: 100px; touch-action: manipulation;"
             >
-          </label>
+          </div>
 
           <!-- Native Camera Capture Button for Mobile -->
-          <label
-            onclick=""
-            class="w-full sm:w-auto px-5 py-3.5 sm:py-3 rounded-xl bg-church-800 hover:bg-church-700 active:scale-95 border border-church-700 text-slate-200 font-semibold text-sm transition-transform duration-75 flex items-center justify-center gap-2 cursor-pointer select-none"
-          >
-            <i class="fa-solid fa-camera text-blue-400"></i>
-            <span class="sm:hidden">Tirar Foto com a Câmera</span>
-            <span class="hidden sm:inline">Câmera</span>
+          <div class="relative w-full sm:w-auto overflow-hidden rounded-xl active:scale-95 transition-transform duration-75">
+            <div class="w-full sm:w-auto px-5 py-3.5 sm:py-3 bg-church-800 hover:bg-church-700 border border-church-700 text-slate-200 font-semibold text-sm flex items-center justify-center gap-2 pointer-events-none select-none">
+              <i class="fa-solid fa-camera text-blue-400"></i>
+              <span class="sm:hidden">Tirar Foto com a Câmera</span>
+              <span class="hidden sm:inline">Câmera</span>
+            </div>
             <input
               type="file"
               id="cameraInput"
               accept="image/*"
               capture="environment"
-              class="hidden"
+              class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              style="font-size: 100px; touch-action: manipulation;"
             >
-          </label>
+          </div>
 
         </div>
       </div>
