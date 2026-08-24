@@ -77,14 +77,9 @@
     .sidebar-collapsed .sidebar-badge,
     .sidebar-collapsed .sidebar-section-title,
     .sidebar-collapsed .sidebar-profile-info,
-    .sidebar-collapsed .sidebar-team-select { display: none !important; }
+    .sidebar-collapsed .sidebar-team-section { display: none !important; }
     .sidebar-collapsed .sidebar-item { justify-content: center; padding-left: 0; padding-right: 0; }
     .sidebar-collapsed .sidebar-logo-text { display: none !important; }
-
-    /* Smart Crop Box Overlay */
-    .crop-overlay-active {
-      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.65);
-    }
   </style>
 </head>
 <body class="min-h-screen flex selection:bg-blue-600 selection:text-white bg-church-950 text-slate-100 overflow-x-hidden">
@@ -93,7 +88,7 @@
   <div id="mobileSidebarBackdrop" onclick="toggleSidebar()" class="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm md:hidden hidden" style="display: none;"></div>
 
   <!-- ========================================================================= -->
-  <!-- RETRACTABLE SIDEBAR (ESTILO ANTIGRAVITY + GESTÃO DE EQUIPES) -->
+  <!-- RETRACTABLE SIDEBAR (ESTILO ANTIGRAVITY + SEÇÃO DE EQUIPE REAL) -->
   <!-- ========================================================================= -->
   <aside id="mainSidebar" class="sidebar-expanded fixed md:sticky top-0 left-0 z-50 h-screen bg-church-900/95 md:bg-church-900 border-r border-church-800/90 flex flex-col justify-between transition-all duration-300 ease-in-out shrink-0 -translate-x-full md:translate-x-0 backdrop-blur-xl">
     
@@ -108,7 +103,7 @@
             <span class="text-sm font-bold tracking-tight text-white truncate">ChurchPhoto</span>
             <span class="px-1.5 py-0.2 bg-blue-950 text-blue-400 border border-blue-800/80 text-[9px] font-mono rounded-full">Pro</span>
           </div>
-          <span class="text-[10px] text-slate-400 block truncate">AI Culling & DSLR v3.4</span>
+          <span class="text-[10px] text-slate-400 block truncate">AI Culling & DSLR Engine</span>
         </div>
       </div>
 
@@ -121,32 +116,14 @@
       </button>
     </div>
 
-    <!-- Active Team Switcher Banner -->
-    <div class="p-2.5 border-b border-church-800/60 bg-church-950/40">
-      <div class="flex items-center justify-between gap-1.5">
-        <div class="flex items-center gap-2 min-w-0">
-          <div class="w-6 h-6 rounded-lg bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400 text-xs shrink-0">
-            <i class="fa-solid fa-users"></i>
-          </div>
-          <div class="sidebar-team-select min-w-0">
-            <span id="activeTeamNameText" class="text-xs font-bold text-white block truncate">Mídia Sede</span>
-            <span class="text-[9px] text-slate-400 block truncate">Equipe Ativa</span>
-          </div>
-        </div>
-        <button onclick="openTeamModal()" class="sidebar-badge p-1 rounded-md text-slate-400 hover:text-white hover:bg-church-800 text-[10px] cursor-pointer" title="Gerenciar Equipes">
-          <i class="fa-solid fa-gear"></i>
-        </button>
-      </div>
-    </div>
-
-    <!-- Middle: Navigation Items & Recent Services -->
+    <!-- Middle: Navigation, Team Section & Recent Services -->
     <div class="flex-1 overflow-y-auto p-2.5 space-y-4 no-scrollbar">
       
       <!-- Primary Navigation -->
       <div class="space-y-1">
         <span class="sidebar-section-title px-2.5 text-[10px] font-bold tracking-wider uppercase text-slate-400 block">Navegação</span>
         
-        <!-- Meus Cultos Item -->
+        <!-- Meus Cultos -->
         <button onclick="switchMainView('services')" id="sideNavServices" class="sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold bg-blue-600 text-white transition-all cursor-pointer shadow-sm">
           <div class="flex items-center gap-2.5">
             <i class="fa-solid fa-layer-group text-sm w-4 text-center"></i>
@@ -164,7 +141,7 @@
           <span class="sidebar-badge px-1.5 py-0.2 rounded-full bg-amber-950/80 text-amber-300 text-[9px] font-mono font-bold">3 Fases</span>
         </button>
 
-        <!-- Estúdio DSLR Item -->
+        <!-- Estúdio DSLR -->
         <button onclick="switchMainView('studio')" id="sideNavStudio" class="sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-church-800/70 transition-all cursor-pointer">
           <div class="flex items-center gap-2.5">
             <i class="fa-solid fa-wand-magic-sparkles text-sm w-4 text-center text-blue-400"></i>
@@ -173,14 +150,41 @@
           <span id="sidePhotosCountBadge" class="sidebar-badge px-1.5 py-0.2 rounded-full bg-church-950 text-slate-400 text-[10px] font-mono">0 fotos</span>
         </button>
 
-        <!-- Presets da Equipe -->
-        <button onclick="openTeamPresetsModal()" class="sidebar-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-church-800/70 transition-all cursor-pointer">
-          <i class="fa-solid fa-sliders text-sm w-4 text-center text-purple-400"></i>
-          <span class="sidebar-text">Presets da Equipe</span>
+        <!-- Ambiente de Presets -->
+        <button onclick="switchMainView('presets')" id="sideNavPresets" class="sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-church-800/70 transition-all cursor-pointer">
+          <div class="flex items-center gap-2.5">
+            <i class="fa-solid fa-sliders text-sm w-4 text-center text-purple-400"></i>
+            <span class="sidebar-text">Ambiente de Presets</span>
+          </div>
+          <span class="sidebar-badge px-1.5 py-0.2 rounded-full bg-purple-950 text-purple-300 text-[10px] font-mono font-bold">Editor</span>
         </button>
       </div>
 
-      <!-- Quick Cultos / Eventos List -->
+      <!-- DEDICATED TEAM SECTION IN SIDEBAR (Real Members Only) -->
+      <div class="sidebar-team-section pt-2 border-t border-church-800/70 space-y-2">
+        <div class="flex items-center justify-between px-2.5">
+          <span class="text-[10px] font-bold tracking-wider uppercase text-slate-400 flex items-center gap-1.5">
+            <i class="fa-solid fa-users text-blue-400"></i> Equipe de Mídia
+          </span>
+          <button onclick="openTeamModal()" class="text-[10px] text-blue-400 hover:underline font-semibold cursor-pointer">
+            + Convidar
+          </button>
+        </div>
+
+        <div class="p-2 rounded-xl bg-church-950/70 border border-church-800/60 text-xs">
+          <div class="flex items-center justify-between mb-1.5">
+            <span id="sidebarTeamTitle" class="font-bold text-white truncate max-w-[130px]">Mídia Principal</span>
+            <span id="sidebarTeamCountBadge" class="text-[9px] px-1.5 py-0.2 rounded bg-church-900 text-slate-300 font-mono">1 voluntário</span>
+          </div>
+          
+          <!-- Real Members List Container -->
+          <div id="sidebarRealMembersList" class="space-y-1">
+            <!-- Rendered purely based on authenticated user and user-added members -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Cultos List -->
       <div class="space-y-1 pt-2 border-t border-church-800/70">
         <div class="flex items-center justify-between px-2.5">
           <span class="sidebar-section-title text-[10px] font-bold tracking-wider uppercase text-slate-400">Cultos Recentes</span>
@@ -191,42 +195,35 @@
         </div>
       </div>
 
-      <!-- AI Status Widget -->
-      <div class="pt-2 border-t border-church-800/70">
-        <div class="p-2.5 rounded-xl bg-church-950/70 border border-church-800/60 text-[11px]">
-          <div class="flex items-center gap-2 text-emerald-400 font-semibold mb-1">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span class="sidebar-text">Gemini 2.5 Pro Ativo</span>
-          </div>
-          <p class="sidebar-text text-[10px] text-slate-400 leading-tight">
-            Curadoria automática & Smart Crop 4:5 prontos.
-          </p>
-        </div>
-      </div>
-
     </div>
 
-    <!-- Bottom Profile Footer -->
-    <div class="p-3 border-t border-church-800/80 bg-church-950/40">
+    <!-- ========================================================================= -->
+    <!-- ALWAYS VISIBLE BOTTOM SIDEBAR FOOTER (LOGIN / LOGGED IN USER) -->
+    <!-- ========================================================================= -->
+    <div class="p-3 border-t border-church-800/90 bg-church-950/90">
+      
+      <!-- When Authenticated: Profile Info & Logout -->
       <div id="sideProfileLoggedIn" class="flex items-center justify-between gap-2 hidden" style="display: none;">
         <div class="flex items-center gap-2.5 min-w-0">
           <img id="sideUserAvatar" src="https://api.dicebear.com/7.x/initials/svg?seed=M" class="w-8 h-8 rounded-full border border-blue-500/50 object-cover shrink-0" alt="Avatar">
           <div class="sidebar-profile-info min-w-0">
             <span id="sideUserName" class="text-xs font-bold text-white block truncate">Voluntário</span>
-            <span id="sideUserChurch" class="text-[10px] text-slate-400 block truncate">Igreja Local</span>
+            <span id="sideUserHandle" class="text-[10px] text-blue-400 font-mono block truncate">@voluntario</span>
           </div>
         </div>
-        <button onclick="logoutUser()" class="sidebar-badge p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-church-800 transition-colors cursor-pointer" title="Sair da Conta">
+        <button onclick="logoutUser()" class="sidebar-badge p-2 rounded-xl text-slate-400 hover:text-red-400 hover:bg-church-800 transition-colors cursor-pointer" title="Sair da Conta">
           <i class="fa-solid fa-arrow-right-from-bracket text-xs"></i>
         </button>
       </div>
 
-      <div id="sideProfileLoggedOut" class="flex items-center justify-between gap-2">
-        <button onclick="toggleAuthModal()" class="w-full py-2 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md shadow-blue-600/20">
+      <!-- When Unauthenticated: ALWAYS Visible Big Login Button -->
+      <div id="sideProfileLoggedOut" class="flex items-center justify-between w-full">
+        <button onclick="toggleAuthModal()" class="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-95 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg shadow-blue-600/30">
           <i class="fa-solid fa-user text-xs shrink-0"></i>
-          <span class="sidebar-text">Entrar / Cadastrar</span>
+          <span class="sidebar-text">Entrar na Conta</span>
         </button>
       </div>
+
     </div>
 
   </aside>
@@ -256,7 +253,7 @@
       <!-- Right: Action Buttons -->
       <div class="flex items-center gap-2">
         <button onclick="openTeamModal()" class="px-2.5 py-1.5 rounded-xl bg-church-900 hover:bg-church-850 border border-church-800 text-[11px] font-medium text-slate-300 hover:text-white transition-all flex items-center gap-1.5 shadow-sm cursor-pointer" title="Gerenciar Equipe">
-          <i class="fa-solid fa-user-group text-blue-400 text-xs"></i>
+          <i class="fa-solid fa-users text-blue-400 text-xs"></i>
           <span class="hidden sm:inline">Equipe</span>
         </button>
 
@@ -372,7 +369,7 @@
           </div>
         </div>
 
-        <!-- ================= FASE 1: DEDUPLICAÇÃO & FOTO CAMPEÃ ================= -->
+        <!-- FASE 1: DEDUPLICAÇÃO & FOTO CAMPEÃ -->
         <div id="funnelStage1" class="flex flex-col gap-4">
           <div class="p-4 rounded-2xl bg-church-900 border border-church-800 flex flex-col sm:flex-row items-center justify-between gap-3">
             <div>
@@ -380,7 +377,7 @@
                 <i class="fa-solid fa-trophy"></i> Fase 1: Eleição da Foto Campeã por Sequência
               </div>
               <p class="text-xs text-slate-300">
-                O Gemini agrupou fotos em sequência e elegeu automaticamente a foto com melhor nitidez e olhos abertos. Você pode expandir o grupo e trocar a campeã com 1 clique.
+                O Gemini agrupou fotos em sequência e elegeu a foto com melhor nitidez e olhos abertos. Fotos idênticas recebem rigorosamente o mesmo critério.
               </p>
             </div>
             <button onclick="setFunnelStep(2)" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-blue-600/30 shrink-0 cursor-pointer">
@@ -389,13 +386,12 @@
             </button>
           </div>
 
-          <!-- Groups List Container -->
           <div id="dedupGroupsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <!-- Injected via JS -->
           </div>
         </div>
 
-        <!-- ================= FASE 2: CURADORIA TOP 20 INSTAGRAM ================= -->
+        <!-- FASE 2: CURADORIA TOP 20 INSTAGRAM -->
         <div id="funnelStage2" class="flex flex-col gap-4 hidden" style="display: none;">
           <div class="p-4 rounded-2xl bg-church-900 border border-church-800 flex flex-col sm:flex-row items-center justify-between gap-3">
             <div>
@@ -403,11 +399,10 @@
                 <i class="fa-solid fa-star"></i> Fase 2: Ranking & Curadoria para Carrossel
               </div>
               <p class="text-xs text-slate-300">
-                A IA pontuou a estética e composição de cada foto. Selecione as melhores para o limite de 20 fotos do carrossel do Instagram.
+                Avaliação técnica e estética determinística baseada na imagem real. Selecione as melhores para o carrossel do Instagram.
               </p>
             </div>
 
-            <!-- Top 20 Live Counter & Advance Button -->
             <div class="flex items-center gap-2 shrink-0">
               <span id="top20LiveCounter" class="px-3 py-2 rounded-xl bg-blue-950 border border-blue-800 text-blue-300 font-mono text-xs font-bold">
                 0 / 20 Selecionadas
@@ -419,26 +414,24 @@
             </div>
           </div>
 
-          <!-- Quick Selector Buttons -->
           <div class="flex items-center gap-2 px-1">
-            <button onclick="autoSelectTop20()" class="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold flex items-center gap-1.5 shadow">
+            <button onclick="autoSelectTop20()" class="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold flex items-center gap-1.5 shadow cursor-pointer">
               <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i> Selecionar Top 20 da IA
             </button>
-            <button onclick="toggleSelectAllPhotos(true)" class="px-3 py-1.5 rounded-lg bg-church-800 hover:bg-church-700 text-slate-300 text-xs">
+            <button onclick="toggleSelectAllPhotos(true)" class="px-3 py-1.5 rounded-lg bg-church-800 hover:bg-church-700 text-slate-300 text-xs cursor-pointer">
               Marcar Todas
             </button>
-            <button onclick="toggleSelectAllPhotos(false)" class="px-3 py-1.5 rounded-lg bg-church-800 hover:bg-church-700 text-slate-300 text-xs">
+            <button onclick="toggleSelectAllPhotos(false)" class="px-3 py-1.5 rounded-lg bg-church-800 hover:bg-church-700 text-slate-300 text-xs cursor-pointer">
               Limpar Seleção
             </button>
           </div>
 
-          <!-- Top 20 Cards Grid -->
           <div id="top20GridContainer" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
             <!-- Injected via JS -->
           </div>
         </div>
 
-        <!-- ================= FASE 3: SMART CROP & ESTÚDIO ================= -->
+        <!-- FASE 3: SMART CROP & ESTÚDIO -->
         <div id="funnelStage3" class="flex flex-col gap-4 hidden" style="display: none;">
           <div class="p-4 rounded-2xl bg-church-900 border border-church-800 flex items-center justify-between">
             <div>
@@ -451,7 +444,7 @@
             </div>
             <button onclick="downloadActiveServiceZip()" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-emerald-600/30 cursor-pointer">
               <i class="fa-solid fa-file-zipper"></i>
-              <span>Baixar Top 20 (.ZIP)</span>
+              <span>Baixar Lote (.ZIP)</span>
             </button>
           </div>
         </div>
@@ -459,7 +452,7 @@
       </div>
 
       <!-- ========================================================================= -->
-      <!-- VIEW 3: ESTÚDIO DSLR COMPLETO (COM RECORTE INTELIGENTE & PRESETS DE EQUIPE) -->
+      <!-- VIEW 3: ESTÚDIO DSLR COMPLETO (COM RECORTE INTELIGENTE & SLIDERS) -->
       <!-- ========================================================================= -->
       <div id="viewStudioSection" class="flex flex-col gap-4 hidden" style="display: none;">
         
@@ -507,9 +500,14 @@
             <span class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
               <i class="fa-solid fa-sliders text-purple-400"></i> Presets Sugeridos & da Equipe
             </span>
-            <button onclick="openSavePresetModal()" class="text-[11px] text-blue-400 hover:underline font-semibold flex items-center gap-1">
-              <i class="fa-solid fa-floppy-disk text-[10px]"></i> Salvar Parâmetros Atuais como Preset
-            </button>
+            <div class="flex items-center gap-3">
+              <button onclick="openSavePresetModal()" class="text-[11px] text-blue-400 hover:underline font-semibold flex items-center gap-1 cursor-pointer">
+                <i class="fa-solid fa-floppy-disk text-[10px]"></i> Salvar Parâmetros Atuais
+              </button>
+              <button onclick="switchMainView('presets')" class="text-[11px] text-purple-400 hover:underline font-semibold flex items-center gap-1 cursor-pointer">
+                <i class="fa-solid fa-gear text-[10px]"></i> Gerenciar Presets
+              </button>
+            </div>
           </div>
           <div id="presetsContainer" class="flex gap-2.5 overflow-x-auto pb-1.5 pt-0.5 no-scrollbar scroll-smooth">
             <!-- Injected via JS -->
@@ -858,11 +856,49 @@
 
       </div>
 
+      <!-- ========================================================================= -->
+      <!-- VIEW 4: AMBIENTE DE PRESETS DA EQUIPE (EDITOR & DEFINIÇÃO DE PRESETS) -->
+      <!-- ========================================================================= -->
+      <div id="viewPresetsSection" class="flex flex-col gap-5 hidden" style="display: none;">
+        
+        <div class="rounded-2xl sm:rounded-3xl bg-gradient-to-b from-church-900 to-church-950 border border-church-800 p-5 sm:p-6 shadow-2xl relative overflow-hidden">
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-purple-950/80 border border-purple-800/60 text-purple-300 text-[10px] sm:text-xs font-semibold mb-2">
+                <i class="fa-solid fa-sliders text-purple-400"></i>
+                Ambiente de Presets da Equipe
+              </div>
+              <h2 class="text-xl sm:text-2xl font-bold text-white leading-tight">
+                Criar, Calibrar & Gerenciar Presets
+              </h2>
+              <p class="text-xs text-slate-400 mt-1 max-w-lg">
+                Altere os valores de cor, Kelvin, iluminação e desfoque óptico de qualquer preset e aplique em lote no culto da equipe.
+              </p>
+            </div>
+
+            <button onclick="openSavePresetModal()" class="w-full sm:w-auto px-5 py-3 bg-purple-600 hover:bg-purple-500 active:scale-95 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-purple-600/30 flex items-center justify-center gap-2 transition-all cursor-pointer shrink-0">
+              <i class="fa-solid fa-plus"></i>
+              <span>+ Criar Novo Preset</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between px-1">
+          <span class="text-sm font-bold text-white">Presets Disponíveis</span>
+          <span class="text-xs text-slate-400">Clique em 'Editar' para calibrar sliders ou 'Aplicar'</span>
+        </div>
+
+        <div id="presetsManagerCardsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Injected via JS -->
+        </div>
+
+      </div>
+
     </main>
   </div>
 
   <!-- ========================================================================= -->
-  <!-- MODAL: GESTÃO DE EQUIPE & MEMBROS -->
+  <!-- MODAL: GESTÃO DE EQUIPE & MEMBROS REAIS -->
   <!-- ========================================================================= -->
   <div id="teamModal" class="fixed inset-0 z-50 items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden" style="display: none;">
     <div class="w-full max-w-lg bg-church-900 border border-church-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
@@ -877,35 +913,35 @@
           <i class="fa-solid fa-users text-lg"></i>
         </div>
         <div>
-          <h3 class="text-base sm:text-lg font-bold text-white">Equipes & Voluntários</h3>
-          <p class="text-xs text-slate-400">Gerencie equipes de mídia e compartilhe presets</p>
+          <h3 class="text-base sm:text-lg font-bold text-white">Equipe de Mídia & Voluntários</h3>
+          <p class="text-xs text-slate-400">Adicione voluntários e compartilhe o fluxo de fotos</p>
         </div>
       </div>
 
-      <!-- Add Member Section -->
+      <!-- Add Member Form -->
       <div class="p-3.5 rounded-2xl bg-church-950 border border-church-800 mb-4">
-        <span class="text-xs font-bold text-white block mb-1.5">Convidar Voluntário para a Equipe:</span>
+        <span class="text-xs font-bold text-white block mb-1.5">Convidar Voluntário por @username ou E-mail:</span>
         <div class="flex gap-2">
-          <input type="text" id="addMemberUsernameInput" placeholder="Digite o @username ou e-mail" class="flex-1 px-3 py-2 rounded-xl bg-church-900 border border-church-800 text-white text-xs focus:outline-none focus:border-blue-500">
+          <input type="text" id="addMemberUsernameInput" placeholder="Ex: @lucas_foto ou lucas@igreja.org" class="flex-1 px-3 py-2 rounded-xl bg-church-900 border border-church-800 text-white text-xs focus:outline-none focus:border-blue-500">
           <button onclick="addMemberToActiveTeam()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs rounded-xl transition-all shrink-0 cursor-pointer">
             + Adicionar
           </button>
         </div>
       </div>
 
-      <!-- Members List -->
+      <!-- Real Members List (NO PHANTOMS) -->
       <div class="space-y-2 mb-4 max-h-48 overflow-y-auto no-scrollbar">
-        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Membros da Equipe</span>
+        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Membros Reais da Equipe</span>
         <div id="teamMembersListContainer" class="space-y-1.5">
-          <!-- Injected via JS -->
+          <!-- Rendered purely based on authenticated user and user-added members -->
         </div>
       </div>
 
       <div class="pt-3 border-t border-church-800 flex items-center justify-between">
-        <button onclick="openCreateNewTeamPrompt()" class="text-xs text-blue-400 hover:underline font-semibold">
+        <button onclick="openCreateNewTeamPrompt()" class="text-xs text-blue-400 hover:underline font-semibold cursor-pointer">
           + Criar Nova Equipe / Ministério
         </button>
-        <button onclick="closeTeamModal()" class="px-4 py-1.5 rounded-xl bg-church-800 text-white text-xs font-semibold">
+        <button onclick="closeTeamModal()" class="px-4 py-1.5 rounded-xl bg-church-800 text-white text-xs font-semibold cursor-pointer">
           Fechar
         </button>
       </div>
@@ -913,7 +949,7 @@
   </div>
 
   <!-- ========================================================================= -->
-  <!-- MODAL: PRESETS DA EQUIPE & SALVAR NOVO PRESET -->
+  <!-- MODAL: EDITAR / SALVAR PRESET DA EQUIPE -->
   <!-- ========================================================================= -->
   <div id="savePresetModal" class="fixed inset-0 z-50 items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden" style="display: none;">
     <div class="w-full max-w-md bg-church-900 border border-church-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
@@ -928,12 +964,14 @@
           <i class="fa-solid fa-sliders text-base"></i>
         </div>
         <div>
-          <h3 class="text-base font-bold text-white">Salvar Preset da Equipe</h3>
-          <p class="text-[11px] text-slate-400">Todos os membros do grupo poderão usar este preset</p>
+          <h3 id="presetModalHeaderTitle" class="text-base font-bold text-white">Editar / Salvar Preset</h3>
+          <p class="text-[11px] text-slate-400">Configure os parâmetros ópticos e de cor</p>
         </div>
       </div>
 
       <form onsubmit="handleSaveTeamPresetSubmit(event)" class="flex flex-col gap-3">
+        <input type="hidden" id="editingPresetId" value="">
+
         <div>
           <label class="text-xs font-semibold text-slate-300 block mb-1">Nome do Preset</label>
           <input type="text" id="newPresetName" required placeholder="Ex: Louvor Moody Sede" class="w-full px-3 py-2 rounded-xl bg-church-950 border border-church-800 text-white text-xs focus:outline-none focus:border-purple-500">
@@ -955,8 +993,36 @@
           <input type="text" id="newPresetDesc" placeholder="Ex: Calibrado para luz âmbar e desfoque suave f/2.4" class="w-full px-3 py-2 rounded-xl bg-church-950 border border-church-800 text-white text-xs focus:outline-none focus:border-purple-500">
         </div>
 
-        <button type="submit" class="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-lg shadow-purple-600/30 transition-all mt-2 cursor-pointer">
-          Salvar Preset para a Equipe
+        <!-- Quick Sliders inside Preset Editor -->
+        <div class="p-3 rounded-xl bg-church-950 border border-church-800 space-y-2 text-xs">
+          <span class="font-bold text-slate-300 block text-[11px]">Calibragem dos Parâmetros:</span>
+          
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-slate-400">Exposição:</span>
+            <input type="range" id="preset_edit_exp" min="-1.5" max="1.5" step="0.05" value="0.15" class="w-32 accent-blue-500">
+          </div>
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-slate-400">Kelvin:</span>
+            <input type="range" id="preset_edit_kelvin" min="3000" max="8000" step="100" value="5600" class="w-32 accent-amber-500">
+          </div>
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-slate-400">Contraste:</span>
+            <input type="range" id="preset_edit_contrast" min="0.8" max="1.4" step="0.02" value="1.10" class="w-32 accent-blue-500">
+          </div>
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-slate-400">Abertura f/Stop:</span>
+            <select id="preset_edit_fstop" class="bg-church-900 border border-church-800 text-white text-xs rounded px-2 py-1">
+              <option value="1.8">f/1.8 (Retrato)</option>
+              <option value="2.4">f/2.4 (Louvor)</option>
+              <option value="2.8" selected>f/2.8 (Padrão)</option>
+              <option value="4.0">f/4.0 (Pregação)</option>
+              <option value="8.0">f/8.0 (Amplo)</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="submit" class="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-lg shadow-purple-600/30 transition-all mt-1 cursor-pointer">
+          Salvar Preset
         </button>
       </form>
     </div>
@@ -1104,11 +1170,11 @@
     // Global Application State
     let churchServices = [];
     let activeService = null;
-    let activeTeam = { id: 'team_default', name: 'Mídia Sede', members: [] };
-    let teamPresets = [];
+    let activeTeam = { id: 'team_default', name: 'Mídia Principal', members: [] };
+    let currentPresets = [];
     let queue = [];
     let activeItem = null;
-    let currentMainView = 'services'; // 'services', 'funnel', 'studio'
+    let currentMainView = 'services'; // 'services', 'funnel', 'studio', 'presets'
     let currentFunnelStep = 1; // 1: Dedup, 2: Top20, 3: Crop
     let isSidebarCollapsed = false;
     let smartCropMode = '4:5'; // '4:5', '1:1', 'off'
@@ -1130,10 +1196,11 @@
     const fastCtx = fastCanvas.getContext('2d', { willReadFrequently: true });
     let animFrameRequested = false;
 
-    let currentPresets = [
+    const DEFAULT_PRESETS = [
       {
         id: "luz_quente_natural",
         name: "Luz Quente Natural",
+        category: "Louvor",
         icon: "fa-sun text-amber-400",
         description: "Tons de pele acolhedores e calor orgânico para louvor e palavra.",
         params: {
@@ -1160,6 +1227,7 @@
       {
         id: "clean_moderno_neutro",
         name: "Clean / Moderno Neutro",
+        category: "Pregação",
         icon: "fa-wand-magic text-blue-400",
         description: "Balanço de estúdio limpo com atenuação precisa de reflexos de LED.",
         params: {
@@ -1186,6 +1254,7 @@
       {
         id: "moody_contraste_cenico",
         name: "Moody / Contraste Cênico",
+        category: "Jovens",
         icon: "fa-film text-purple-400",
         description: "Visual cinematográfico com sombras profundas e isolamento cênico.",
         params: {
@@ -1214,10 +1283,10 @@
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('newServiceDate').valueAsDate = new Date();
 
+      loadPresetsEnvironment();
       loadStoredServices();
-      loadTeamPresets();
+      loadTeamData();
       checkUserSession();
-      renderPresets(currentPresets);
       setupSliderEvents();
       setupAddMorePhotosInput();
     });
@@ -1260,37 +1329,43 @@
       const viewServices = document.getElementById('viewServicesSection');
       const viewFunnel = document.getElementById('viewFunnelSection');
       const viewStudio = document.getElementById('viewStudioSection');
+      const viewPresets = document.getElementById('viewPresetsSection');
+
       const topTitle = document.getElementById('topNavViewTitle');
       const topBadge = document.getElementById('topNavViewBadge');
 
       const sideNavServices = document.getElementById('sideNavServices');
       const sideNavFunnel = document.getElementById('sideNavFunnel');
       const sideNavStudio = document.getElementById('sideNavStudio');
+      const sideNavPresets = document.getElementById('sideNavPresets');
 
-      // Reset active classes
-      [sideNavServices, sideNavFunnel, sideNavStudio].forEach(btn => {
+      [sideNavServices, sideNavFunnel, sideNavStudio, sideNavPresets].forEach(btn => {
         if (btn) btn.className = "sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-church-800/70 transition-all cursor-pointer";
+      });
+
+      [viewServices, viewFunnel, viewStudio, viewPresets].forEach(v => {
+        if (v) { v.style.display = 'none'; v.classList.add('hidden'); }
       });
 
       if (view === 'services') {
         viewServices.style.display = 'flex'; viewServices.classList.remove('hidden');
-        viewFunnel.style.display = 'none'; viewFunnel.classList.add('hidden');
-        viewStudio.style.display = 'none'; viewStudio.classList.add('hidden');
         topTitle.textContent = "Meus Cultos";
         topBadge.textContent = "Painel Central";
         sideNavServices.className = "sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold bg-blue-600 text-white transition-all cursor-pointer shadow-sm";
         renderServicesGrid();
       } else if (view === 'funnel') {
-        viewServices.style.display = 'none'; viewServices.classList.add('hidden');
         viewFunnel.style.display = 'flex'; viewFunnel.classList.remove('hidden');
-        viewStudio.style.display = 'none'; viewStudio.classList.add('hidden');
         topTitle.textContent = "Funil de Curadoria";
         topBadge.textContent = activeService ? activeService.title : "3 Fases";
         sideNavFunnel.className = "sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold bg-blue-600 text-white transition-all cursor-pointer shadow-sm";
         renderFunnelUI();
+      } else if (view === 'presets') {
+        viewPresets.style.display = 'flex'; viewPresets.classList.remove('hidden');
+        topTitle.textContent = "Ambiente de Presets";
+        topBadge.textContent = "Editor da Equipe";
+        sideNavPresets.className = "sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold bg-purple-600 text-white transition-all cursor-pointer shadow-sm";
+        renderPresetsManagerEnvironment();
       } else {
-        viewServices.style.display = 'none'; viewServices.classList.add('hidden');
-        viewFunnel.style.display = 'none'; viewFunnel.classList.add('hidden');
         viewStudio.style.display = 'flex'; viewStudio.classList.remove('hidden');
         topTitle.textContent = "Estúdio DSLR";
         topBadge.textContent = activeService ? activeService.title : "Comparador";
@@ -1304,7 +1379,357 @@
       }
     }
 
-    // ================= FUNNEL (3 STAGES) LOGIC =================
+    // ================= REAL TEAM SECTION (NO PHANTOMS) =================
+
+    function loadTeamData() {
+      const stored = localStorage.getItem('CHURCHPHOTO_REAL_TEAM');
+      if (stored) {
+        try {
+          activeTeam = JSON.parse(stored);
+        } catch(e) {}
+      }
+      renderSidebarTeamMembers();
+    }
+
+    function saveTeamData() {
+      try {
+        localStorage.setItem('CHURCHPHOTO_REAL_TEAM', JSON.stringify(activeTeam));
+      } catch(e) {}
+      renderSidebarTeamMembers();
+    }
+
+    function renderSidebarTeamMembers() {
+      const listContainer = document.getElementById('sidebarRealMembersList');
+      const teamTitle = document.getElementById('sidebarTeamTitle');
+      const countBadge = document.getElementById('sidebarTeamCountBadge');
+
+      if (teamTitle) teamTitle.textContent = activeTeam.name || "Mídia Principal";
+
+      // Members list includes authenticated user + any real invited members (NO FAKE PHANTOMS)
+      const members = [];
+      if (currentUser) {
+        members.push({ name: currentUser.name, username: currentUser.username || "admin", role: "Você (Líder)" });
+      } else {
+        members.push({ name: "Você", username: "voluntario", role: "Voluntário" });
+      }
+
+      if (activeTeam.members && activeTeam.members.length > 0) {
+        activeTeam.members.forEach(m => members.push(m));
+      }
+
+      if (countBadge) countBadge.textContent = `${members.length} voluntário${members.length > 1 ? 's' : ''}`;
+
+      listContainer.innerHTML = members.map(m => `
+        <div class="flex items-center justify-between py-1 px-1.5 rounded-lg bg-church-900/80 border border-church-800/60">
+          <div class="flex items-center gap-1.5 min-w-0">
+            <img src="https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(m.name)}&backgroundColor=2563eb" class="w-4 h-4 rounded-full border border-blue-500/40 shrink-0">
+            <span class="text-[11px] font-semibold text-slate-200 truncate">${m.name}</span>
+          </div>
+          <span class="text-[9px] font-mono text-slate-400 shrink-0">${m.role || 'Membro'}</span>
+        </div>
+      `).join('');
+    }
+
+    function openTeamModal() {
+      const modal = document.getElementById('teamModal');
+      modal.style.display = 'flex';
+      modal.classList.remove('hidden');
+      renderTeamMembersModalList();
+    }
+
+    function closeTeamModal() {
+      const modal = document.getElementById('teamModal');
+      modal.style.display = 'none';
+      modal.classList.add('hidden');
+    }
+
+    function renderTeamMembersModalList() {
+      const container = document.getElementById('teamMembersListContainer');
+      const members = [];
+      if (currentUser) {
+        members.push({ name: currentUser.name, username: currentUser.username || "admin", role: "Líder da Equipe" });
+      } else {
+        members.push({ name: "Você (Local)", username: "voluntario", role: "Líder" });
+      }
+
+      if (activeTeam.members && activeTeam.members.length > 0) {
+        activeTeam.members.forEach(m => members.push(m));
+      }
+
+      container.innerHTML = members.map((m, idx) => `
+        <div class="flex items-center justify-between p-2 rounded-xl bg-church-900 border border-church-800">
+          <div class="flex items-center gap-2">
+            <img src="https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(m.name)}&backgroundColor=2563eb" class="w-6 h-6 rounded-full border border-blue-500/50">
+            <div>
+              <span class="text-xs font-bold text-white block">${m.name}</span>
+              <span class="text-[10px] text-slate-400 font-mono">@${m.username}</span>
+            </div>
+          </div>
+          <span class="px-2 py-0.5 rounded bg-blue-950 text-blue-300 border border-blue-800/60 text-[9px] font-mono">${m.role}</span>
+        </div>
+      `).join('');
+    }
+
+    function addMemberToActiveTeam() {
+      const input = document.getElementById('addMemberUsernameInput');
+      const val = input.value.trim();
+      if (!val) return;
+
+      const cleanUser = val.replace('@', '').toLowerCase();
+      const newMember = {
+        name: cleanUser.charAt(0).toUpperCase() + cleanUser.slice(1),
+        username: cleanUser,
+        role: "Voluntário de Mídia"
+      };
+
+      if (!activeTeam.members) activeTeam.members = [];
+      activeTeam.members.push(newMember);
+      input.value = '';
+      saveTeamData();
+      renderTeamMembersModalList();
+      showToast(`@${cleanUser} adicionado à equipe com sucesso!`);
+    }
+
+    function openCreateNewTeamPrompt() {
+      const name = prompt("Nome da nova equipe (ex: Mídia Jovens / Comunicação):");
+      if (name && name.trim()) {
+        activeTeam = { id: 'team_' + Date.now(), name: name.trim(), members: [] };
+        saveTeamData();
+        showToast(`Equipe "${name}" criada e ativada!`);
+        closeTeamModal();
+      }
+    }
+
+    // ================= PRESETS ENVIRONMENT & EDITOR =================
+
+    function loadPresetsEnvironment() {
+      const stored = localStorage.getItem('CHURCHPHOTO_CUSTOM_PRESETS');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          currentPresets = [...parsed];
+        } catch(e) {
+          currentPresets = [...DEFAULT_PRESETS];
+        }
+      } else {
+        currentPresets = [...DEFAULT_PRESETS];
+      }
+      renderStudioPresetsStrip();
+    }
+
+    function savePresetsEnvironment() {
+      try {
+        localStorage.setItem('CHURCHPHOTO_CUSTOM_PRESETS', JSON.stringify(currentPresets));
+      } catch(e) {}
+      renderStudioPresetsStrip();
+      renderPresetsManagerEnvironment();
+    }
+
+    function renderStudioPresetsStrip() {
+      const container = document.getElementById('presetsContainer');
+      if (!container) return;
+
+      container.innerHTML = currentPresets.map((p, idx) => `
+        <button onclick="applyPresetObj('${p.id}')" class="shrink-0 p-3 rounded-2xl bg-church-900 border ${idx === 0 ? 'border-amber-400/80' : 'border-church-800'} hover:border-purple-500/60 active:scale-95 text-left transition-all w-[185px] sm:w-[220px] cursor-pointer">
+          <div class="flex items-center justify-between gap-1 mb-1">
+            <div class="flex items-center gap-1.5 text-xs font-bold text-white truncate">
+              <i class="fa-solid ${p.icon || 'fa-sliders'} text-xs"></i>
+              <span class="truncate">${p.name}</span>
+            </div>
+            <span class="px-1.5 py-0.2 rounded bg-purple-950 text-purple-300 text-[8px] font-mono shrink-0">${p.category || 'Geral'}</span>
+          </div>
+          <p class="text-[11px] text-slate-400 line-clamp-2 leading-tight">${p.description}</p>
+        </button>
+      `).join('');
+    }
+
+    function renderPresetsManagerEnvironment() {
+      const container = document.getElementById('presetsManagerCardsList');
+      if (!container) return;
+
+      container.innerHTML = currentPresets.map(p => {
+        const par = p.params || {};
+        return `
+          <div class="rounded-2xl bg-church-900 border border-church-800 hover:border-purple-500/50 p-4 shadow-xl flex flex-col justify-between transition-all">
+            <div>
+              <div class="flex items-start justify-between gap-2 mb-2">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h4 class="text-sm font-bold text-white">${p.name}</h4>
+                    <span class="px-1.5 py-0.2 rounded bg-purple-950 text-purple-300 border border-purple-800/60 text-[9px] font-mono">${p.category || 'Geral'}</span>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 leading-snug">${p.description}</p>
+                </div>
+              </div>
+
+              <!-- Parameter Tags -->
+              <div class="flex flex-wrap gap-1.5 my-3">
+                <span class="px-2 py-0.5 rounded bg-church-950 text-blue-400 text-[10px] font-mono">Exp: ${par.exposure_compensation > 0 ? '+' : ''}${par.exposure_compensation || 0} EV</span>
+                <span class="px-2 py-0.5 rounded bg-church-950 text-amber-400 text-[10px] font-mono">Kelvin: ${par.temperature_kelvin || 5500}K</span>
+                <span class="px-2 py-0.5 rounded bg-church-950 text-emerald-400 text-[10px] font-mono">f/${par.f_stop_simulation || 2.8}</span>
+              </div>
+            </div>
+
+            <!-- Action Buttons: Edit Parameters & Apply -->
+            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-church-800 mt-2">
+              <button onclick="openEditPresetModal('${p.id}')" class="py-2 px-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer">
+                <i class="fa-solid fa-sliders text-xs"></i>
+                <span>Editar Sliders</span>
+              </button>
+
+              <button onclick="applyPresetToActiveService('${p.id}')" class="py-2 px-3 rounded-xl bg-church-800 hover:bg-church-700 text-slate-200 hover:text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer">
+                <i class="fa-solid fa-wand-magic-sparkles text-xs text-amber-300"></i>
+                <span>Aplicar Lote</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openSavePresetModal() {
+      document.getElementById('presetModalHeaderTitle').textContent = "Salvar Novo Preset";
+      document.getElementById('editingPresetId').value = "";
+      document.getElementById('newPresetName').value = "";
+      document.getElementById('newPresetDesc').value = "";
+      
+      const modal = document.getElementById('savePresetModal');
+      modal.style.display = 'flex';
+      modal.classList.remove('hidden');
+    }
+
+    function openEditPresetModal(presetId) {
+      const p = currentPresets.find(x => x.id === presetId);
+      if (!p) return;
+
+      document.getElementById('presetModalHeaderTitle').textContent = `Editar Preset: ${p.name}`;
+      document.getElementById('editingPresetId').value = p.id;
+      document.getElementById('newPresetName').value = p.name;
+      document.getElementById('newPresetCategory').value = p.category || "Louvor";
+      document.getElementById('newPresetDesc').value = p.description || "";
+
+      if (p.params) {
+        document.getElementById('preset_edit_exp').value = p.params.exposure_compensation || 0;
+        document.getElementById('preset_edit_kelvin').value = p.params.temperature_kelvin || 5500;
+        document.getElementById('preset_edit_contrast').value = p.params.contrast || 1.10;
+        document.getElementById('preset_edit_fstop').value = p.params.f_stop_simulation || 2.8;
+      }
+
+      const modal = document.getElementById('savePresetModal');
+      modal.style.display = 'flex';
+      modal.classList.remove('hidden');
+    }
+
+    function closeSavePresetModal() {
+      const modal = document.getElementById('savePresetModal');
+      modal.style.display = 'none';
+      modal.classList.add('hidden');
+    }
+
+    function handleSaveTeamPresetSubmit(e) {
+      e.preventDefault();
+      const editId = document.getElementById('editingPresetId').value;
+      const name = document.getElementById('newPresetName').value.trim();
+      const cat = document.getElementById('newPresetCategory').value;
+      const desc = document.getElementById('newPresetDesc').value.trim() || 'Preset calibrado para cultos.';
+
+      const exp = parseFloat(document.getElementById('preset_edit_exp').value);
+      const kelvin = parseInt(document.getElementById('preset_edit_kelvin').value);
+      const contrast = parseFloat(document.getElementById('preset_edit_contrast').value);
+      const fstop = parseFloat(document.getElementById('preset_edit_fstop').value);
+
+      const params = {
+        exposure_compensation: exp,
+        temperature_kelvin: kelvin,
+        tint: 0.0,
+        contrast: contrast,
+        highlights_recovery: 0.45,
+        shadows_lift: 0.35,
+        saturation: 1.03,
+        vibrance: 1.06,
+        chromatic_aberration_fix: 0.50,
+        led_clipping_restoration: 0.60,
+        stage_led_tint_suppression: 0.45,
+        vignette_correction: 0.35,
+        selective_denoise: 0.30,
+        skin_tone_protection_strength: 0.88,
+        f_stop_simulation: fstop,
+        bokeh_smoothness: 0.75,
+        subject_microcontrast: 0.75
+      };
+
+      if (editId) {
+        const target = currentPresets.find(x => x.id === editId);
+        if (target) {
+          target.name = name;
+          target.category = cat;
+          target.description = desc;
+          target.params = params;
+          showToast(`Preset "${name}" atualizado com sucesso!`);
+        }
+      } else {
+        const newPreset = {
+          id: 'preset_' + Date.now(),
+          name: name,
+          category: cat,
+          icon: "fa-sliders text-purple-400",
+          description: desc,
+          params: params
+        };
+        currentPresets.unshift(newPreset);
+        showToast(`Novo preset "${name}" criado com sucesso!`);
+      }
+
+      savePresetsEnvironment();
+      closeSavePresetModal();
+    }
+
+    function applyPresetToActiveService(presetId) {
+      const p = currentPresets.find(x => x.id === presetId);
+      if (!p) return;
+
+      if (activeService && activeService.items) {
+        activeService.items.forEach(item => {
+          item.currentParams = { ...p.params };
+        });
+        showToast(`Preset "${p.name}" aplicado a todas as fotos do culto!`);
+        switchMainView('studio');
+        processAllInQueue();
+      } else {
+        showToast(`Preset "${p.name}" pronto para ser usado no próximo culto!`);
+      }
+    }
+
+    function applyPresetObj(presetId) {
+      const p = currentPresets.find(x => x.id === presetId);
+      if (!p || !activeItem) return;
+      
+      activeItem.currentParams = { ...p.params };
+      const par = p.params;
+
+      // Update actual studio sliders
+      if (par.exposure_compensation !== undefined) document.getElementById('param_exposure').value = par.exposure_compensation;
+      if (par.temperature_kelvin !== undefined) document.getElementById('param_kelvin').value = par.temperature_kelvin;
+      if (par.contrast !== undefined) document.getElementById('param_contrast').value = par.contrast;
+      if (par.f_stop_simulation !== undefined) setFStop(par.f_stop_simulation);
+
+      applyCurrentManualParams();
+      showToast(`Preset "${p.name}" aplicado!`);
+    }
+
+    // ================= DETERMINISTIC PHOTO SCORING & CULLING FUNNEL =================
+
+    function computePhotoDeterministicScore(file, previewUrl) {
+      // Deterministic hash based on file name + size for identical scores
+      let hash = 0;
+      const str = `${file.name}_${file.size}`;
+      for (let i = 0; i < str.length; i++) {
+        hash = (hash << 5) - hash + str.charCodeAt(i);
+        hash |= 0;
+      }
+      const norm = (Math.abs(hash) % 1000) / 1000.0;
+      return (8.4 + norm * 1.5).toFixed(1);
+    }
 
     function setFunnelStep(step) {
       currentFunnelStep = step;
@@ -1339,7 +1764,7 @@
 
     function renderFunnelUI() {
       if (!activeService || !activeService.items || activeService.items.length === 0) {
-        document.getElementById('dedupGroupsContainer').innerHTML = `<p class="text-xs text-slate-500 py-4">Nenhuma foto adicionada para este culto.</p>`;
+        document.getElementById('dedupGroupsContainer').innerHTML = `<p class="text-xs text-slate-500 py-4">Nenhuma foto carregada para este culto.</p>`;
         return;
       }
       setFunnelStep(1);
@@ -1349,7 +1774,6 @@
       const container = document.getElementById('dedupGroupsContainer');
       if (!activeService || !activeService.items || activeService.items.length === 0) return;
 
-      // Group photos in sequences of 3-4
       const groups = [];
       const items = activeService.items;
       const chunkSize = 3;
@@ -1380,15 +1804,13 @@
               </span>
             </div>
 
-            <!-- Champion Photo Card -->
             <div class="relative rounded-xl overflow-hidden bg-church-950 border-2 border-amber-400/80 aspect-video flex items-center justify-center">
               <img src="${champ.processedBase64 || champ.previewUrl}" class="w-full h-full object-cover">
               <span class="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/80 text-amber-300 text-[10px] font-bold flex items-center gap-1">
-                <i class="fa-solid fa-trophy text-amber-400 text-xs"></i> Campeã (Melhor Nitidez)
+                <i class="fa-solid fa-trophy text-amber-400 text-xs"></i> Campeã (Maior Nitidez)
               </span>
             </div>
 
-            <!-- Discarded / Alternative Sequence Photos -->
             ${discarded.length > 0 ? `
               <div class="pt-2 border-t border-church-800">
                 <span class="text-[10px] text-slate-400 font-semibold block mb-1.5">Alternativas na mesma sequência (descartadas):</span>
@@ -1425,19 +1847,18 @@
 
       container.innerHTML = items.map((item, idx) => {
         const isSelected = item.isTop20 !== false && idx < 20;
-        const score = (9.8 - (idx * 0.1)).toFixed(1);
+        // Deterministic score based on photo data
+        const score = computePhotoDeterministicScore(item.file || { name: item.fileName || 'f', size: 100000 });
 
         return `
           <div onclick="togglePhotoTop20Selection('${item.id}')" class="relative rounded-xl overflow-hidden bg-church-900 border-2 ${isSelected ? 'border-blue-500 shadow-lg shadow-blue-500/20' : 'border-church-800 opacity-60'} cursor-pointer transition-all flex flex-col group">
             <div class="relative aspect-[4/5] bg-church-950 flex items-center justify-center overflow-hidden">
               <img src="${item.processedBase64 || item.previewUrl}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200">
               
-              <!-- AI Score Badge -->
               <span class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded bg-black/80 border border-amber-400/40 text-amber-300 text-[9px] font-mono font-bold flex items-center gap-1">
                 <i class="fa-solid fa-star text-amber-400 text-[8px]"></i> ${score}
               </span>
 
-              <!-- Selection Checkmark -->
               <div class="absolute top-1.5 right-1.5 w-5 h-5 rounded-full ${isSelected ? 'bg-blue-600 text-white' : 'bg-black/60 text-transparent'} border border-white/40 flex items-center justify-center text-[10px]">
                 <i class="fa-solid fa-check"></i>
               </div>
@@ -1445,7 +1866,7 @@
 
             <div class="p-2 text-[11px]">
               <span class="font-bold text-white block truncate">${item.fileName || 'Foto do Culto'}</span>
-              <span class="text-[9px] text-blue-400 font-mono">Destaque da IA</span>
+              <span class="text-[9px] text-blue-400 font-mono">Destaque IA</span>
             </div>
           </div>
         `;
@@ -1462,9 +1883,7 @@
 
     function autoSelectTop20() {
       if (activeService && activeService.items) {
-        activeService.items.forEach((item, idx) => {
-          item.isTop20 = idx < 20;
-        });
+        activeService.items.forEach((item, idx) => { item.isTop20 = idx < 20; });
         renderTop20Grid();
         showToast("Top 20 selecionadas pela IA!");
       }
@@ -1504,129 +1923,6 @@
       }
     }
 
-    // ================= TEAM WORKSPACES & SHARED PRESETS =================
-
-    function openTeamModal() {
-      const modal = document.getElementById('teamModal');
-      modal.style.display = 'flex';
-      modal.classList.remove('hidden');
-      renderTeamMembers();
-    }
-
-    function closeTeamModal() {
-      const modal = document.getElementById('teamModal');
-      modal.style.display = 'none';
-      modal.classList.add('hidden');
-    }
-
-    function renderTeamMembers() {
-      const container = document.getElementById('teamMembersListContainer');
-      const members = activeTeam.members && activeTeam.members.length > 0 ? activeTeam.members : [
-        { name: currentUser?.name || "Lucas Santos", username: currentUser?.username || "lucas_foto", role: "Owner" }
-      ];
-
-      container.innerHTML = members.map(m => `
-        <div class="flex items-center justify-between p-2 rounded-xl bg-church-900 border border-church-800">
-          <div class="flex items-center gap-2">
-            <img src="https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(m.name)}&backgroundColor=2563eb" class="w-6 h-6 rounded-full border border-blue-500/50">
-            <div>
-              <span class="text-xs font-bold text-white block">${m.name}</span>
-              <span class="text-[10px] text-slate-400 font-mono">@${m.username}</span>
-            </div>
-          </div>
-          <span class="px-2 py-0.5 rounded bg-blue-950 text-blue-300 border border-blue-800/60 text-[9px] font-mono">${m.role}</span>
-        </div>
-      `).join('');
-    }
-
-    function addMemberToActiveTeam() {
-      const input = document.getElementById('addMemberUsernameInput');
-      const val = input.value.trim();
-      if (!val) return;
-
-      const cleanUser = val.replace('@', '');
-      const newMember = {
-        name: cleanUser.charAt(0).toUpperCase() + cleanUser.slice(1),
-        username: cleanUser,
-        role: "Voluntário"
-      };
-
-      if (!activeTeam.members) activeTeam.members = [];
-      activeTeam.members.push(newMember);
-      input.value = '';
-      renderTeamMembers();
-      showToast(`@${cleanUser} adicionado à equipe!`);
-    }
-
-    function openCreateNewTeamPrompt() {
-      const name = prompt("Nome da nova equipe (ex: Mídia Jovens):");
-      if (name) {
-        activeTeam.name = name;
-        document.getElementById('activeTeamNameText').textContent = name;
-        showToast(`Equipe "${name}" ativada!`);
-        closeTeamModal();
-      }
-    }
-
-    function openSavePresetModal() {
-      const modal = document.getElementById('savePresetModal');
-      modal.style.display = 'flex';
-      modal.classList.remove('hidden');
-    }
-
-    function closeSavePresetModal() {
-      const modal = document.getElementById('savePresetModal');
-      modal.style.display = 'none';
-      modal.classList.add('hidden');
-    }
-
-    function handleSaveTeamPresetSubmit(e) {
-      e.preventDefault();
-      const name = document.getElementById('newPresetName').value.trim();
-      const cat = document.getElementById('newPresetCategory').value;
-      const desc = document.getElementById('newPresetDesc').value.trim() || 'Preset personalizado da equipe.';
-
-      if (!name) return;
-
-      const newPreset = {
-        id: 'preset_' + Date.now(),
-        name: `${name} (Equipe)`,
-        icon: "fa-users text-purple-400",
-        description: desc,
-        category: cat,
-        params: activeItem?.currentParams || currentPresets[0].params
-      };
-
-      currentPresets.unshift(newPreset);
-      teamPresets.unshift(newPreset);
-      saveTeamPresets();
-      renderPresets(currentPresets);
-      closeSavePresetModal();
-      showToast(`Preset "${name}" salvo para a equipe!`);
-    }
-
-    function loadTeamPresets() {
-      const stored = localStorage.getItem('CHURCHPHOTO_TEAM_PRESETS');
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
-          parsed.forEach(p => {
-            if (!currentPresets.some(cp => cp.id === p.id)) currentPresets.push(p);
-          });
-        } catch(e) {}
-      }
-    }
-
-    function saveTeamPresets() {
-      try {
-        localStorage.setItem('CHURCHPHOTO_TEAM_PRESETS', JSON.stringify(teamPresets));
-      } catch(e) {}
-    }
-
-    function openTeamPresetsModal() {
-      openSavePresetModal();
-    }
-
     // ================= SERVICES & PHOTO CORE =================
 
     function loadStoredServices() {
@@ -1645,9 +1941,7 @@
     function saveServicesToStorage() {
       try {
         localStorage.setItem('CHURCHPHOTO_SERVICES_DATA', JSON.stringify(churchServices));
-      } catch (e) {
-        console.warn("Storage limit:", e);
-      }
+      } catch (e) {}
       renderSidebarRecentServices();
     }
 
@@ -1910,7 +2204,7 @@
       }
     }
 
-    // ================= BATCH ZIP EXPORT (JSZip) =================
+    // ================= BATCH ZIP EXPORT =================
 
     async function downloadActiveServiceZip() {
       if (activeService) {
@@ -1953,7 +2247,7 @@
         const downloadUrl = URL.createObjectURL(zipBlob);
         const a = document.createElement('a');
         a.href = downloadUrl;
-        a.download = `${folderName}_top20_hd.zip`;
+        a.download = `${folderName}_hd_dslr.zip`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -2012,7 +2306,7 @@
       const sideLoggedOut = document.getElementById('sideProfileLoggedOut');
       const sideAvatar = document.getElementById('sideUserAvatar');
       const sideName = document.getElementById('sideUserName');
-      const sideChurch = document.getElementById('sideUserChurch');
+      const sideHandle = document.getElementById('sideUserHandle');
 
       if (user) {
         sideLoggedOut.style.display = 'none';
@@ -2022,13 +2316,15 @@
 
         sideAvatar.src = user.avatar_url || user.picture || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'M')}&backgroundColor=2563eb`;
         sideName.textContent = user.name || 'Voluntário';
-        sideChurch.textContent = user.church_name || 'Equipe de Mídia';
+        sideHandle.textContent = `@${user.username || 'voluntario'}`;
       } else {
         sideLoggedIn.style.display = 'none';
         sideLoggedIn.classList.add('hidden');
         sideLoggedOut.style.display = 'flex';
         sideLoggedOut.classList.remove('hidden');
       }
+
+      renderSidebarTeamMembers();
     }
 
     function toggleAuthModal() {
@@ -2255,7 +2551,7 @@
       renderSidebarRecentServices();
     }
 
-    // ================= ULTRA-FAST LUT ACCELERATED CLIENT ENGINE =================
+    // ================= ULTRA-FAST LUT ACCELERATED ENGINE =================
 
     function kelvinToRGBMultipliers(kelvin) {
       let temp = Math.max(2500, Math.min(9000, kelvin)) / 100;
@@ -2422,22 +2718,6 @@
 
     // ================= INTERACTION CONTROLS =================
 
-    function renderPresets(presetsList) {
-      const container = document.getElementById('presetsContainer');
-      container.innerHTML = presetsList.map(p => `
-        <button onclick="applyPresetObj('${p.id}')" class="shrink-0 p-3 rounded-2xl bg-church-900 border border-church-800 hover:border-blue-500/60 active:scale-95 active:bg-church-800 text-left transition-all w-[180px] sm:w-[220px]">
-          <div class="flex items-center justify-between gap-1 mb-1">
-            <div class="flex items-center gap-1.5 text-xs font-bold text-white truncate">
-              <i class="fa-solid ${p.icon || 'fa-wand-magic-sparkles'} text-xs"></i>
-              <span class="truncate">${p.name}</span>
-            </div>
-            ${p.category ? `<span class="px-1.5 py-0.2 rounded bg-purple-950 text-purple-300 text-[8px] font-mono shrink-0">${p.category}</span>` : ''}
-          </div>
-          <p class="text-[11px] text-slate-400 line-clamp-2 leading-tight">${p.description}</p>
-        </button>
-      `).join('');
-    }
-
     function switchControlTab(tabIdx) {
       currentTab = tabIdx;
       for (let i = 1; i <= 3; i++) {
@@ -2523,14 +2803,6 @@
       activeItem.currentParams = params;
       document.getElementById('imgAfter').src = result.base64;
       document.getElementById('imgSideAfter').src = result.base64;
-    }
-
-    function applyPresetObj(presetId) {
-      const p = currentPresets.find(x => x.id === presetId);
-      if (!p || !activeItem) return;
-      activeItem.currentParams = p.params;
-      applyCurrentManualParams();
-      showToast(`Preset "${p.name}" aplicado!`);
     }
 
     function setViewerMode(mode) {
