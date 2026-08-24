@@ -256,6 +256,11 @@
 
       <!-- Right: Action Buttons -->
       <div class="flex items-center gap-2">
+        <button onclick="clearDeviceDataPrompt()" class="px-2.5 py-1.5 rounded-xl bg-church-900 hover:bg-church-850 border border-church-800 text-[11px] font-medium text-slate-400 hover:text-red-400 transition-all flex items-center gap-1.5 shadow-sm cursor-pointer" title="Limpar dados do dispositivo">
+          <i class="fa-solid fa-trash-can text-xs"></i>
+          <span class="hidden sm:inline">Limpar Cache</span>
+        </button>
+
         <button onclick="switchMainView('team_area')" class="px-2.5 py-1.5 rounded-xl bg-church-900 hover:bg-church-850 border border-church-800 text-[11px] font-medium text-slate-300 hover:text-white transition-all flex items-center gap-1.5 shadow-sm cursor-pointer" title="Área da Equipe">
           <i class="fa-solid fa-users text-purple-400 text-xs"></i>
           <span class="hidden sm:inline" id="topTeamNameBadge">Mídia Principal</span>
@@ -278,7 +283,7 @@
     <main class="max-w-6xl w-full mx-auto px-3 sm:px-6 py-4 sm:py-6 flex-1 flex flex-col gap-4 sm:gap-6">
 
       <!-- ========================================================================= -->
-      <!-- VIEW 1: MEUS CULTOS (GERENCIADOR DE ÁLBUNS) -->
+      <!-- VIEW 1: MEUS CULTOS (GERENCIADOR DE ÁLBUNS VINCULADO À CONTA) -->
       <!-- ========================================================================= -->
       <div id="viewServicesSection" class="flex flex-col gap-5 w-full">
         
@@ -289,21 +294,28 @@
           <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
               <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-950/70 border border-blue-800/60 text-blue-300 text-[10px] sm:text-xs font-semibold mb-2">
-                <i class="fa-solid fa-photo-film text-amber-400"></i>
-                Gestão por Cultos & Funil em 3 Fases
+                <i class="fa-solid fa-user-shield text-amber-400"></i>
+                <span id="userAccountStatusBadge">Conta: Visitante (Não autenticado)</span>
               </div>
               <h2 class="text-xl sm:text-2xl font-bold text-white leading-tight">
                 Curadoria com IA, Equipes & Edição DSLR
               </h2>
               <p class="text-xs text-slate-400 mt-1 max-w-lg">
-                Faça upload de 150 a 300+ fotos, elimine repetições com a Foto Campeã, gere o Top 20 para o Instagram e aplique presets da equipe.
+                Cadastre sua conta para sincronizar todos os seus cultos e fotos com segurança.
               </p>
             </div>
 
-            <button onclick="openCreateServiceModal()" class="w-full sm:w-auto px-6 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-95 text-white font-bold text-xs sm:text-sm rounded-xl shadow-xl shadow-blue-600/30 flex items-center justify-center gap-2.5 transition-all cursor-pointer shrink-0">
-              <i class="fa-solid fa-plus text-sm"></i>
-              <span>Criar Novo Culto</span>
-            </button>
+            <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <button id="mainHeroAuthBtn" onclick="toggleAuthModal()" class="w-full sm:w-auto px-5 py-3.5 bg-church-800 hover:bg-church-700 active:scale-95 text-white font-bold text-xs sm:text-sm rounded-xl border border-church-700 flex items-center justify-center gap-2 transition-all cursor-pointer">
+                <i class="fa-solid fa-user-lock text-sm text-blue-400"></i>
+                <span>Entrar / Cadastrar</span>
+              </button>
+
+              <button onclick="openCreateServiceModal()" class="w-full sm:w-auto px-6 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-95 text-white font-bold text-xs sm:text-sm rounded-xl shadow-xl shadow-blue-600/30 flex items-center justify-center gap-2.5 transition-all cursor-pointer shrink-0">
+                <i class="fa-solid fa-plus text-sm"></i>
+                <span>Criar Novo Culto</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -315,7 +327,7 @@
               0 cultos
             </span>
           </div>
-          <span class="text-[11px] text-slate-400">Clique para abrir no funil ou baixar lote</span>
+          <span class="text-[11px] text-slate-400">Vinculados à sua conta ativa</span>
         </div>
 
         <!-- Services Cards Grid List -->
@@ -328,7 +340,7 @@
           <div class="w-16 h-16 rounded-2xl bg-church-950 border border-church-800 flex items-center justify-center text-slate-600 mb-3 shadow-inner">
             <i class="fa-solid fa-church text-2xl text-blue-400"></i>
           </div>
-          <h3 class="text-base font-bold text-white">Nenhum culto criado ainda</h3>
+          <h3 class="text-base font-bold text-white">Nenhum culto criado nesta conta</h3>
           <p class="text-xs text-slate-400 mt-1 max-w-sm">
             Crie seu primeiro culto para fazer upload das fotos da equipe de mídia e iniciar a curadoria em lote.
           </p>
@@ -1112,7 +1124,7 @@
     </div>
   </div>
 
-  <!-- AUTHENTICATION MODAL (ROBUST, 100% OPERATIONAL) -->
+  <!-- AUTHENTICATION MODAL (STRICT VALIDATION: CADASTRO OBRIGATÓRIO PARA LOGIN) -->
   <div id="authModal" class="fixed inset-0 z-50 items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden" style="display: none;">
     <div class="w-full max-w-md bg-church-900 border border-church-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
       <div class="absolute -top-16 -right-16 w-36 h-36 bg-blue-500/20 blur-3xl pointer-events-none"></div>
@@ -1127,12 +1139,12 @@
         </div>
         <div>
           <h3 id="authModalTitle" class="text-base font-bold text-white">Entrar na Conta</h3>
-          <p id="authModalSubtitle" class="text-[11px] text-slate-400">Acesse com seu e-mail ou nome de usuário</p>
+          <p id="authModalSubtitle" class="text-[11px] text-slate-400">Acesse com seus dados cadastrados</p>
         </div>
       </div>
 
-      <div id="authAlertBox" class="p-3 rounded-xl bg-blue-950/70 border border-blue-800/80 text-blue-300 text-xs hidden mb-3 flex items-center gap-2" style="display: none;">
-        <i class="fa-solid fa-circle-info shrink-0"></i>
+      <div id="authAlertBox" class="p-3 rounded-xl bg-red-950/80 border border-red-800/90 text-red-300 text-xs hidden mb-3 flex items-start gap-2" style="display: none;">
+        <i class="fa-solid fa-circle-exclamation shrink-0 mt-0.5"></i>
         <span id="authAlertMessage"></span>
       </div>
 
@@ -1185,14 +1197,6 @@
         </button>
       </form>
 
-      <!-- Instant Fast Demo Login -->
-      <div class="mt-3">
-        <button onclick="loginAsDemoUser()" type="button" class="w-full py-2 px-3 rounded-xl bg-church-950 hover:bg-church-800 border border-church-800 text-slate-300 hover:text-white text-[11px] font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer">
-          <i class="fa-solid fa-bolt text-amber-400"></i>
-          <span>Entrar Direto com Conta Voluntário (1 Clique)</span>
-        </button>
-      </div>
-
       <div class="text-center mt-3 pt-3 border-t border-church-800/80">
         <button id="toggleRegisterModeBtn" onclick="toggleRegisterMode()" type="button" class="text-xs text-blue-400 hover:text-blue-300 font-medium transition-colors cursor-pointer">
           Não tem conta? <strong>Cadastre-se grátis</strong>
@@ -1222,8 +1226,6 @@
     let viewerMode = 'slider';
     let sliderPercent = 50;
     let isDragging = false;
-    const DEFAULT_SERVER_URL = 'https://enhacepics.onrender.com';
-    let serverUrl = localStorage.getItem('CHURCHPHOTO_SERVER_URL') || DEFAULT_SERVER_URL;
     let currentTab = 1;
     let focalPoint = { x: 0.50, y: 0.40 };
     let currentFStop = 2.8;
@@ -1323,12 +1325,29 @@
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('newServiceDate').valueAsDate = new Date();
 
+      checkUserSession();
       loadTeamData();
       loadStoredServices();
-      checkUserSession();
       setupSliderEvents();
       setupAddMorePhotosInput();
     });
+
+    // ================= REGISTERED USERS DATABASE (STRICT AUTH) =================
+
+    function getRegisteredUsersDb() {
+      try {
+        const raw = localStorage.getItem('CHURCHPHOTO_REGISTERED_USERS_DB');
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveRegisteredUsersDb(users) {
+      try {
+        localStorage.setItem('CHURCHPHOTO_REGISTERED_USERS_DB', JSON.stringify(users));
+      } catch (e) {}
+    }
 
     // ================= SIDEBAR & NAVIGATION =================
 
@@ -1389,7 +1408,7 @@
       if (view === 'services') {
         viewServices.style.display = 'flex'; viewServices.classList.remove('hidden');
         topTitle.textContent = "Meus Cultos";
-        topBadge.textContent = "Painel Central";
+        topBadge.textContent = currentUser ? `Conta: @${currentUser.username}` : "Painel Central";
         sideNavServices.className = "sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold bg-blue-600 text-white transition-all cursor-pointer shadow-sm";
         renderServicesGrid();
       } else if (view === 'funnel') {
@@ -1420,8 +1439,13 @@
 
     // ================= REAL TEAM WORKSPACE & PRESETS LINKED TO TEAM =================
 
+    function getStorageTeamKey() {
+      return currentUser ? `CHURCHPHOTO_TEAM_${currentUser.id}` : 'CHURCHPHOTO_TEAM_GUEST';
+    }
+
     function loadTeamData() {
-      const stored = localStorage.getItem('CHURCHPHOTO_REAL_TEAM');
+      const key = getStorageTeamKey();
+      const stored = localStorage.getItem(key);
       if (stored) {
         try {
           activeTeam = JSON.parse(stored);
@@ -1429,17 +1453,18 @@
             activeTeam.presets = [...DEFAULT_TEAM_PRESETS];
           }
         } catch(e) {
-          activeTeam = { id: 'team_default', name: 'Mídia Principal', members: [], presets: [...DEFAULT_TEAM_PRESETS] };
+          activeTeam = { id: 'team_default', name: currentUser ? `Mídia ${currentUser.church_name || 'Igreja'}` : 'Mídia Principal', members: [], presets: [...DEFAULT_TEAM_PRESETS] };
         }
       } else {
-        activeTeam = { id: 'team_default', name: 'Mídia Principal', members: [], presets: [...DEFAULT_TEAM_PRESETS] };
+        activeTeam = { id: 'team_default', name: currentUser ? `Mídia ${currentUser.church_name || 'Igreja'}` : 'Mídia Principal', members: [], presets: [...DEFAULT_TEAM_PRESETS] };
       }
       saveTeamData();
     }
 
     function saveTeamData() {
       try {
-        localStorage.setItem('CHURCHPHOTO_REAL_TEAM', JSON.stringify(activeTeam));
+        const key = getStorageTeamKey();
+        localStorage.setItem(key, JSON.stringify(activeTeam));
       } catch(e) {}
       renderSidebarTeamMembers();
       renderStudioPresetsStrip();
@@ -1448,9 +1473,9 @@
     function getRealTeamMembersList() {
       const members = [];
       if (currentUser) {
-        members.push({ name: currentUser.name, username: currentUser.username || "admin", role: "Você (Líder da Equipe)" });
+        members.push({ name: currentUser.name, username: currentUser.username, role: "Você (Líder da Equipe)" });
       } else {
-        members.push({ name: "Você (Voluntário)", username: "voluntario", role: "Voluntário Local" });
+        members.push({ name: "Você (Visitante)", username: "visitante", role: "Não autenticado" });
       }
 
       if (activeTeam.members && activeTeam.members.length > 0) {
@@ -1948,16 +1973,23 @@
       }
     }
 
-    // ================= SERVICES & PHOTO CORE =================
+    // ================= SERVICES & PHOTO STORAGE (ACCOUNT-BOUND) =================
+
+    function getStorageServicesKey() {
+      return currentUser ? `CHURCHPHOTO_SERVICES_${currentUser.id}` : 'CHURCHPHOTO_SERVICES_GUEST';
+    }
 
     function loadStoredServices() {
-      const stored = localStorage.getItem('CHURCHPHOTO_SERVICES_DATA');
+      const key = getStorageServicesKey();
+      const stored = localStorage.getItem(key);
       if (stored) {
         try {
           churchServices = JSON.parse(stored);
         } catch (e) {
           churchServices = [];
         }
+      } else {
+        churchServices = [];
       }
       renderServicesGrid();
       renderSidebarRecentServices();
@@ -1965,9 +1997,24 @@
 
     function saveServicesToStorage() {
       try {
-        localStorage.setItem('CHURCHPHOTO_SERVICES_DATA', JSON.stringify(churchServices));
+        const key = getStorageServicesKey();
+        localStorage.setItem(key, JSON.stringify(churchServices));
       } catch (e) {}
       renderSidebarRecentServices();
+    }
+
+    function clearDeviceDataPrompt() {
+      if (confirm("Deseja limpar o cache e cultos locais deste dispositivo? (Seus dados permanecerão salvos na nuvem quando autenticado)")) {
+        localStorage.removeItem(getStorageServicesKey());
+        churchServices = [];
+        activeService = null;
+        queue = [];
+        activeItem = null;
+        renderServicesGrid();
+        renderSidebarRecentServices();
+        renderThumbnails();
+        showToast("Cache do dispositivo limpo com sucesso!");
+      }
     }
 
     function renderSidebarRecentServices() {
@@ -2118,6 +2165,8 @@
 
       const newService = {
         id: 'srv_' + Date.now(),
+        userId: currentUser ? currentUser.id : 'guest',
+        teamId: activeTeam ? activeTeam.id : 'team_default',
         title: title,
         date: date || new Date().toLocaleDateString('pt-BR'),
         items: [],
@@ -2146,7 +2195,7 @@
       churchServices.unshift(newService);
       saveServicesToStorage();
       closeCreateServiceModal();
-      showToast(`Culto "${title}" criado!`);
+      showToast(`Culto "${title}" criado na sua conta!`);
 
       openServiceInFunnel(newService.id);
     }
@@ -2285,7 +2334,7 @@
       }
     }
 
-    // ================= USER AUTHENTICATION (100% OPERATIONAL) =================
+    // ================= USER AUTHENTICATION (STRICT AUTHENTICATION) =================
 
     function showToast(msg) {
       const toast = document.getElementById('toastNotification');
@@ -2303,13 +2352,13 @@
       }
     }
 
-    function showAuthAlert(msg, type = 'info') {
+    function showAuthAlert(msg, type = 'error') {
       const box = document.getElementById('authAlertBox');
       const text = document.getElementById('authAlertMessage');
       if (!box || !text) return;
       box.className = type === 'error' 
-        ? 'p-3 rounded-xl bg-red-950/70 border border-red-800/80 text-red-300 text-xs mb-3 flex items-center gap-2' 
-        : 'p-3 rounded-xl bg-blue-950/70 border border-blue-800/80 text-blue-300 text-xs mb-3 flex items-center gap-2';
+        ? 'p-3 rounded-xl bg-red-950/80 border border-red-800/90 text-red-300 text-xs mb-3 flex items-start gap-2' 
+        : 'p-3 rounded-xl bg-blue-950/80 border border-blue-800/90 text-blue-300 text-xs mb-3 flex items-start gap-2';
       box.style.display = 'flex';
       box.classList.remove('hidden');
       text.textContent = msg;
@@ -2333,17 +2382,20 @@
       const sideAvatar = document.getElementById('sideUserAvatar');
       const sideName = document.getElementById('sideUserName');
       const sideHandle = document.getElementById('sideUserHandle');
+      const heroStatus = document.getElementById('userAccountStatusBadge');
 
       if (user) {
         if (sideLoggedOut) { sideLoggedOut.style.display = 'none'; sideLoggedOut.classList.add('hidden'); }
         if (sideLoggedIn) { sideLoggedIn.style.display = 'flex'; sideLoggedIn.classList.remove('hidden'); }
 
-        if (sideAvatar) sideAvatar.src = user.avatar_url || user.picture || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'M')}&backgroundColor=2563eb`;
+        if (sideAvatar) sideAvatar.src = user.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'M')}&backgroundColor=2563eb`;
         if (sideName) sideName.textContent = user.name || 'Voluntário';
         if (sideHandle) sideHandle.textContent = `@${user.username || 'voluntario'}`;
+        if (heroStatus) heroStatus.innerHTML = `<span class="text-emerald-400 font-bold">Conectado como: ${user.name} (@${user.username})</span>`;
       } else {
         if (sideLoggedIn) { sideLoggedIn.style.display = 'none'; sideLoggedIn.classList.add('hidden'); }
         if (sideLoggedOut) { sideLoggedOut.style.display = 'flex'; sideLoggedOut.classList.remove('hidden'); }
+        if (heroStatus) heroStatus.textContent = 'Conta: Visitante (Não autenticado)';
       }
 
       renderSidebarTeamMembers();
@@ -2369,6 +2421,8 @@
       const regFields = document.getElementById('registerFieldsGroup');
       const submitText = document.getElementById('authSubmitText');
       const toggleBtn = document.getElementById('toggleRegisterModeBtn');
+      const box = document.getElementById('authAlertBox');
+      if (box) { box.style.display = 'none'; box.classList.add('hidden'); }
 
       if (isRegisterMode) {
         if (title) title.textContent = 'Criar Nova Conta';
@@ -2383,64 +2437,98 @@
       }
     }
 
-    function loginAsDemoUser() {
-      currentUser = {
-        id: `usr_demo_voluntario`,
-        username: "voluntario_midia",
-        name: "Voluntário de Mídia",
-        email: "voluntario@igreja.org",
-        church_name: "Igreja Central",
-        avatar_url: `https://api.dicebear.com/7.x/initials/svg?seed=Voluntario&backgroundColor=2563eb`,
-        role: 'photographer'
-      };
-
-      localStorage.setItem('CHURCHPHOTO_USER_SESSION', JSON.stringify(currentUser));
-      renderAuthenticatedUser(currentUser);
-      toggleAuthModal();
-      showToast("Conectado com sucesso como Voluntário!");
-    }
-
     async function handleEmailAuth(e) {
       e.preventDefault();
-      const emailOrUsername = document.getElementById('authEmailInput').value.trim();
+      const emailOrUsername = document.getElementById('authEmailInput').value.trim().toLowerCase();
       const password = document.getElementById('authPasswordInput').value.trim();
-      const rawName = document.getElementById('authNameInput').value.trim() || 'Voluntário de Mídia';
-      const rawUsername = document.getElementById('authUsernameInput').value.trim() || emailOrUsername.split('@')[0];
-      const rawChurch = document.getElementById('authChurchInput').value.trim() || 'Igreja Local';
+      const rawName = document.getElementById('authNameInput').value.trim();
+      const rawUsername = document.getElementById('authUsernameInput').value.trim().toLowerCase().replace('@', '');
+      const rawChurch = document.getElementById('authChurchInput').value.trim();
 
       if (!emailOrUsername || !password) {
-        showAuthAlert("Preencha seu e-mail/username e senha.", "error");
+        showAuthAlert("Preencha todos os campos obrigatórios.");
         return;
       }
 
-      // Safe capitalize logic (no broken .capitalize() method)
-      const basePart = emailOrUsername.split('@')[0];
-      const safeName = isRegisterMode 
-        ? rawName 
-        : (basePart.charAt(0).toUpperCase() + basePart.slice(1));
+      const usersDb = getRegisteredUsersDb();
 
-      currentUser = {
-        id: `usr_${Date.now()}`,
-        username: rawUsername.replace('@', '').toLowerCase(),
-        name: safeName,
-        email: emailOrUsername.includes('@') ? emailOrUsername : `${emailOrUsername}@igreja.org`,
-        church_name: rawChurch,
-        avatar_url: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(safeName)}&backgroundColor=2563eb`,
-        role: 'photographer'
-      };
+      // ================= CADASTRO (REGISTRO) =================
+      if (isRegisterMode) {
+        if (!rawName || !rawUsername) {
+          showAuthAlert("Por favor, preencha seu Nome Completo e Nome de Usuário (@username).");
+          return;
+        }
 
+        // Check if user already exists
+        const existing = usersDb.find(u => u.email.toLowerCase() === emailOrUsername || u.username.toLowerCase() === rawUsername);
+        if (existing) {
+          showAuthAlert("Este e-mail ou @username já está cadastrado. Faça login na sua conta.");
+          return;
+        }
+
+        const newUser = {
+          id: `usr_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+          name: rawName,
+          username: rawUsername,
+          email: emailOrUsername.includes('@') ? emailOrUsername : `${rawUsername}@igreja.org`,
+          password: password,
+          church_name: rawChurch || "Igreja Local",
+          avatar_url: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(rawName)}&backgroundColor=2563eb`,
+          createdAt: new Date().toISOString()
+        };
+
+        usersDb.push(newUser);
+        saveRegisteredUsersDb(usersDb);
+
+        currentUser = newUser;
+        localStorage.setItem('CHURCHPHOTO_USER_SESSION', JSON.stringify(currentUser));
+        
+        renderAuthenticatedUser(currentUser);
+        loadTeamData();
+        loadStoredServices();
+        toggleAuthModal();
+        showToast(`Conta criada com sucesso! Bem-vindo(a), ${newUser.name}!`);
+        return;
+      }
+
+      // ================= LOGIN ESTRITO =================
+      const matchedUser = usersDb.find(u => 
+        u.email.toLowerCase() === emailOrUsername || 
+        u.username.toLowerCase() === emailOrUsername.replace('@', '')
+      );
+
+      if (!matchedUser) {
+        showAuthAlert("❌ Conta não encontrada com este e-mail/username. Clique abaixo em 'Cadastre-se grátis' para criar sua conta.");
+        return;
+      }
+
+      if (matchedUser.password !== password) {
+        showAuthAlert("❌ Senha incorreta. Verifique sua senha e tente novamente.");
+        return;
+      }
+
+      // Successful Login
+      currentUser = matchedUser;
       localStorage.setItem('CHURCHPHOTO_USER_SESSION', JSON.stringify(currentUser));
       renderAuthenticatedUser(currentUser);
+
+      // Load user-bound team & cultos
+      loadTeamData();
+      loadStoredServices();
+
       toggleAuthModal();
-      showToast(`Bem-vindo(a), ${currentUser.name}!`);
+      showToast(`Login realizado com sucesso! Bem-vindo(a), ${currentUser.name}!`);
     }
 
     function logoutUser() {
       currentUser = null;
       localStorage.removeItem('CHURCHPHOTO_USER_SESSION');
-      localStorage.removeItem('CHURCHPHOTO_AUTH_TOKEN');
       renderAuthenticatedUser(null);
-      showToast("Você saiu da conta.");
+      
+      // Reset view to clean guest state
+      loadTeamData();
+      loadStoredServices();
+      showToast("Você saiu da conta com sucesso.");
     }
 
     // ================= STUDIO THUMBNAILS & PHOTO PROCESSING =================
