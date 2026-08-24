@@ -1518,14 +1518,14 @@
       if (box) { box.style.display = 'none'; box.classList.add('hidden'); }
     }
 
-    // ================= DIRECT LOGIN SUBMISSION (100% RESILIENT & IMMEDIATE) =================
+    // ================= DIRECT LOGIN SUBMISSION (STRICT VALIDATION) =================
     async function handleDirectLoginSubmit(e) {
       e.preventDefault();
       const rawInput = document.getElementById('loginEmailInput').value.trim();
       const password = document.getElementById('loginPasswordInput').value.trim();
 
-      if (!rawInput) {
-        showAuthAlert("Por favor, informe seu e-mail ou @username.");
+      if (!rawInput || !password) {
+        showAuthAlert("Por favor, preencha o e-mail/username e a senha.");
         return;
       }
 
@@ -1533,22 +1533,25 @@
       const cleanNoAt = cleanInput.replace('@', '');
       const usersDb = getRegisteredUsersDb();
 
-      // Flexible Matching Algorithm
-      let matched = usersDb.find(u => {
+      // Search registered database
+      const matched = usersDb.find(u => {
         const uEmail = (u.email || '').toLowerCase().trim();
         const uUser = (u.username || '').toLowerCase().trim().replace('@', '');
         return uEmail === cleanInput || uUser === cleanInput || uUser === cleanNoAt || uEmail.split('@')[0] === cleanNoAt;
       });
 
-      if (matched) {
-        // User exists: update password to the typed one (guarantees no blocking) and log in
-        if (password) matched.password = password;
-        saveRegisteredUsersDb(usersDb);
-        performLoginSuccess(matched);
-      } else {
-        // User not found: automatically register and log in instantly
-        quickRegisterAndLogin(rawInput, password || '123');
+      if (!matched) {
+        showAuthAlert("❌ Conta não encontrada. Este e-mail ou username não está cadastrado. Clique na aba 'Cadastre-se Grátis' acima para criar sua conta.");
+        return;
       }
+
+      if (matched.password !== password) {
+        showAuthAlert("❌ Senha incorreta para esta conta. Verifique sua senha e tente novamente.");
+        return;
+      }
+
+      // Successful Strict Login
+      performLoginSuccess(matched);
     }
 
     // ================= DIRECT REGISTER SUBMISSION =================
@@ -1560,8 +1563,8 @@
       const rawPassword = document.getElementById('regPasswordInput').value.trim();
       const rawChurch = document.getElementById('regChurchInput').value.trim();
 
-      if (!rawName || !rawUsername || !rawEmail) {
-        showAuthAlert("Por favor, preencha o nome, @username e e-mail.");
+      if (!rawName || !rawUsername || !rawEmail || !rawPassword) {
+        showAuthAlert("Por favor, preencha todos os campos obrigatórios.");
         return;
       }
 
@@ -1575,7 +1578,9 @@
 
       if (existing) {
         existing.name = rawName;
-        existing.password = rawPassword || '123';
+        existing.username = rawUsername;
+        existing.email = rawEmail;
+        existing.password = rawPassword;
         if (rawChurch) existing.church_name = rawChurch;
         saveRegisteredUsersDb(usersDb);
         performLoginSuccess(existing);
@@ -1587,7 +1592,7 @@
         name: rawName,
         username: rawUsername,
         email: rawEmail,
-        password: rawPassword || '123',
+        password: rawPassword,
         church_name: rawChurch || "Igreja Local",
         avatar_url: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(rawName)}&backgroundColor=2563eb`,
         createdAt: new Date().toISOString()
@@ -1596,41 +1601,6 @@
       usersDb.push(newUser);
       saveRegisteredUsersDb(usersDb);
       performLoginSuccess(newUser);
-    }
-
-    // 1-Click Fast Register & Login Helper
-    function quickRegisterAndLogin(identifier, password) {
-      const cleanId = identifier.trim().toLowerCase().replace('@', '');
-      const isEmail = identifier.includes('@');
-      const email = isEmail ? identifier.trim().toLowerCase() : `${cleanId}@igreja.org`;
-      const username = isEmail ? cleanId.split('@')[0] : cleanId;
-      const name = username.charAt(0).toUpperCase() + username.slice(1);
-
-      const usersDb = getRegisteredUsersDb();
-      const newUser = {
-        id: `usr_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
-        name: name,
-        username: username,
-        email: email,
-        password: password || '123',
-        church_name: "Igreja Local",
-        avatar_url: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}&backgroundColor=2563eb`,
-        createdAt: new Date().toISOString()
-      };
-
-      usersDb.push(newUser);
-      saveRegisteredUsersDb(usersDb);
-      performLoginSuccess(newUser);
-    }
-
-    function resetUserPasswordAndLogin(userId, newPassword) {
-      const usersDb = getRegisteredUsersDb();
-      const target = usersDb.find(u => u.id === userId);
-      if (target) {
-        target.password = newPassword;
-        saveRegisteredUsersDb(usersDb);
-        performLoginSuccess(target);
-      }
     }
 
     function performLoginSuccess(user) {
