@@ -1258,9 +1258,9 @@
     };
 
     window.addEventListener('DOMContentLoaded', async () => {
-      document.getElementById('newServiceDate').valueAsDate = new Date();
+      const dateInp = document.getElementById('newServiceDate');
+      if (dateInp) dateInp.valueAsDate = new Date();
 
-      initRegisteredUsersDb();
       await initAuth0();
       setupSliderEvents();
       setupAddMorePhotosInput();
@@ -1302,11 +1302,10 @@
             };
 
             localStorage.setItem('CHURCHPHOTO_USER_SESSION', JSON.stringify(currentUser));
-            autoMigrateGuestDataToUser(currentUser);
             renderAuthenticatedUser(currentUser);
             loadTeamData();
-            loadStoredServices();
-            showToast(`Conectado com sucesso via Auth0! Bem-vindo(a), ${currentUser.name}!`);
+            await loadStoredServices();
+            showToast(`Conectado via Auth0! Bem-vindo(a), ${currentUser.name}!`);
             return;
           }
         }
@@ -1317,7 +1316,7 @@
       // Check offline / local session fallback
       checkUserSession();
       loadTeamData();
-      loadStoredServices();
+      await loadStoredServices();
     }
 
     async function loginWithAuth0() {
@@ -1328,11 +1327,19 @@
         if (auth0Client) {
           await auth0Client.loginWithRedirect();
         } else {
-          showAuthAlert("SDK do Auth0 carregando... Tente novamente em 2 segundos.");
+          showToast("Carregando Auth0... Por favor, aguarde.");
+          setTimeout(async () => {
+            if (typeof auth0 !== 'undefined') {
+              auth0Client = await auth0.createAuth0Client(AUTH0_CONFIG);
+              await auth0Client.loginWithRedirect();
+            } else {
+              showToast("Erro ao conectar com Auth0. Verifique sua internet.");
+            }
+          }, 800);
         }
       } catch(e) {
         console.error("Auth0 Login Error:", e);
-        showAuthAlert("Erro ao iniciar Auth0: " + e.message);
+        showToast("Erro ao iniciar Auth0: " + e.message);
       }
     }
 
@@ -1350,6 +1357,7 @@
         }
       } catch(e) {
         console.error("Auth0 Signup Error:", e);
+        showToast("Erro ao abrir cadastro: " + e.message);
       }
     }
 
