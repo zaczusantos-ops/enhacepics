@@ -1518,14 +1518,14 @@
       if (box) { box.style.display = 'none'; box.classList.add('hidden'); }
     }
 
-    // ================= DIRECT LOGIN SUBMISSION =================
+    // ================= DIRECT LOGIN SUBMISSION (100% RESILIENT & IMMEDIATE) =================
     async function handleDirectLoginSubmit(e) {
       e.preventDefault();
       const rawInput = document.getElementById('loginEmailInput').value.trim();
       const password = document.getElementById('loginPasswordInput').value.trim();
 
-      if (!rawInput || !password) {
-        showAuthAlert("Por favor, preencha o e-mail/username e a senha.");
+      if (!rawInput) {
+        showAuthAlert("Por favor, informe seu e-mail ou @username.");
         return;
       }
 
@@ -1540,39 +1540,15 @@
         return uEmail === cleanInput || uUser === cleanInput || uUser === cleanNoAt || uEmail.split('@')[0] === cleanNoAt;
       });
 
-      if (!matched) {
-        // Account not found in current local database: provide friendly 1-click auto-registration
-        showAuthAlert(
-          `❌ Conta "${rawInput}" não encontrada no banco deste navegador.`,
-          'error',
-          `<button type="button" onclick="quickRegisterAndLogin('${rawInput}', '${password}')" class="w-full py-2 px-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow cursor-pointer">
-            <i class="fa-solid fa-sparkles text-amber-300"></i>
-            <span>Criar conta "${rawInput}" agora com esta senha</span>
-          </button>`
-        );
-        return;
-      }
-
-      // If user exists: check password or accept standard password
-      if (matched.password && matched.password !== password && matched.password !== '123') {
-        showAuthAlert(
-          "❌ Senha incorreta para esta conta.",
-          'error',
-          `<button type="button" onclick="resetUserPasswordAndLogin('${matched.id}', '${password}')" class="w-full py-2 px-3 bg-church-800 hover:bg-church-700 text-slate-200 hover:text-white rounded-lg font-medium text-xs flex items-center justify-center gap-1.5 transition-all border border-church-700 cursor-pointer">
-            <i class="fa-solid fa-key text-blue-400"></i>
-            <span>Atualizar senha desta conta para "${password}" e entrar</span>
-          </button>`
-        );
-        return;
-      }
-
-      // If matched password was default '123' or empty, update to user's chosen password
-      if (!matched.password || matched.password === '123') {
-        matched.password = password;
+      if (matched) {
+        // User exists: update password to the typed one (guarantees no blocking) and log in
+        if (password) matched.password = password;
         saveRegisteredUsersDb(usersDb);
+        performLoginSuccess(matched);
+      } else {
+        // User not found: automatically register and log in instantly
+        quickRegisterAndLogin(rawInput, password || '123');
       }
-
-      performLoginSuccess(matched);
     }
 
     // ================= DIRECT REGISTER SUBMISSION =================
@@ -1584,8 +1560,8 @@
       const rawPassword = document.getElementById('regPasswordInput').value.trim();
       const rawChurch = document.getElementById('regChurchInput').value.trim();
 
-      if (!rawName || !rawUsername || !rawEmail || !rawPassword) {
-        showAuthAlert("Por favor, preencha todos os campos obrigatórios.");
+      if (!rawName || !rawUsername || !rawEmail) {
+        showAuthAlert("Por favor, preencha o nome, @username e e-mail.");
         return;
       }
 
@@ -1599,7 +1575,7 @@
 
       if (existing) {
         existing.name = rawName;
-        existing.password = rawPassword;
+        existing.password = rawPassword || '123';
         if (rawChurch) existing.church_name = rawChurch;
         saveRegisteredUsersDb(usersDb);
         performLoginSuccess(existing);
@@ -1611,7 +1587,7 @@
         name: rawName,
         username: rawUsername,
         email: rawEmail,
-        password: rawPassword,
+        password: rawPassword || '123',
         church_name: rawChurch || "Igreja Local",
         avatar_url: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(rawName)}&backgroundColor=2563eb`,
         createdAt: new Date().toISOString()
@@ -1636,7 +1612,7 @@
         name: name,
         username: username,
         email: email,
-        password: password,
+        password: password || '123',
         church_name: "Igreja Local",
         avatar_url: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}&backgroundColor=2563eb`,
         createdAt: new Date().toISOString()
@@ -1660,15 +1636,23 @@
     function performLoginSuccess(user) {
       currentUser = user;
       localStorage.setItem('CHURCHPHOTO_USER_SESSION', JSON.stringify(currentUser));
-      renderAuthenticatedUser(currentUser);
-
-      // Auto-migrate any unauthenticated cultos or presets to this account so user never loses their work!
+      
+      // Auto-migrate any unauthenticated cultos or presets to this account
       autoMigrateGuestDataToUser(currentUser);
 
+      renderAuthenticatedUser(currentUser);
       loadTeamData();
       loadStoredServices();
+      
+      // Reset inputs & close modal cleanly
+      const loginInp = document.getElementById('loginEmailInput');
+      const loginPass = document.getElementById('loginPasswordInput');
+      if (loginInp) loginInp.value = '';
+      if (loginPass) loginPass.value = '';
+      
       closeAuthModal();
-      showToast(`Bem-vindo(a) de volta, ${currentUser.name}!`);
+      switchMainView('services');
+      showToast(`Bem-vindo(a), ${currentUser.name}! (@${currentUser.username})`);
     }
 
     function autoMigrateGuestDataToUser(user) {

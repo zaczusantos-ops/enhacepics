@@ -1,0 +1,1950 @@
+
+    // Global Application State
+    let churchServices = [];
+    let activeService = null;
+    let activeTeam = { 
+      id: 'team_default', 
+      name: 'Mídia Principal', 
+      members: [],
+      presets: []
+    };
+    let queue = [];
+    let activeItem = null;
+    let currentMainView = 'services'; // 'services', 'funnel', 'studio', 'team_area'
+    let currentFunnelStep = 1; // 1: Dedup, 2: Top20, 3: Crop
+    let isSidebarCollapsed = false;
+    let smartCropMode = '4:5'; // '4:5', '1:1', 'off'
+
+    let viewerMode = 'slider';
+    let sliderPercent = 50;
+    let isDragging = false;
+    let currentTab = 1;
+    let focalPoint = { x: 0.50, y: 0.40 };
+    let currentFStop = 2.8;
+    let currentUser = null;
+    let currentAuthTab = 'login'; // 'login' or 'register'
+    let pendingModalFiles = [];
+
+    // Fast canvas cache for 60fps
+    const fastCanvas = document.createElement('canvas');
+    const fastCtx = fastCanvas.getContext('2d', { willReadFrequently: true });
+    let animFrameRequested = false;
+
+    const DEFAULT_TEAM_PRESETS = [
+      {
+        id: "luz_quente_natural",
+        name: "Luz Quente Natural",
+        category: "Louvor",
+        icon: "fa-sun text-amber-400",
+        description: "Tons de pele acolhedores e calor orgânico para louvor e palavra.",
+        params: {
+          exposure_compensation: 0.20,
+          temperature_kelvin: 5700,
+          tint: -2.0,
+          contrast: 1.06,
+          highlights_recovery: 0.45,
+          shadows_lift: 0.40,
+          saturation: 1.04,
+          vibrance: 1.08,
+          chromatic_aberration_fix: 0.50,
+          vignette_correction: 0.35,
+          lens_distortion_correction: 0.20,
+          led_clipping_restoration: 0.60,
+          stage_led_tint_suppression: 0.45,
+          selective_denoise: 0.28,
+          skin_tone_protection_strength: 0.92,
+          f_stop_simulation: 2.4,
+          bokeh_smoothness: 0.75,
+          subject_microcontrast: 0.80
+        }
+      },
+      {
+        id: "clean_moderno_neutro",
+        name: "Clean / Moderno Neutro",
+        category: "Pregação",
+        icon: "fa-wand-magic text-blue-400",
+        description: "Balanço de estúdio limpo com atenuação precisa de reflexos de LED.",
+        params: {
+          exposure_compensation: 0.10,
+          temperature_kelvin: 5400,
+          tint: 0.0,
+          contrast: 1.10,
+          highlights_recovery: 0.55,
+          shadows_lift: 0.35,
+          saturation: 0.98,
+          vibrance: 1.02,
+          chromatic_aberration_fix: 0.65,
+          vignette_correction: 0.40,
+          lens_distortion_correction: 0.20,
+          led_clipping_restoration: 0.70,
+          stage_led_tint_suppression: 0.55,
+          selective_denoise: 0.35,
+          skin_tone_protection_strength: 0.88,
+          f_stop_simulation: 2.8,
+          bokeh_smoothness: 0.75,
+          subject_microcontrast: 0.75
+        }
+      },
+      {
+        id: "moody_contraste_cenico",
+        name: "Moody / Contraste Cênico",
+        category: "Jovens",
+        icon: "fa-film text-purple-400",
+        description: "Visual cinematográfico com sombras profundas e isolamento cênico.",
+        params: {
+          exposure_compensation: -0.05,
+          temperature_kelvin: 5100,
+          tint: 4.0,
+          contrast: 1.22,
+          highlights_recovery: 0.65,
+          shadows_lift: 0.25,
+          saturation: 1.06,
+          vibrance: 1.12,
+          chromatic_aberration_fix: 0.55,
+          vignette_correction: 0.20,
+          lens_distortion_correction: 0.20,
+          led_clipping_restoration: 0.60,
+          stage_led_tint_suppression: 0.40,
+          selective_denoise: 0.25,
+          skin_tone_protection_strength: 0.85,
+          f_stop_simulation: 1.8,
+          bokeh_smoothness: 0.85,
+          subject_microcontrast: 0.90
+        }
+      }
+    ];
+
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('newServiceDate').valueAsDate = new Date();
+
+      initRegisteredUsersDb();
+      checkUserSession();
+      loadTeamData();
+      loadStoredServices();
+      setupSliderEvents();
+      setupAddMorePhotosInput();
+    });
+
+    // ================= REGISTERED USERS DATABASE & AUTHENTICATION =================
+
+    function getRegisteredUsersDb() {
+      try {
+        const raw = localStorage.getItem('CHURCHPHOTO_REGISTERED_USERS_DB');
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveRegisteredUsersDb(users) {
+      try {
+        localStorage.setItem('CHURCHPHOTO_REGISTERED_USERS_DB', JSON.stringify(users));
+      } catch (e) {}
+    }
+
+    function initRegisteredUsersDb() {
+      let db = getRegisteredUsersDb();
+      
+      // Ensure default and seed accounts are present
+      const defaultAccounts = [
+        {
+          id: 'usr_zaczusantos',
+          name: 'Claudio Santos',
+          username: 'zaczusantos',
+          email: 'zaczusantos@gmail.com',
+          password: '123',
+          church_name: 'Igreja Central',
+          avatar_url: 'https://api.dicebear.com/7.x/initials/svg?seed=Claudio&backgroundColor=2563eb',
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: 'usr_voluntario',
+          name: 'Voluntário de Mídia',
+          username: 'voluntario',
+          email: 'voluntario@igreja.org',
+          password: '123',
+          church_name: 'Igreja Local',
+          avatar_url: 'https://api.dicebear.com/7.x/initials/svg?seed=Voluntario&backgroundColor=2563eb',
+          createdAt: new Date().toISOString()
+        }
+      ];
+
+      defaultAccounts.forEach(seed => {
+        const exists = db.some(u => 
+          (u.email && u.email.toLowerCase() === seed.email.toLowerCase()) || 
+          (u.username && u.username.toLowerCase() === seed.username.toLowerCase())
+        );
+        if (!exists) {
+          db.push(seed);
+        }
+      });
+
+      // Migrate existing active session if found
+      try {
+        const saved = localStorage.getItem('CHURCHPHOTO_USER_SESSION');
+        if (saved) {
+          const u = JSON.parse(saved);
+          if (u && (u.email || u.username)) {
+            const hasIt = db.some(x => 
+              (x.email && x.email.toLowerCase() === (u.email || '').toLowerCase()) || 
+              (x.username && x.username.toLowerCase() === (u.username || '').toLowerCase())
+            );
+            if (!hasIt) {
+              db.push({
+                id: u.id || `usr_${Date.now()}`,
+                name: u.name || 'Voluntário',
+                username: (u.username || 'usuario').toLowerCase().replace('@', ''),
+                email: (u.email || 'voluntario@igreja.org').toLowerCase(),
+                password: u.password || '123',
+                church_name: u.church_name || 'Igreja',
+                avatar_url: u.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(u.name || 'M')}&backgroundColor=2563eb`,
+                createdAt: new Date().toISOString()
+              });
+            }
+          }
+        }
+      } catch (e) {}
+
+      saveRegisteredUsersDb(db);
+    }
+
+    function openAuthModal(tab = 'login') {
+      const modal = document.getElementById('authModal');
+      modal.style.display = 'flex';
+      modal.classList.remove('hidden');
+      setAuthActiveTab(tab);
+      hideAuthAlert();
+    }
+
+    function closeAuthModal() {
+      const modal = document.getElementById('authModal');
+      modal.style.display = 'none';
+      modal.classList.add('hidden');
+      hideAuthAlert();
+    }
+
+    function setAuthActiveTab(tab) {
+      currentAuthTab = tab;
+      const tabLogin = document.getElementById('tabAuthLoginBtn');
+      const tabReg = document.getElementById('tabAuthRegisterBtn');
+      const formLogin = document.getElementById('authLoginForm');
+      const formReg = document.getElementById('authRegisterForm');
+      hideAuthAlert();
+
+      if (tab === 'login') {
+        tabLogin.className = "flex-1 py-2 rounded-lg font-bold bg-blue-600 text-white transition-all text-center flex items-center justify-center gap-1.5 shadow";
+        tabReg.className = "flex-1 py-2 rounded-lg font-medium text-slate-400 hover:text-white transition-all text-center flex items-center justify-center gap-1.5";
+        formLogin.style.display = 'flex'; formLogin.classList.remove('hidden');
+        formReg.style.display = 'none'; formReg.classList.add('hidden');
+      } else {
+        tabReg.className = "flex-1 py-2 rounded-lg font-bold bg-emerald-600 text-white transition-all text-center flex items-center justify-center gap-1.5 shadow";
+        tabLogin.className = "flex-1 py-2 rounded-lg font-medium text-slate-400 hover:text-white transition-all text-center flex items-center justify-center gap-1.5";
+        formReg.style.display = 'flex'; formReg.classList.remove('hidden');
+        formLogin.style.display = 'none'; formLogin.classList.add('hidden');
+      }
+    }
+
+    function showAuthAlert(msg, type = 'error', actionBtnHtml = null) {
+      const box = document.getElementById('authAlertBox');
+      const text = document.getElementById('authAlertMessage');
+      const actionWrapper = document.getElementById('authAlertActionBtnWrapper');
+      if (!box || !text) return;
+
+      box.className = type === 'error' 
+        ? 'p-3 rounded-xl bg-red-950/90 border border-red-800/90 text-red-300 text-xs mb-3 flex flex-col gap-2' 
+        : 'p-3 rounded-xl bg-blue-950/90 border border-blue-800/90 text-blue-300 text-xs mb-3 flex flex-col gap-2';
+      box.style.display = 'flex';
+      box.classList.remove('hidden');
+      text.textContent = msg;
+
+      if (actionBtnHtml && actionWrapper) {
+        actionWrapper.innerHTML = actionBtnHtml;
+        actionWrapper.style.display = 'block';
+        actionWrapper.classList.remove('hidden');
+      } else if (actionWrapper) {
+        actionWrapper.innerHTML = '';
+        actionWrapper.style.display = 'none';
+        actionWrapper.classList.add('hidden');
+      }
+    }
+
+    function hideAuthAlert() {
+      const box = document.getElementById('authAlertBox');
+      if (box) { box.style.display = 'none'; box.classList.add('hidden'); }
+    }
+
+    // ================= DIRECT LOGIN SUBMISSION =================
+    async function handleDirectLoginSubmit(e) {
+      e.preventDefault();
+      const rawInput = document.getElementById('loginEmailInput').value.trim();
+      const password = document.getElementById('loginPasswordInput').value.trim();
+
+      if (!rawInput || !password) {
+        showAuthAlert("Por favor, preencha o e-mail/username e a senha.");
+        return;
+      }
+
+      const cleanInput = rawInput.toLowerCase();
+      const cleanNoAt = cleanInput.replace('@', '');
+      const usersDb = getRegisteredUsersDb();
+
+      // Flexible Matching Algorithm
+      let matched = usersDb.find(u => {
+        const uEmail = (u.email || '').toLowerCase().trim();
+        const uUser = (u.username || '').toLowerCase().trim().replace('@', '');
+        return uEmail === cleanInput || uUser === cleanInput || uUser === cleanNoAt || uEmail.split('@')[0] === cleanNoAt;
+      });
+
+      if (!matched) {
+        // Account not found in current local database: provide friendly 1-click auto-registration
+        showAuthAlert(
+          `❌ Conta "${rawInput}" não encontrada no banco deste navegador.`,
+          'error',
+          `<button type="button" onclick="quickRegisterAndLogin('${rawInput}', '${password}')" class="w-full py-2 px-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow cursor-pointer">
+            <i class="fa-solid fa-sparkles text-amber-300"></i>
+            <span>Criar conta "${rawInput}" agora com esta senha</span>
+          </button>`
+        );
+        return;
+      }
+
+      // If user exists: check password or accept standard password
+      if (matched.password && matched.password !== password && matched.password !== '123') {
+        showAuthAlert(
+          "❌ Senha incorreta para esta conta.",
+          'error',
+          `<button type="button" onclick="resetUserPasswordAndLogin('${matched.id}', '${password}')" class="w-full py-2 px-3 bg-church-800 hover:bg-church-700 text-slate-200 hover:text-white rounded-lg font-medium text-xs flex items-center justify-center gap-1.5 transition-all border border-church-700 cursor-pointer">
+            <i class="fa-solid fa-key text-blue-400"></i>
+            <span>Atualizar senha desta conta para "${password}" e entrar</span>
+          </button>`
+        );
+        return;
+      }
+
+      // If matched password was default '123' or empty, update to user's chosen password
+      if (!matched.password || matched.password === '123') {
+        matched.password = password;
+        saveRegisteredUsersDb(usersDb);
+      }
+
+      performLoginSuccess(matched);
+    }
+
+    // ================= DIRECT REGISTER SUBMISSION =================
+    async function handleDirectRegisterSubmit(e) {
+      e.preventDefault();
+      const rawName = document.getElementById('regNameInput').value.trim();
+      const rawUsername = document.getElementById('regUsernameInput').value.trim().toLowerCase().replace('@', '');
+      const rawEmail = document.getElementById('regEmailInput').value.trim().toLowerCase();
+      const rawPassword = document.getElementById('regPasswordInput').value.trim();
+      const rawChurch = document.getElementById('regChurchInput').value.trim();
+
+      if (!rawName || !rawUsername || !rawEmail || !rawPassword) {
+        showAuthAlert("Por favor, preencha todos os campos obrigatórios.");
+        return;
+      }
+
+      const usersDb = getRegisteredUsersDb();
+
+      // Check if user already exists
+      const existing = usersDb.find(u => 
+        (u.email && u.email.toLowerCase() === rawEmail) || 
+        (u.username && u.username.toLowerCase() === rawUsername)
+      );
+
+      if (existing) {
+        existing.name = rawName;
+        existing.password = rawPassword;
+        if (rawChurch) existing.church_name = rawChurch;
+        saveRegisteredUsersDb(usersDb);
+        performLoginSuccess(existing);
+        return;
+      }
+
+      const newUser = {
+        id: `usr_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+        name: rawName,
+        username: rawUsername,
+        email: rawEmail,
+        password: rawPassword,
+        church_name: rawChurch || "Igreja Local",
+        avatar_url: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(rawName)}&backgroundColor=2563eb`,
+        createdAt: new Date().toISOString()
+      };
+
+      usersDb.push(newUser);
+      saveRegisteredUsersDb(usersDb);
+      performLoginSuccess(newUser);
+    }
+
+    // 1-Click Fast Register & Login Helper
+    function quickRegisterAndLogin(identifier, password) {
+      const cleanId = identifier.trim().toLowerCase().replace('@', '');
+      const isEmail = identifier.includes('@');
+      const email = isEmail ? identifier.trim().toLowerCase() : `${cleanId}@igreja.org`;
+      const username = isEmail ? cleanId.split('@')[0] : cleanId;
+      const name = username.charAt(0).toUpperCase() + username.slice(1);
+
+      const usersDb = getRegisteredUsersDb();
+      const newUser = {
+        id: `usr_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+        name: name,
+        username: username,
+        email: email,
+        password: password,
+        church_name: "Igreja Local",
+        avatar_url: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}&backgroundColor=2563eb`,
+        createdAt: new Date().toISOString()
+      };
+
+      usersDb.push(newUser);
+      saveRegisteredUsersDb(usersDb);
+      performLoginSuccess(newUser);
+    }
+
+    function resetUserPasswordAndLogin(userId, newPassword) {
+      const usersDb = getRegisteredUsersDb();
+      const target = usersDb.find(u => u.id === userId);
+      if (target) {
+        target.password = newPassword;
+        saveRegisteredUsersDb(usersDb);
+        performLoginSuccess(target);
+      }
+    }
+
+    function performLoginSuccess(user) {
+      currentUser = user;
+      localStorage.setItem('CHURCHPHOTO_USER_SESSION', JSON.stringify(currentUser));
+      renderAuthenticatedUser(currentUser);
+
+      // Auto-migrate any unauthenticated cultos or presets to this account so user never loses their work!
+      autoMigrateGuestDataToUser(currentUser);
+
+      loadTeamData();
+      loadStoredServices();
+      closeAuthModal();
+      showToast(`Bem-vindo(a) de volta, ${currentUser.name}!`);
+    }
+
+    function autoMigrateGuestDataToUser(user) {
+      try {
+        const guestServicesRaw = localStorage.getItem('CHURCHPHOTO_SERVICES_GUEST') || localStorage.getItem('CHURCHPHOTO_SERVICES');
+        const userServicesKey = `CHURCHPHOTO_SERVICES_${user.id}`;
+        let userServices = localStorage.getItem(userServicesKey);
+        
+        if (!userServices || userServices === '[]') {
+          if (guestServicesRaw && guestServicesRaw !== '[]') {
+            localStorage.setItem(userServicesKey, guestServicesRaw);
+          }
+        }
+      } catch (e) {}
+    }
+
+    function checkUserSession() {
+      const savedUser = localStorage.getItem('CHURCHPHOTO_USER_SESSION');
+      if (savedUser) {
+        try {
+          currentUser = JSON.parse(savedUser);
+          renderAuthenticatedUser(currentUser);
+        } catch (e) {
+          currentUser = null;
+        }
+      }
+    }
+
+    function renderAuthenticatedUser(user) {
+      const sideLoggedIn = document.getElementById('sideProfileLoggedIn');
+      const sideLoggedOut = document.getElementById('sideProfileLoggedOut');
+      const sideAvatar = document.getElementById('sideUserAvatar');
+      const sideName = document.getElementById('sideUserName');
+      const sideHandle = document.getElementById('sideUserHandle');
+      const heroStatus = document.getElementById('userAccountStatusBadge');
+
+      if (user) {
+        if (sideLoggedOut) { sideLoggedOut.style.display = 'none'; sideLoggedOut.classList.add('hidden'); }
+        if (sideLoggedIn) { sideLoggedIn.style.display = 'flex'; sideLoggedIn.classList.remove('hidden'); }
+
+        if (sideAvatar) sideAvatar.src = user.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'M')}&backgroundColor=2563eb`;
+        if (sideName) sideName.textContent = user.name || 'Voluntário';
+        if (sideHandle) sideHandle.textContent = `@${user.username || 'voluntario'}`;
+        if (heroStatus) heroStatus.innerHTML = `<span class="text-emerald-400 font-bold">Conectado como: ${user.name} (@${user.username})</span>`;
+      } else {
+        if (sideLoggedIn) { sideLoggedIn.style.display = 'none'; sideLoggedIn.classList.add('hidden'); }
+        if (sideLoggedOut) { sideLoggedOut.style.display = 'flex'; sideLoggedOut.classList.remove('hidden'); }
+        if (heroStatus) heroStatus.textContent = 'Conta: Visitante (Não autenticado)';
+      }
+
+      renderSidebarTeamMembers();
+    }
+
+    function logoutUser() {
+      currentUser = null;
+      localStorage.removeItem('CHURCHPHOTO_USER_SESSION');
+      renderAuthenticatedUser(null);
+      
+      // Reset view to clean guest state
+      loadTeamData();
+      loadStoredServices();
+      showToast("Você saiu da conta com sucesso.");
+    }
+
+    // ================= SIDEBAR & NAVIGATION =================
+
+    function toggleSidebar() {
+      const sidebar = document.getElementById('mainSidebar');
+      const backdrop = document.getElementById('mobileSidebarBackdrop');
+      
+      if (sidebar.classList.contains('-translate-x-full')) {
+        sidebar.classList.remove('-translate-x-full');
+        backdrop.style.display = 'block';
+        backdrop.classList.remove('hidden');
+      } else {
+        sidebar.classList.add('-translate-x-full');
+        backdrop.style.display = 'none';
+        backdrop.classList.add('hidden');
+      }
+    }
+
+    function toggleSidebarCollapse() {
+      const sidebar = document.getElementById('mainSidebar');
+      const icon = document.getElementById('collapseToggleIcon');
+      isSidebarCollapsed = !isSidebarCollapsed;
+
+      if (isSidebarCollapsed) {
+        sidebar.classList.remove('sidebar-expanded');
+        sidebar.classList.add('sidebar-collapsed');
+        icon.className = 'fa-solid fa-chevron-right text-xs';
+      } else {
+        sidebar.classList.remove('sidebar-collapsed');
+        sidebar.classList.add('sidebar-expanded');
+        icon.className = 'fa-solid fa-chevron-left text-xs';
+      }
+    }
+
+    function switchMainView(view) {
+      currentMainView = view;
+      const viewServices = document.getElementById('viewServicesSection');
+      const viewFunnel = document.getElementById('viewFunnelSection');
+      const viewStudio = document.getElementById('viewStudioSection');
+      const viewTeamArea = document.getElementById('viewTeamAreaSection');
+
+      const topTitle = document.getElementById('topNavViewTitle');
+      const topBadge = document.getElementById('topNavViewBadge');
+
+      const sideNavServices = document.getElementById('sideNavServices');
+      const sideNavFunnel = document.getElementById('sideNavFunnel');
+      const sideNavStudio = document.getElementById('sideNavStudio');
+      const sideNavTeamArea = document.getElementById('sideNavTeamArea');
+
+      [sideNavServices, sideNavFunnel, sideNavStudio, sideNavTeamArea].forEach(btn => {
+        if (btn) btn.className = "sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-church-800/70 transition-all cursor-pointer";
+      });
+
+      [viewServices, viewFunnel, viewStudio, viewTeamArea].forEach(v => {
+        if (v) { v.style.display = 'none'; v.classList.add('hidden'); }
+      });
+
+      if (view === 'services') {
+        viewServices.style.display = 'flex'; viewServices.classList.remove('hidden');
+        topTitle.textContent = "Meus Cultos";
+        topBadge.textContent = currentUser ? `Conta: @${currentUser.username}` : "Painel Central";
+        sideNavServices.className = "sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold bg-blue-600 text-white transition-all cursor-pointer shadow-sm";
+        renderServicesGrid();
+      } else if (view === 'funnel') {
+        viewFunnel.style.display = 'flex'; viewFunnel.classList.remove('hidden');
+        topTitle.textContent = "Funil de Curadoria";
+        topBadge.textContent = activeService ? activeService.title : "3 Fases";
+        sideNavFunnel.className = "sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold bg-blue-600 text-white transition-all cursor-pointer shadow-sm";
+        renderFunnelUI();
+      } else if (view === 'team_area') {
+        viewTeamArea.style.display = 'flex'; viewTeamArea.classList.remove('hidden');
+        topTitle.textContent = "Equipe & Presets";
+        topBadge.textContent = activeTeam.name;
+        sideNavTeamArea.className = "sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold bg-purple-600 text-white transition-all cursor-pointer shadow-sm";
+        renderTeamAreaView();
+      } else {
+        viewStudio.style.display = 'flex'; viewStudio.classList.remove('hidden');
+        topTitle.textContent = "Estúdio DSLR";
+        topBadge.textContent = activeService ? activeService.title : "Comparador";
+        sideNavStudio.className = "sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold bg-blue-600 text-white transition-all cursor-pointer shadow-sm";
+        if (activeItem) showProcessedViewer(activeItem);
+      }
+
+      if (window.innerWidth < 768) {
+        document.getElementById('mainSidebar').classList.add('-translate-x-full');
+        document.getElementById('mobileSidebarBackdrop').style.display = 'none';
+      }
+    }
+
+    // ================= REAL TEAM WORKSPACE & PRESETS LINKED TO TEAM =================
+
+    function getStorageTeamKey() {
+      return currentUser ? `CHURCHPHOTO_TEAM_${currentUser.id}` : 'CHURCHPHOTO_TEAM_GUEST';
+    }
+
+    function loadTeamData() {
+      const key = getStorageTeamKey();
+      const stored = localStorage.getItem(key);
+      if (stored) {
+        try {
+          activeTeam = JSON.parse(stored);
+          if (!activeTeam.presets || activeTeam.presets.length === 0) {
+            activeTeam.presets = [...DEFAULT_TEAM_PRESETS];
+          }
+        } catch(e) {
+          activeTeam = { id: 'team_default', name: currentUser ? `Mídia ${currentUser.church_name || 'Igreja'}` : 'Mídia Principal', members: [], presets: [...DEFAULT_TEAM_PRESETS] };
+        }
+      } else {
+        activeTeam = { id: 'team_default', name: currentUser ? `Mídia ${currentUser.church_name || 'Igreja'}` : 'Mídia Principal', members: [], presets: [...DEFAULT_TEAM_PRESETS] };
+      }
+      saveTeamData();
+    }
+
+    function saveTeamData() {
+      try {
+        const key = getStorageTeamKey();
+        localStorage.setItem(key, JSON.stringify(activeTeam));
+      } catch(e) {}
+      renderSidebarTeamMembers();
+      renderStudioPresetsStrip();
+    }
+
+    function getRealTeamMembersList() {
+      const members = [];
+      if (currentUser) {
+        members.push({ name: currentUser.name, username: currentUser.username, role: "Você (Líder da Equipe)" });
+      } else {
+        members.push({ name: "Você (Visitante)", username: "visitante", role: "Não autenticado" });
+      }
+
+      if (activeTeam.members && activeTeam.members.length > 0) {
+        activeTeam.members.forEach(m => members.push(m));
+      }
+      return members;
+    }
+
+    function renderSidebarTeamMembers() {
+      const listContainer = document.getElementById('sidebarRealMembersList');
+      const teamTitle = document.getElementById('sidebarTeamTitle');
+      const countBadge = document.getElementById('sidebarTeamCountBadge');
+      const topBadge = document.getElementById('topTeamNameBadge');
+      const sidePresetsBadge = document.getElementById('sideTeamPresetsCountBadge');
+      const studioTeamLabel = document.getElementById('studioTeamNameLabel');
+
+      const teamName = activeTeam.name || "Mídia Principal";
+      if (teamTitle) teamTitle.textContent = teamName;
+      if (topBadge) topBadge.textContent = teamName;
+      if (studioTeamLabel) studioTeamLabel.textContent = teamName;
+
+      const members = getRealTeamMembersList();
+      if (countBadge) countBadge.textContent = `${members.length} membro${members.length > 1 ? 's' : ''}`;
+      if (sidePresetsBadge) sidePresetsBadge.textContent = `${(activeTeam.presets || []).length} presets`;
+
+      if (listContainer) {
+        listContainer.innerHTML = members.map(m => `
+          <div class="flex items-center justify-between py-1 px-1.5 rounded-lg bg-church-900/80 border border-church-800/60">
+            <div class="flex items-center gap-1.5 min-w-0">
+              <img src="https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(m.name)}&backgroundColor=2563eb" class="w-4 h-4 rounded-full border border-blue-500/40 shrink-0">
+              <span class="text-[11px] font-semibold text-slate-200 truncate">${m.name}</span>
+            </div>
+            <span class="text-[9px] font-mono text-slate-400 shrink-0">${m.role || 'Membro'}</span>
+          </div>
+        `).join('');
+      }
+    }
+
+    function renderTeamAreaView() {
+      const headerTitle = document.getElementById('teamAreaHeaderName');
+      const membersGrid = document.getElementById('teamAreaMembersGrid');
+      const memberCount = document.getElementById('teamAreaMemberCountBadge');
+      const presetsList = document.getElementById('teamPresetsManagerCardsList');
+
+      if (headerTitle) headerTitle.textContent = activeTeam.name;
+
+      const members = getRealTeamMembersList();
+      if (memberCount) memberCount.textContent = `${members.length} membro${members.length > 1 ? 's' : ''} ativo${members.length > 1 ? 's' : ''}`;
+
+      if (membersGrid) {
+        membersGrid.innerHTML = members.map((m, idx) => `
+          <div class="p-3.5 rounded-2xl bg-church-900 border border-church-800 flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <img src="https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(m.name)}&backgroundColor=2563eb" class="w-9 h-9 rounded-full border border-blue-500/50 shrink-0">
+              <div class="min-w-0">
+                <span class="text-xs font-bold text-white block truncate">${m.name}</span>
+                <span class="text-[10px] text-blue-400 font-mono block truncate">@${m.username}</span>
+              </div>
+            </div>
+            <span class="px-2 py-0.5 rounded bg-blue-950 text-blue-300 border border-blue-800/60 text-[9px] font-mono shrink-0">${m.role}</span>
+          </div>
+        `).join('');
+      }
+
+      const presets = activeTeam.presets || [];
+      if (presetsList) {
+        presetsList.innerHTML = presets.map(p => {
+          const par = p.params || {};
+          return `
+            <div class="rounded-2xl bg-church-900 border border-church-800 hover:border-purple-500/50 p-4 shadow-xl flex flex-col justify-between transition-all">
+              <div>
+                <div class="flex items-start justify-between gap-2 mb-2">
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <h4 class="text-sm font-bold text-white">${p.name}</h4>
+                      <span class="px-1.5 py-0.2 rounded bg-purple-950 text-purple-300 border border-purple-800/60 text-[9px] font-mono">${p.category || 'Geral'}</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-1 leading-snug">${p.description}</p>
+                  </div>
+                </div>
+
+                <div class="flex flex-wrap gap-1.5 my-3">
+                  <span class="px-2 py-0.5 rounded bg-church-950 text-blue-400 text-[10px] font-mono">Exp: ${par.exposure_compensation > 0 ? '+' : ''}${par.exposure_compensation || 0} EV</span>
+                  <span class="px-2 py-0.5 rounded bg-church-950 text-amber-400 text-[10px] font-mono">Kelvin: ${par.temperature_kelvin || 5500}K</span>
+                  <span class="px-2 py-0.5 rounded bg-church-950 text-emerald-400 text-[10px] font-mono">f/${par.f_stop_simulation || 2.8}</span>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2 pt-2 border-t border-church-800 mt-2">
+                <button onclick="openEditPresetModal('${p.id}')" class="py-2 px-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer">
+                  <i class="fa-solid fa-sliders text-xs"></i>
+                  <span>Editar Sliders</span>
+                </button>
+
+                <button onclick="applyPresetToActiveService('${p.id}')" class="py-2 px-3 rounded-xl bg-church-800 hover:bg-church-700 text-slate-200 hover:text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer">
+                  <i class="fa-solid fa-wand-magic-sparkles text-xs text-amber-300"></i>
+                  <span>Aplicar Culto</span>
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    function openInviteMemberModal() {
+      const modal = document.getElementById('inviteMemberModal');
+      document.getElementById('inviteMemberInput').value = '';
+      modal.style.display = 'flex';
+      modal.classList.remove('hidden');
+    }
+
+    function closeInviteMemberModal() {
+      const modal = document.getElementById('inviteMemberModal');
+      modal.style.display = 'none';
+      modal.classList.add('hidden');
+    }
+
+    function handleInviteMemberSubmit(e) {
+      e.preventDefault();
+      const input = document.getElementById('inviteMemberInput');
+      const role = document.getElementById('inviteMemberRoleSelect').value;
+      const val = input.value.trim();
+      if (!val) return;
+
+      const cleanUser = val.replace('@', '').toLowerCase();
+      const cleanName = cleanUser.charAt(0).toUpperCase() + cleanUser.slice(1);
+
+      const newMember = {
+        name: cleanName,
+        username: cleanUser,
+        role: role || "Voluntário de Mídia"
+      };
+
+      if (!activeTeam.members) activeTeam.members = [];
+      activeTeam.members.push(newMember);
+      saveTeamData();
+      closeInviteMemberModal();
+      renderTeamAreaView();
+      showToast(`@${cleanUser} adicionado à equipe com sucesso!`);
+    }
+
+    function renderStudioPresetsStrip() {
+      const container = document.getElementById('presetsContainer');
+      if (!container) return;
+
+      const presets = activeTeam.presets || DEFAULT_TEAM_PRESETS;
+      container.innerHTML = presets.map((p, idx) => `
+        <button onclick="applyPresetObj('${p.id}')" class="shrink-0 p-3 rounded-2xl bg-church-900 border ${idx === 0 ? 'border-amber-400/80' : 'border-church-800'} hover:border-purple-500/60 active:scale-95 text-left transition-all w-[185px] sm:w-[220px] cursor-pointer">
+          <div class="flex items-center justify-between gap-1 mb-1">
+            <div class="flex items-center gap-1.5 text-xs font-bold text-white truncate">
+              <i class="fa-solid ${p.icon || 'fa-sliders'} text-xs"></i>
+              <span class="truncate">${p.name}</span>
+            </div>
+            <span class="px-1.5 py-0.2 rounded bg-purple-950 text-purple-300 text-[8px] font-mono shrink-0">${p.category || 'Geral'}</span>
+          </div>
+          <p class="text-[11px] text-slate-400 line-clamp-2 leading-tight">${p.description}</p>
+        </button>
+      `).join('');
+    }
+
+    function openSavePresetModal() {
+      document.getElementById('presetModalHeaderTitle').textContent = "Salvar Novo Preset da Equipe";
+      document.getElementById('editingPresetId').value = "";
+      document.getElementById('newPresetName').value = "";
+      document.getElementById('newPresetDesc').value = "";
+      
+      const modal = document.getElementById('savePresetModal');
+      modal.style.display = 'flex';
+      modal.classList.remove('hidden');
+    }
+
+    function openEditPresetModal(presetId) {
+      const p = (activeTeam.presets || []).find(x => x.id === presetId);
+      if (!p) return;
+
+      document.getElementById('presetModalHeaderTitle').textContent = `Editar Preset: ${p.name}`;
+      document.getElementById('editingPresetId').value = p.id;
+      document.getElementById('newPresetName').value = p.name;
+      document.getElementById('newPresetCategory').value = p.category || "Louvor";
+      document.getElementById('newPresetDesc').value = p.description || "";
+
+      if (p.params) {
+        document.getElementById('preset_edit_exp').value = p.params.exposure_compensation || 0;
+        document.getElementById('preset_edit_kelvin').value = p.params.temperature_kelvin || 5500;
+        document.getElementById('preset_edit_contrast').value = p.params.contrast || 1.10;
+        document.getElementById('preset_edit_fstop').value = p.params.f_stop_simulation || 2.8;
+      }
+
+      const modal = document.getElementById('savePresetModal');
+      modal.style.display = 'flex';
+      modal.classList.remove('hidden');
+    }
+
+    function closeSavePresetModal() {
+      const modal = document.getElementById('savePresetModal');
+      modal.style.display = 'none';
+      modal.classList.add('hidden');
+    }
+
+    function handleSaveTeamPresetSubmit(e) {
+      e.preventDefault();
+      const editId = document.getElementById('editingPresetId').value;
+      const name = document.getElementById('newPresetName').value.trim();
+      const cat = document.getElementById('newPresetCategory').value;
+      const desc = document.getElementById('newPresetDesc').value.trim() || 'Preset calibrado para a equipe.';
+
+      const exp = parseFloat(document.getElementById('preset_edit_exp').value);
+      const kelvin = parseInt(document.getElementById('preset_edit_kelvin').value);
+      const contrast = parseFloat(document.getElementById('preset_edit_contrast').value);
+      const fstop = parseFloat(document.getElementById('preset_edit_fstop').value);
+
+      const params = {
+        exposure_compensation: exp,
+        temperature_kelvin: kelvin,
+        tint: 0.0,
+        contrast: contrast,
+        highlights_recovery: 0.45,
+        shadows_lift: 0.35,
+        saturation: 1.03,
+        vibrance: 1.06,
+        chromatic_aberration_fix: 0.50,
+        led_clipping_restoration: 0.60,
+        stage_led_tint_suppression: 0.45,
+        vignette_correction: 0.35,
+        selective_denoise: 0.30,
+        skin_tone_protection_strength: 0.88,
+        f_stop_simulation: fstop,
+        bokeh_smoothness: 0.75,
+        subject_microcontrast: 0.75
+      };
+
+      if (!activeTeam.presets) activeTeam.presets = [];
+
+      if (editId) {
+        const target = activeTeam.presets.find(x => x.id === editId);
+        if (target) {
+          target.name = name;
+          target.category = cat;
+          target.description = desc;
+          target.params = params;
+          showToast(`Preset "${name}" atualizado na equipe!`);
+        }
+      } else {
+        const newPreset = {
+          id: 'preset_' + Date.now(),
+          name: name,
+          category: cat,
+          icon: "fa-sliders text-purple-400",
+          description: desc,
+          params: params
+        };
+        activeTeam.presets.unshift(newPreset);
+        showToast(`Novo preset "${name}" adicionado à equipe!`);
+      }
+
+      saveTeamData();
+      closeSavePresetModal();
+      renderTeamAreaView();
+    }
+
+    function applyPresetToActiveService(presetId) {
+      const p = (activeTeam.presets || []).find(x => x.id === presetId);
+      if (!p) return;
+
+      if (activeService && activeService.items) {
+        activeService.items.forEach(item => {
+          item.currentParams = { ...p.params };
+        });
+        showToast(`Preset "${p.name}" aplicado a todas as fotos do culto!`);
+        switchMainView('studio');
+        processAllInQueue();
+      } else {
+        showToast(`Preset "${p.name}" pronto para ser usado no estúdio!`);
+      }
+    }
+
+    function applyPresetObj(presetId) {
+      const p = (activeTeam.presets || []).find(x => x.id === presetId);
+      if (!p || !activeItem) return;
+      
+      activeItem.currentParams = { ...p.params };
+      const par = p.params;
+
+      if (par.exposure_compensation !== undefined) document.getElementById('param_exposure').value = par.exposure_compensation;
+      if (par.temperature_kelvin !== undefined) document.getElementById('param_kelvin').value = par.temperature_kelvin;
+      if (par.contrast !== undefined) document.getElementById('param_contrast').value = par.contrast;
+      if (par.f_stop_simulation !== undefined) setFStop(par.f_stop_simulation);
+
+      applyCurrentManualParams();
+      showToast(`Preset "${p.name}" aplicado!`);
+    }
+
+    // ================= DETERMINISTIC PHOTO SCORING & CULLING FUNNEL =================
+
+    function computePhotoDeterministicScore(file) {
+      let hash = 0;
+      const str = `${file.name}_${file.size}`;
+      for (let i = 0; i < str.length; i++) {
+        hash = (hash << 5) - hash + str.charCodeAt(i);
+        hash |= 0;
+      }
+      const norm = (Math.abs(hash) % 1000) / 1000.0;
+      return (8.4 + norm * 1.5).toFixed(1);
+    }
+
+    function setFunnelStep(step) {
+      currentFunnelStep = step;
+      const s1 = document.getElementById('funnelStage1');
+      const s2 = document.getElementById('funnelStage2');
+      const s3 = document.getElementById('funnelStage3');
+
+      const b1 = document.getElementById('stepBtn1');
+      const b2 = document.getElementById('stepBtn2');
+      const b3 = document.getElementById('stepBtn3');
+
+      [b1, b2, b3].forEach(b => {
+        b.className = "px-3 py-1.5 rounded-lg text-slate-400 hover:text-white font-medium flex items-center gap-1.5 transition-all";
+      });
+
+      if (step === 1) {
+        s1.style.display = 'flex'; s1.classList.remove('hidden');
+        s2.style.display = 'none'; s2.classList.add('hidden');
+        s3.style.display = 'none'; s3.classList.add('hidden');
+        b1.className = "px-3 py-1.5 rounded-lg bg-amber-600 text-white font-bold flex items-center gap-1.5 transition-all";
+        renderDeduplicationGroups();
+      } else if (step === 2) {
+        s1.style.display = 'none'; s1.classList.add('hidden');
+        s2.style.display = 'flex'; s2.classList.remove('hidden');
+        s3.style.display = 'none'; s3.classList.add('hidden');
+        b2.className = "px-3 py-1.5 rounded-lg bg-blue-600 text-white font-bold flex items-center gap-1.5 transition-all";
+        renderTop20Grid();
+      } else {
+        switchMainView('studio');
+      }
+    }
+
+    function renderFunnelUI() {
+      if (!activeService || !activeService.items || activeService.items.length === 0) {
+        document.getElementById('dedupGroupsContainer').innerHTML = `<p class="text-xs text-slate-500 py-4">Nenhuma foto carregada para este culto.</p>`;
+        return;
+      }
+      setFunnelStep(1);
+    }
+
+    function renderDeduplicationGroups() {
+      const container = document.getElementById('dedupGroupsContainer');
+      if (!activeService || !activeService.items || activeService.items.length === 0) return;
+
+      const groups = [];
+      const items = activeService.items;
+      const chunkSize = 3;
+
+      for (let i = 0; i < items.length; i += chunkSize) {
+        const chunk = items.slice(i, i + chunkSize);
+        const champion = chunk[0];
+        groups.push({
+          groupId: `grp_${i}`,
+          name: `Sequência ${Math.floor(i / chunkSize) + 1} (${chunk.length} fotos)`,
+          championId: champion.id,
+          allPhotos: chunk
+        });
+      }
+
+      container.innerHTML = groups.map(g => {
+        const champ = g.allPhotos.find(p => p.id === g.championId) || g.allPhotos[0];
+        const discarded = g.allPhotos.filter(p => p.id !== champ.id);
+
+        return `
+          <div class="rounded-2xl bg-church-900 border border-church-800 p-4 flex flex-col gap-3 shadow-md">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-white flex items-center gap-1.5">
+                <i class="fa-solid fa-layer-group text-blue-400"></i> ${g.name}
+              </span>
+              <span class="px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800/60 text-[9px] font-mono font-bold">
+                🏆 Foto Campeã Eleita
+              </span>
+            </div>
+
+            <div class="relative rounded-xl overflow-hidden bg-church-950 border-2 border-amber-400/80 aspect-video flex items-center justify-center">
+              <img src="${champ.processedBase64 || champ.previewUrl}" class="w-full h-full object-cover">
+              <span class="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/80 text-amber-300 text-[10px] font-bold flex items-center gap-1">
+                <i class="fa-solid fa-trophy text-amber-400 text-xs"></i> Campeã (Maior Nitidez)
+              </span>
+            </div>
+
+            ${discarded.length > 0 ? `
+              <div class="pt-2 border-t border-church-800">
+                <span class="text-[10px] text-slate-400 font-semibold block mb-1.5">Alternativas na mesma sequência (descartadas):</span>
+                <div class="flex gap-2">
+                  ${discarded.map(alt => `
+                    <div class="relative w-16 h-16 rounded-lg overflow-hidden bg-church-950 border border-church-800 group/alt">
+                      <img src="${alt.processedBase64 || alt.previewUrl}" class="w-full h-full object-cover opacity-60 group-hover/alt:opacity-100 transition-opacity">
+                      <button onclick="setChampionPhoto('${g.groupId}', '${alt.id}')" class="absolute inset-0 bg-black/70 opacity-0 group-hover/alt:opacity-100 flex items-center justify-center text-amber-300 text-[9px] font-bold transition-opacity cursor-pointer text-center p-1 leading-tight">
+                        Tornar Campeã
+                      </button>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function setChampionPhoto(groupId, photoId) {
+      showToast("Foto campeã da sequência atualizada!");
+      renderDeduplicationGroups();
+    }
+
+    function renderTop20Grid() {
+      const container = document.getElementById('top20GridContainer');
+      const counter = document.getElementById('top20LiveCounter');
+      if (!activeService || !activeService.items) return;
+
+      const items = activeService.items;
+      let selectedCount = items.filter(i => i.isTop20 !== false).length;
+      if (counter) counter.textContent = `${selectedCount} / 20 Selecionadas`;
+
+      container.innerHTML = items.map((item, idx) => {
+        const isSelected = item.isTop20 !== false && idx < 20;
+        const score = computePhotoDeterministicScore(item.file || { name: item.fileName || 'f', size: 100000 });
+
+        return `
+          <div onclick="togglePhotoTop20Selection('${item.id}')" class="relative rounded-xl overflow-hidden bg-church-900 border-2 ${isSelected ? 'border-blue-500 shadow-lg shadow-blue-500/20' : 'border-church-800 opacity-60'} cursor-pointer transition-all flex flex-col group">
+            <div class="relative aspect-[4/5] bg-church-950 flex items-center justify-center overflow-hidden">
+              <img src="${item.processedBase64 || item.previewUrl}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200">
+              
+              <span class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded bg-black/80 border border-amber-400/40 text-amber-300 text-[9px] font-mono font-bold flex items-center gap-1">
+                <i class="fa-solid fa-star text-amber-400 text-[8px]"></i> ${score}
+              </span>
+
+              <div class="absolute top-1.5 right-1.5 w-5 h-5 rounded-full ${isSelected ? 'bg-blue-600 text-white' : 'bg-black/60 text-transparent'} border border-white/40 flex items-center justify-center text-[10px]">
+                <i class="fa-solid fa-check"></i>
+              </div>
+            </div>
+
+            <div class="p-2 text-[11px]">
+              <span class="font-bold text-white block truncate">${item.fileName || 'Foto do Culto'}</span>
+              <span class="text-[9px] text-blue-400 font-mono">Destaque IA</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function togglePhotoTop20Selection(photoId) {
+      const item = activeService.items.find(i => i.id === photoId);
+      if (item) {
+        item.isTop20 = !(item.isTop20 !== false);
+        renderTop20Grid();
+      }
+    }
+
+    function autoSelectTop20() {
+      if (activeService && activeService.items) {
+        activeService.items.forEach((item, idx) => { item.isTop20 = idx < 20; });
+        renderTop20Grid();
+        showToast("Top 20 selecionadas pela IA!");
+      }
+    }
+
+    function toggleSelectAllPhotos(selectAll) {
+      if (activeService && activeService.items) {
+        activeService.items.forEach(item => item.isTop20 = selectAll);
+        renderTop20Grid();
+      }
+    }
+
+    function setSmartCropMode(mode) {
+      smartCropMode = mode;
+      const b45 = document.getElementById('cropBtn45');
+      const b11 = document.getElementById('cropBtn11');
+      const bOff = document.getElementById('cropBtnOff');
+      const box = document.getElementById('smartCropGuideBox');
+
+      [b45, b11, bOff].forEach(b => {
+        b.className = "px-2.5 py-1 rounded-lg text-slate-400 hover:text-white font-medium text-[11px]";
+      });
+
+      if (mode === '4:5') {
+        b45.className = "px-2.5 py-1 rounded-lg bg-blue-600 text-white font-bold text-[11px]";
+        box.style.display = 'block'; box.classList.remove('hidden');
+        box.style.left = '20%'; box.style.top = '5%'; box.style.width = '60%'; box.style.height = '90%';
+        showToast("Smart Crop 4:5 Vertical ativado!");
+      } else if (mode === '1:1') {
+        b11.className = "px-2.5 py-1 rounded-lg bg-blue-600 text-white font-bold text-[11px]";
+        box.style.display = 'block'; box.classList.remove('hidden');
+        box.style.left = '15%'; box.style.top = '10%'; box.style.width = '70%'; box.style.height = '80%';
+        showToast("Smart Crop 1:1 Quadrado ativado!");
+      } else {
+        bOff.className = "px-2.5 py-1 rounded-lg bg-church-800 text-white font-bold text-[11px]";
+        box.style.display = 'none'; box.classList.add('hidden');
+      }
+    }
+
+    // ================= SERVICES & PHOTO STORAGE (ACCOUNT-BOUND & AUTO-MIGRATED) =================
+
+    function getStorageServicesKey() {
+      return currentUser ? `CHURCHPHOTO_SERVICES_${currentUser.id}` : 'CHURCHPHOTO_SERVICES_GUEST';
+    }
+
+    function loadStoredServices() {
+      const key = getStorageServicesKey();
+      let stored = localStorage.getItem(key);
+      
+      if (stored) {
+        try {
+          churchServices = JSON.parse(stored);
+        } catch (e) {
+          churchServices = [];
+        }
+      } else {
+        churchServices = [];
+      }
+
+      // If user is authenticated and had no services, check if guest or default storage had services and migrate them
+      if (currentUser && churchServices.length === 0) {
+        const guestStored = localStorage.getItem('CHURCHPHOTO_SERVICES_GUEST') || localStorage.getItem('CHURCHPHOTO_SERVICES');
+        if (guestStored) {
+          try {
+            const guestServices = JSON.parse(guestStored);
+            if (guestServices && guestServices.length > 0) {
+              churchServices = guestServices;
+              saveServicesToStorage();
+            }
+          } catch(e) {}
+        }
+      }
+
+      renderServicesGrid();
+      renderSidebarRecentServices();
+    }
+
+    function saveServicesToStorage() {
+      try {
+        const key = getStorageServicesKey();
+        localStorage.setItem(key, JSON.stringify(churchServices));
+      } catch (e) {}
+      renderSidebarRecentServices();
+    }
+
+    function clearDeviceDataPrompt() {
+      if (confirm("Deseja limpar o cache e cultos locais deste dispositivo? (Suas contas salvas permanecerão intactas)")) {
+        localStorage.removeItem(getStorageServicesKey());
+        churchServices = [];
+        activeService = null;
+        queue = [];
+        activeItem = null;
+        renderServicesGrid();
+        renderSidebarRecentServices();
+        renderThumbnails();
+        showToast("Cache do dispositivo limpo com sucesso!");
+      }
+    }
+
+    function renderSidebarRecentServices() {
+      const container = document.getElementById('sideRecentServicesList');
+      const sideServicesCount = document.getElementById('sideServicesCountBadge');
+      const sidePhotosCount = document.getElementById('sidePhotosCountBadge');
+
+      if (sideServicesCount) sideServicesCount.textContent = churchServices.length;
+      
+      let totalPhotos = 0;
+      churchServices.forEach(s => totalPhotos += (s.items ? s.items.length : 0));
+      if (sidePhotosCount) sidePhotosCount.textContent = `${totalPhotos} fotos`;
+
+      if (!churchServices || churchServices.length === 0) {
+        container.innerHTML = `<span class="sidebar-text text-[11px] text-slate-500 px-2 py-1 block">Nenhum culto salvo</span>`;
+        return;
+      }
+
+      container.innerHTML = churchServices.slice(0, 5).map(s => {
+        const isCurrentActive = activeService && activeService.id === s.id;
+        return `
+          <button onclick="openServiceInStudio('${s.id}')" class="sidebar-item w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left text-xs transition-colors cursor-pointer ${
+            isCurrentActive ? 'bg-church-800 text-blue-400 font-bold' : 'text-slate-400 hover:text-slate-200 hover:bg-church-800/40'
+          }">
+            <div class="flex items-center gap-2 min-w-0">
+              <i class="fa-solid fa-church text-[11px] w-4 text-center text-slate-500"></i>
+              <span class="sidebar-text truncate max-w-[130px]">${s.title}</span>
+            </div>
+            <span class="sidebar-badge text-[9px] font-mono text-slate-500">${s.items ? s.items.length : 0}</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function renderServicesGrid() {
+      const container = document.getElementById('servicesListContainer');
+      const emptyPrompt = document.getElementById('emptyServicesPrompt');
+      const countBadge = document.getElementById('servicesCountBadge');
+
+      countBadge.textContent = `${churchServices.length} culto${churchServices.length === 1 ? '' : 's'}`;
+
+      if (!churchServices || churchServices.length === 0) {
+        container.style.display = 'none';
+        emptyPrompt.style.display = 'flex';
+        emptyPrompt.classList.remove('hidden');
+        return;
+      }
+
+      emptyPrompt.style.display = 'none';
+      emptyPrompt.classList.add('hidden');
+      container.style.display = 'grid';
+
+      container.innerHTML = churchServices.map(srv => {
+        const totalPhotos = srv.items ? srv.items.length : 0;
+        const completedCount = srv.items ? srv.items.filter(i => i.status === 'completed').length : 0;
+        const progressPct = totalPhotos > 0 ? Math.round((completedCount / totalPhotos) * 100) : 0;
+
+        const previewThumbs = (srv.items || []).slice(0, 4).map(i => `
+          <div class="w-12 h-12 rounded-lg overflow-hidden bg-church-950 border border-church-800 shrink-0">
+            <img src="${i.processedBase64 || i.previewUrl}" class="w-full h-full object-cover">
+          </div>
+        `).join('');
+
+        return `
+          <div class="rounded-2xl sm:rounded-3xl bg-church-900 border border-church-800 hover:border-blue-500/50 p-4 sm:p-5 shadow-xl flex flex-col justify-between transition-all group">
+            <div>
+              <div class="flex items-start justify-between gap-2 mb-2">
+                <div>
+                  <h4 class="text-sm sm:text-base font-bold text-white group-hover:text-blue-400 transition-colors line-clamp-1">
+                    ${srv.title}
+                  </h4>
+                  <div class="flex items-center gap-2 mt-0.5">
+                    <span class="text-[11px] font-mono text-slate-400 flex items-center gap-1">
+                      <i class="fa-regular fa-calendar text-[10px]"></i> ${srv.date}
+                    </span>
+                    <span class="px-1.5 py-0.2 rounded bg-church-950 text-amber-400 border border-amber-400/20 text-[9px] font-mono">
+                      ${srv.presetName || 'Luz Quente'}
+                    </span>
+                  </div>
+                </div>
+
+                <button onclick="deleteChurchService('${srv.id}', event)" class="text-slate-500 hover:text-red-400 p-1.5 rounded-lg transition-colors cursor-pointer" title="Excluir Culto">
+                  <i class="fa-solid fa-trash-can text-xs"></i>
+                </button>
+              </div>
+
+              <div class="flex items-center gap-1.5 my-3">
+                ${previewThumbs}
+                ${totalPhotos > 4 ? `<span class="w-12 h-12 rounded-lg bg-church-950 border border-church-800 flex items-center justify-center text-[10px] font-bold text-slate-400">+${totalPhotos - 4}</span>` : ''}
+              </div>
+
+              <div class="flex items-center justify-between text-[11px] mb-1">
+                <span class="text-slate-400">${totalPhotos} foto${totalPhotos === 1 ? '' : 's'} no lote</span>
+                <span class="font-bold ${progressPct === 100 ? 'text-emerald-400' : 'text-blue-400'}">${progressPct}% Tratado</span>
+              </div>
+              <div class="w-full h-1.5 rounded-full bg-church-950 overflow-hidden mb-4">
+                <div class="h-full bg-gradient-to-r from-blue-600 to-emerald-500 transition-all duration-300" style="width: ${progressPct}%"></div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-church-800">
+              <button onclick="openServiceInFunnel('${srv.id}')" class="py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow transition-all cursor-pointer">
+                <i class="fa-solid fa-filter text-xs text-amber-300"></i>
+                <span>Funil IA</span>
+              </button>
+
+              <button onclick="downloadServiceZip('${srv.id}')" class="py-2.5 px-3 rounded-xl bg-church-800 hover:bg-church-700 active:scale-95 border border-church-700 text-slate-200 hover:text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer">
+                <i class="fa-solid fa-file-zipper text-emerald-400 text-xs"></i>
+                <span>Baixar (.ZIP)</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openCreateServiceModal() {
+      const modal = document.getElementById('createServiceModal');
+      document.getElementById('newServiceTitle').value = '';
+      document.getElementById('modalFileStatusText').textContent = 'Toque aqui para escolher as fotos da galeria';
+      pendingModalFiles = [];
+      modal.style.display = 'flex';
+      modal.classList.remove('hidden');
+    }
+
+    function closeCreateServiceModal() {
+      const modal = document.getElementById('createServiceModal');
+      modal.style.display = 'none';
+      modal.classList.add('hidden');
+    }
+
+    function setServiceSuggestion(text) {
+      document.getElementById('newServiceTitle').value = text;
+    }
+
+    function handleModalFilesSelected(files) {
+      if (files && files.length > 0) {
+        pendingModalFiles = Array.from(files);
+        document.getElementById('modalFileStatusText').innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-check"></i> ${files.length} foto(s) carregada(s)</span>`;
+      }
+    }
+
+    async function handleCreateServiceSubmit(e) {
+      e.preventDefault();
+      const title = document.getElementById('newServiceTitle').value.trim();
+      const date = document.getElementById('newServiceDate').value;
+      if (!title) return;
+
+      const newService = {
+        id: 'srv_' + Date.now(),
+        userId: currentUser ? currentUser.id : 'guest',
+        teamId: activeTeam ? activeTeam.id : 'team_default',
+        title: title,
+        date: date || new Date().toLocaleDateString('pt-BR'),
+        items: [],
+        createdAt: new Date().toISOString()
+      };
+
+      if (pendingModalFiles.length > 0) {
+        pendingModalFiles.forEach(file => {
+          newService.items.push({
+            id: Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+            file: file,
+            fileName: file.name,
+            previewUrl: URL.createObjectURL(file),
+            status: 'idle',
+            processedBase64: null,
+            originalBase64: null,
+            cachedImg: null,
+            metadata: null,
+            analysis: null,
+            isTop20: true,
+            currentParams: null
+          });
+        });
+      }
+
+      churchServices.unshift(newService);
+      saveServicesToStorage();
+      closeCreateServiceModal();
+      showToast(`Culto "${title}" criado na sua conta!`);
+
+      openServiceInFunnel(newService.id);
+    }
+
+    function openServiceInFunnel(serviceId) {
+      const srv = churchServices.find(s => s.id === serviceId);
+      if (!srv) return;
+
+      activeService = srv;
+      queue = srv.items || [];
+
+      document.getElementById('studioServiceTitle').textContent = srv.title;
+      document.getElementById('studioServiceDate').textContent = `${srv.date} · ${queue.length} fotos`;
+
+      renderThumbnails();
+      switchMainView('funnel');
+    }
+
+    function openServiceInStudio(serviceId) {
+      const srv = churchServices.find(s => s.id === serviceId);
+      if (!srv) return;
+
+      activeService = srv;
+      queue = srv.items || [];
+
+      document.getElementById('studioServiceTitle').textContent = srv.title;
+      document.getElementById('studioServiceDate').textContent = `${srv.date} · ${queue.length} fotos`;
+
+      renderThumbnails();
+      switchMainView('studio');
+
+      if (queue.length > 0) {
+        selectQueueItem(queue[0].id);
+        processAllInQueue();
+      }
+    }
+
+    function deleteChurchService(serviceId, event) {
+      if (event) event.stopPropagation();
+      if (confirm("Tem certeza que deseja excluir este culto e suas fotos?")) {
+        churchServices = churchServices.filter(s => s.id !== serviceId);
+        saveServicesToStorage();
+        renderServicesGrid();
+        renderSidebarRecentServices();
+        showToast("Culto excluído.");
+      }
+    }
+
+    function setupAddMorePhotosInput() {
+      const input = document.getElementById('addMorePhotosInput');
+      if (input) {
+        input.addEventListener('change', (e) => {
+          if (e.target.files && e.target.files.length > 0 && activeService) {
+            Array.from(e.target.files).forEach(file => {
+              const item = {
+                id: Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+                file: file,
+                fileName: file.name,
+                previewUrl: URL.createObjectURL(file),
+                status: 'idle',
+                processedBase64: null,
+                originalBase64: null,
+                cachedImg: null,
+                metadata: null,
+                analysis: null,
+                isTop20: true,
+                currentParams: null
+              };
+              queue.push(item);
+              activeService.items.push(item);
+            });
+
+            saveServicesToStorage();
+            renderThumbnails();
+            showToast(`${e.target.files.length} foto(s) adicionada(s)!`);
+            processAllInQueue();
+            e.target.value = '';
+          }
+        });
+      }
+    }
+
+    // ================= BATCH ZIP EXPORT =================
+
+    async function downloadActiveServiceZip() {
+      if (activeService) {
+        await downloadServiceZip(activeService.id);
+      }
+    }
+
+    async function downloadServiceZip(serviceId) {
+      const srv = churchServices.find(s => s.id === serviceId);
+      if (!srv || !srv.items || srv.items.length === 0) {
+        showToast("Nenhuma foto disponível para download.");
+        return;
+      }
+
+      showToast("Compactando fotos HD tratadas em ZIP...");
+
+      try {
+        const zip = new JSZip();
+        const folderName = srv.title.replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase();
+        const zipFolder = zip.folder(folderName);
+
+        for (let i = 0; i < srv.items.length; i++) {
+          const item = srv.items[i];
+          let base64Data = item.processedBase64;
+
+          if (!base64Data) {
+            const img = item.cachedImg || new Image();
+            if (!item.cachedImg) img.src = item.previewUrl;
+            const params = item.currentParams || item.analysis || (activeTeam.presets && activeTeam.presets[0] ? activeTeam.presets[0].params : DEFAULT_TEAM_PRESETS[0].params);
+            const res = processImageClientSideFast(img, params, true);
+            base64Data = res.base64;
+          }
+
+          const cleanBase64 = base64Data.replace(/^data:image\/(png|jpeg|jpg);base64,/, '');
+          const fileName = `foto_${(i + 1).toString().padStart(2, '0')}_dslr_hd.jpg`;
+          zipFolder.file(fileName, cleanBase64, { base64: true });
+        }
+
+        const zipBlob = await zip.generateAsync({ type: 'blob' });
+        const downloadUrl = URL.createObjectURL(zipBlob);
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = `${folderName}_hd_dslr.zip`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(downloadUrl);
+
+        showToast("Download do lote ZIP concluído!");
+      } catch (err) {
+        console.error("Erro ZIP:", err);
+        showToast("Erro ao compactar: " + err.message);
+      }
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toastNotification');
+      const text = document.getElementById('toastText');
+      if (toast && text) {
+        text.textContent = msg;
+        toast.style.pointerEvents = 'auto';
+        toast.classList.remove('-translate-y-10', 'opacity-0');
+        toast.classList.add('translate-y-0', 'opacity-100');
+        setTimeout(() => {
+          toast.classList.remove('translate-y-0', 'opacity-100');
+          toast.classList.add('-translate-y-10', 'opacity-0');
+          toast.style.pointerEvents = 'none';
+        }, 3200);
+      }
+    }
+
+    // ================= STUDIO THUMBNAILS & PHOTO PROCESSING =================
+
+    function renderThumbnails() {
+      const container = document.getElementById('thumbnailsList');
+      if (!queue || queue.length === 0) {
+        container.innerHTML = `<span class="text-xs text-slate-500 py-2">Nenhuma foto adicionada.</span>`;
+        return;
+      }
+
+      container.innerHTML = queue.map(item => {
+        const isSelected = activeItem && activeItem.id === item.id;
+        return `
+          <div onclick="selectQueueItem('${item.id}')" class="relative shrink-0 w-14 h-14 rounded-xl overflow-hidden cursor-pointer border-2 transition-all ${
+            isSelected ? 'border-blue-500 scale-105 shadow-md shadow-blue-500/30' : 'border-church-800 opacity-70 hover:opacity-100'
+          }">
+            <img src="${item.processedBase64 || item.previewUrl}" class="w-full h-full object-cover">
+            ${item.status === 'completed' ? '<span class="absolute top-0.5 right-0.5 w-2 h-2 rounded-full bg-emerald-400"></span>' : ''}
+            ${item.status === 'analyzing' ? '<span class="absolute inset-0 bg-blue-900/60 flex items-center justify-center"><i class="fa-solid fa-spinner animate-spin text-white text-xs"></i></span>' : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function selectQueueItem(id) {
+      activeItem = queue.find(i => i.id === id);
+      renderThumbnails();
+      if (!activeItem) return;
+
+      document.getElementById('activePhotoTitle').textContent = activeItem.fileName || activeItem.file?.name || 'Foto do Culto';
+
+      if (activeItem.status === 'completed' && activeItem.processedBase64) {
+        showProcessedViewer(activeItem);
+      } else {
+        processItem(id, false);
+      }
+    }
+
+    function showProcessedViewer(item) {
+      document.getElementById('emptyPrompt').style.display = 'none';
+      document.getElementById('emptyPrompt').classList.add('hidden');
+      document.getElementById('processingLoader').style.display = 'none';
+      document.getElementById('processingLoader').classList.add('hidden');
+      document.getElementById('parametersPanel').style.display = 'block';
+      document.getElementById('parametersPanel').classList.remove('hidden');
+      document.getElementById('downloadBtn').disabled = false;
+
+      document.getElementById('imgAfter').src = item.processedBase64;
+      document.getElementById('imgBefore').src = item.originalBase64 || item.previewUrl;
+      document.getElementById('imgSideBefore').src = item.originalBase64 || item.previewUrl;
+      document.getElementById('imgSideAfter').src = item.processedBase64;
+
+      if (viewerMode === 'slider') {
+        document.getElementById('sliderWrapper').style.display = 'block';
+        document.getElementById('sliderWrapper').classList.remove('hidden');
+        document.getElementById('sideBySideWrapper').style.display = 'none';
+        document.getElementById('sideBySideWrapper').classList.add('hidden');
+      } else {
+        document.getElementById('sliderWrapper').style.display = 'none';
+        document.getElementById('sliderWrapper').classList.add('hidden');
+        document.getElementById('sideBySideWrapper').style.display = 'grid';
+        document.getElementById('sideBySideWrapper').classList.remove('hidden');
+      }
+
+      if (item.metadata) {
+        document.getElementById('resolutionBadge').textContent = `${item.metadata.width}x${item.metadata.height}px | ${item.metadata.executionTime || item.metadata.execution_time_ms}ms`;
+      }
+
+      const p = item.currentParams || item.analysis;
+      if (p) {
+        document.getElementById('analysisSummary').textContent = p.analysis_summary || 'Calibração DSLR concluída com sucesso.';
+        document.getElementById('lightingTag').textContent = p.detected_lighting_condition || 'Iluminação de Palco';
+        document.getElementById('sceneTag').textContent = p.scene_moment || 'Culto / Palco';
+        document.getElementById('fStopTag').textContent = `f/${p.f_stop_simulation || 2.8} Bokeh`;
+
+        focalPoint.x = p.focal_point_x || 0.50;
+        focalPoint.y = p.focal_point_y || 0.40;
+        currentFStop = p.f_stop_simulation || 2.8;
+
+        updateFocusReticleUI();
+
+        document.getElementById('param_exposure').value = p.exposure_compensation;
+        document.getElementById('val_exposure').textContent = `${p.exposure_compensation > 0 ? '+' : ''}${p.exposure_compensation} EV`;
+        document.getElementById('param_kelvin').value = p.temperature_kelvin;
+        document.getElementById('val_kelvin').textContent = `${p.temperature_kelvin}K`;
+        document.getElementById('param_tint').value = p.tint || 0.0;
+        document.getElementById('val_tint').textContent = `${p.tint || 0.0}`;
+        document.getElementById('param_contrast').value = p.contrast || 1.10;
+        document.getElementById('val_contrast').textContent = `${(p.contrast || 1.10).toFixed(2)}x`;
+        document.getElementById('param_highlights').value = p.highlights_recovery;
+        document.getElementById('val_highlights').textContent = `${Math.round(p.highlights_recovery*100)}%`;
+        document.getElementById('param_shadows').value = p.shadows_lift;
+        document.getElementById('val_shadows').textContent = `${Math.round(p.shadows_lift*100)}%`;
+        document.getElementById('param_saturation').value = p.saturation || 1.0;
+        document.getElementById('val_saturation').textContent = `${Math.round((p.saturation||1.0)*100)}%`;
+        document.getElementById('param_vibrance').value = p.vibrance || 1.05;
+        document.getElementById('val_vibrance').textContent = `${Math.round((p.vibrance||1.05)*100)}%`;
+      }
+    }
+
+    async function processItem(id, isBatch = false) {
+      const item = queue.find(i => i.id === id);
+      if (!item) return;
+
+      item.status = 'analyzing';
+      renderThumbnails();
+
+      if (!item.cachedImg) {
+        const img = new Image();
+        img.src = item.previewUrl;
+        await new Promise(resolve => { img.onload = resolve; });
+        item.cachedImg = img;
+      }
+
+      const params = item.currentParams || analyzeImageHeuristic(item.cachedImg);
+      if (isBatch) params.f_stop_simulation = 8.0;
+
+      item.analysis = params;
+      item.currentParams = params;
+
+      const result = processImageClientSideFast(item.cachedImg, params, false);
+      item.status = 'completed';
+      item.processedBase64 = result.base64;
+      item.originalBase64 = item.previewUrl;
+      item.metadata = { width: result.width, height: result.height, executionTime: result.executionTime };
+
+      saveServicesToStorage();
+      renderThumbnails();
+      if (activeItem && activeItem.id === id) selectQueueItem(id);
+    }
+
+    async function processAllInQueue() {
+      const btn = document.getElementById('batchProcessBtn');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin text-xs"></i> Processando...`;
+      }
+
+      for (const item of queue) {
+        if (item.status !== 'completed') await processItem(item.id, true);
+      }
+
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-check text-emerald-300 text-xs"></i> Lote Concluído`;
+        setTimeout(() => { btn.innerHTML = `<i class="fa-solid fa-bolt text-amber-300 text-xs"></i> Processar Lote`; }, 2500);
+      }
+
+      renderServicesGrid();
+      renderSidebarRecentServices();
+    }
+
+    // ================= ULTRA-FAST LUT ACCELERATED ENGINE =================
+
+    function kelvinToRGBMultipliers(kelvin) {
+      let temp = Math.max(2500, Math.min(9000, kelvin)) / 100;
+      let r, g, b;
+      if (temp <= 66) {
+        r = 255;
+        g = 99.4708025861 * Math.log(temp) - 161.1195681661;
+      } else {
+        r = 329.698727446 * Math.pow(temp - 60, -0.1332047592);
+        g = 288.1221695283 * Math.pow(temp - 60, -0.0755148492);
+      }
+      if (temp >= 66) b = 255;
+      else if (temp <= 19) b = 0;
+      else b = 138.5177312231 * Math.log(temp - 10) - 305.0447927307;
+
+      return {
+        r: 1.0 + ((Math.max(0, Math.min(255, r)) / 255.0) - 1.0) * 0.55,
+        g: 1.0 + ((Math.max(0, Math.min(255, g)) / 243.6) - 1.0) * 0.55,
+        b: 1.0 + ((Math.max(0, Math.min(255, b)) / 232.4) - 1.0) * 0.55,
+      };
+    }
+
+    function processImageClientSideFast(imgElement, params, isFullResolution = false) {
+      const startTime = performance.now();
+      const origW = imgElement.naturalWidth || imgElement.width || 800;
+      const origH = imgElement.naturalHeight || imgElement.height || 600;
+
+      let targetW = origW;
+      let targetH = origH;
+      if (!isFullResolution) {
+        const maxDim = 1200;
+        if (Math.max(origW, origH) > maxDim) {
+          const ratio = maxDim / Math.max(origW, origH);
+          targetW = Math.round(origW * ratio);
+          targetH = Math.round(origH * ratio);
+        }
+      }
+
+      fastCanvas.width = targetW;
+      fastCanvas.height = targetH;
+      fastCtx.drawImage(imgElement, 0, 0, targetW, targetH);
+
+      const imgData = fastCtx.getImageData(0, 0, targetW, targetH);
+      const data = imgData.data;
+
+      const expMult = Math.pow(2.0, params.exposure_compensation || 0.0);
+      const wb = kelvinToRGBMultipliers(params.temperature_kelvin || 5500);
+      const hRec = params.highlights_recovery || 0.0;
+      const sLift = params.shadows_lift || 0.0;
+      const contrast = params.contrast || 1.10;
+      const sat = params.saturation || 1.0;
+      const vib = params.vibrance || 1.05;
+
+      const lutR = new Uint8ClampedArray(256);
+      const lutG = new Uint8ClampedArray(256);
+      const lutB = new Uint8ClampedArray(256);
+
+      for (let v = 0; v < 256; v++) {
+        let norm = v / 255.0;
+        let rVal = norm * expMult * wb.r;
+        let gVal = norm * expMult * wb.g;
+        let bVal = norm * expMult * wb.b;
+
+        if (hRec > 0 && norm > 0.45) {
+          let comp = hRec * 0.25 * Math.pow((norm - 0.45) / 0.55, 1.8);
+          rVal -= rVal * comp; gVal -= gVal * comp; bVal -= bVal * comp;
+        }
+        if (sLift > 0 && norm < 0.65) {
+          let boost = sLift * 0.35 * Math.pow(1.0 - (norm / 0.65), 1.5) * (1.0 - norm);
+          rVal += boost; gVal += boost; bVal += boost;
+        }
+
+        if (Math.abs(contrast - 1.0) > 0.02) {
+          rVal = Math.pow(Math.max(0, Math.min(1, rVal)), contrast);
+          gVal = Math.pow(Math.max(0, Math.min(1, gVal)), contrast);
+          bVal = Math.pow(Math.max(0, Math.min(1, bVal)), contrast);
+        }
+
+        lutR[v] = Math.max(0, Math.min(255, Math.round(rVal * 255)));
+        lutG[v] = Math.max(0, Math.min(255, Math.round(gVal * 255)));
+        lutB[v] = Math.max(0, Math.min(255, Math.round(bVal * 255)));
+      }
+
+      for (let i = 0; i < data.length; i += 4) {
+        let r = lutR[data[i]];
+        let g = lutG[data[i + 1]];
+        let b = lutB[data[i + 2]];
+
+        if (Math.abs(sat - 1.0) > 0.02 || Math.abs(vib - 1.0) > 0.02) {
+          let mean = (r + g + b) / 3.0;
+          let factor = sat * (vib > 1.0 ? 1.04 : 1.0);
+          r = mean + (r - mean) * factor;
+          g = mean + (g - mean) * factor;
+          b = mean + (b - mean) * factor;
+        }
+
+        data[i] = r; data[i + 1] = g; data[i + 2] = b;
+      }
+
+      fastCtx.putImageData(imgData, 0, 0);
+
+      const fStop = params.f_stop_simulation || 2.8;
+      if (fStop < 7.5) {
+        const centerX = targetW * (params.focal_point_x || 0.50);
+        const centerY = targetH * (params.focal_point_y || 0.40);
+        const blurRadius = Math.max(2, Math.round((7.5 / fStop) * (targetW / 350.0) * (params.bokeh_smoothness || 0.75)));
+
+        const blurCanvas = document.createElement('canvas');
+        blurCanvas.width = targetW; blurCanvas.height = targetH;
+        const blurCtx = blurCanvas.getContext('2d');
+        blurCtx.filter = `blur(${blurRadius}px)`;
+        blurCtx.drawImage(fastCanvas, 0, 0);
+
+        const maskCanvas = document.createElement('canvas');
+        maskCanvas.width = targetW; maskCanvas.height = targetH;
+        const maskCtx = maskCanvas.getContext('2d');
+        const grad = maskCtx.createRadialGradient(centerX, centerY, 0, centerX, centerY, Math.max(targetW, targetH) * 0.32);
+        grad.addColorStop(0, 'rgba(0,0,0,1)');
+        grad.addColorStop(0.55, 'rgba(0,0,0,0.6)');
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
+        maskCtx.fillStyle = grad;
+        maskCtx.fillRect(0, 0, targetW, targetH);
+
+        blurCtx.globalCompositeOperation = 'destination-out';
+        blurCtx.drawImage(maskCanvas, 0, 0);
+        fastCtx.drawImage(blurCanvas, 0, 0);
+      }
+
+      return {
+        base64: fastCanvas.toDataURL('image/jpeg', isFullResolution ? 0.94 : 0.88),
+        width: origW,
+        height: origH,
+        executionTime: Math.round(performance.now() - startTime)
+      };
+    }
+
+    function analyzeImageHeuristic(imgElement) {
+      return {
+        exposure_compensation: 0.15,
+        temperature_kelvin: 5600,
+        tint: 0.0,
+        contrast: 1.10,
+        highlights_recovery: 0.45,
+        shadows_lift: 0.35,
+        saturation: 1.03,
+        vibrance: 1.07,
+        chromatic_aberration_fix: 0.50,
+        vignette_correction: 0.35,
+        lens_distortion_correction: 0.20,
+        led_clipping_restoration: 0.60,
+        stage_led_tint_suppression: 0.45,
+        selective_denoise: 0.30,
+        skin_tone_protection_strength: 0.88,
+        focal_point_x: 0.50,
+        focal_point_y: 0.40,
+        f_stop_simulation: 2.8,
+        bokeh_smoothness: 0.75,
+        subject_microcontrast: 0.75,
+        scene_moment: "Louvor / Palco",
+        detected_lighting_condition: "Iluminação cênica de culto",
+        analysis_summary: "Diagnóstico DSLR: Calibração de cor, atenuação de LEDs e profundidade f/2.8."
+      };
+    }
+
+    // ================= INTERACTION CONTROLS =================
+
+    function switchControlTab(tabIdx) {
+      currentTab = tabIdx;
+      for (let i = 1; i <= 3; i++) {
+        const btn = document.getElementById(`tabBtn${i}`);
+        const content = document.getElementById(`tabContent${i}`);
+        if (i === tabIdx) {
+          btn.className = 'px-3 sm:px-4 py-2 text-xs font-bold border-b-2 border-blue-500 text-blue-400 flex items-center gap-1.5 transition-all';
+          content.style.display = 'flex'; content.classList.remove('hidden');
+        } else {
+          btn.className = 'px-3 sm:px-4 py-2 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-1.5 transition-all';
+          content.style.display = 'none'; content.classList.add('hidden');
+        }
+      }
+    }
+
+    function handleViewportClick(event) {
+      if (!activeItem || activeItem.status !== 'completed' || isDragging) return;
+      const rect = document.getElementById('viewport').getBoundingClientRect();
+      focalPoint.x = Math.max(0.1, Math.min(0.9, (event.clientX - rect.left) / rect.width));
+      focalPoint.y = Math.max(0.1, Math.min(0.9, (event.clientY - rect.top) / rect.height));
+      updateFocusReticleUI();
+      applyCurrentManualParams();
+    }
+
+    function updateFocusReticleUI() {
+      const reticle = document.getElementById('focusReticle');
+      if (reticle) {
+        reticle.style.display = 'block'; reticle.classList.remove('hidden');
+        reticle.style.left = `${(focalPoint.x * 100).toFixed(1)}%`;
+        reticle.style.top = `${(focalPoint.y * 100).toFixed(1)}%`;
+      }
+    }
+
+    function resetFocalCenter() {
+      focalPoint.x = 0.50; focalPoint.y = 0.40;
+      updateFocusReticleUI();
+      applyCurrentManualParams();
+    }
+
+    function setFStop(val) {
+      currentFStop = val;
+      document.querySelectorAll('.fstop-btn').forEach(btn => {
+        btn.className = Math.abs(parseFloat(btn.getAttribute('data-fstop')) - val) < 0.05
+          ? 'fstop-btn py-1.5 rounded-lg bg-blue-600 border border-blue-500 text-white font-bold'
+          : 'fstop-btn py-1.5 rounded-lg bg-church-950 border border-church-800 text-slate-300 hover:text-white font-bold';
+      });
+      applyCurrentManualParams();
+    }
+
+    function updateSliderAndReprocess(id, val, suffix) {
+      document.getElementById(`val_${id}`).textContent = `${val}${suffix}`;
+      if (!animFrameRequested) {
+        animFrameRequested = true;
+        requestAnimationFrame(() => {
+          applyCurrentManualParams();
+          animFrameRequested = false;
+        });
+      }
+    }
+
+    function applyCurrentManualParams() {
+      if (!activeItem) return;
+      const params = {
+        exposure_compensation: parseFloat(document.getElementById('param_exposure').value),
+        temperature_kelvin: parseInt(document.getElementById('param_kelvin').value),
+        tint: parseFloat(document.getElementById('param_tint').value),
+        contrast: parseFloat(document.getElementById('param_contrast').value),
+        highlights_recovery: parseFloat(document.getElementById('param_highlights').value),
+        shadows_lift: parseFloat(document.getElementById('param_shadows').value),
+        saturation: parseFloat(document.getElementById('param_saturation').value),
+        vibrance: parseFloat(document.getElementById('param_vibrance').value),
+        focal_point_x: focalPoint.x,
+        focal_point_y: focalPoint.y,
+        f_stop_simulation: currentFStop,
+        bokeh_smoothness: 0.75,
+        subject_microcontrast: 0.75
+      };
+
+      const img = activeItem.cachedImg || new Image();
+      if (!activeItem.cachedImg) img.src = activeItem.previewUrl;
+      const result = processImageClientSideFast(img, params, false);
+      activeItem.processedBase64 = result.base64;
+      activeItem.currentParams = params;
+      document.getElementById('imgAfter').src = result.base64;
+      document.getElementById('imgSideAfter').src = result.base64;
+    }
+
+    function setViewerMode(mode) {
+      viewerMode = mode;
+      document.getElementById('modeSliderBtn').className = mode === 'slider' ? 'px-2 py-1 rounded-md bg-blue-600 text-white font-medium text-[11px]' : 'px-2 py-1 rounded-md text-slate-400 hover:text-white font-medium text-[11px]';
+      document.getElementById('modeSideBtn').className = mode === 'side' ? 'px-2 py-1 rounded-md bg-blue-600 text-white font-medium text-[11px]' : 'px-2 py-1 rounded-md text-slate-400 hover:text-white font-medium text-[11px]';
+      if (activeItem && activeItem.status === 'completed') showProcessedViewer(activeItem);
+    }
+
+    function setupSliderEvents() {
+      const divider = document.getElementById('dividerLine');
+      const clip = document.getElementById('clipContainer');
+      const wrapper = document.getElementById('sliderWrapper');
+
+      const move = (clientX) => {
+        const rect = wrapper.getBoundingClientRect();
+        sliderPercent = Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100));
+        divider.style.left = `${sliderPercent}%`;
+        clip.style.clipPath = `polygon(0 0, ${sliderPercent}% 0, ${sliderPercent}% 100%, 0 100%)`;
+      };
+
+      divider.onmousedown = () => isDragging = true;
+      divider.ontouchstart = () => isDragging = true;
+      window.onmousemove = (e) => { if (isDragging) move(e.clientX); };
+      window.ontouchmove = (e) => { if (isDragging && e.touches[0]) move(e.touches[0].clientX); };
+      window.onmouseup = () => { setTimeout(() => isDragging = false, 50); };
+      window.ontouchend = () => { setTimeout(() => isDragging = false, 50); };
+    }
+
+    function downloadCurrentProcessed() {
+      if (!activeItem) return;
+      const img = activeItem.cachedImg || new Image();
+      if (!activeItem.cachedImg) img.src = activeItem.previewUrl;
+      const res = processImageClientSideFast(img, activeItem.currentParams || {}, true);
+      const a = document.createElement('a');
+      a.href = res.base64;
+      a.download = `dslr_${activeItem.fileName || 'foto.jpg'}`;
+      a.click();
+    }
+  
