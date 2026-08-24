@@ -103,7 +103,7 @@
             <span class="text-sm font-bold tracking-tight text-white truncate">ChurchPhoto</span>
             <span class="px-1.5 py-0.2 bg-blue-950 text-blue-400 border border-blue-800/80 text-[9px] font-mono rounded-full">Pro</span>
           </div>
-          <span class="text-[10px] text-slate-400 block truncate">AI Culling & DSLR Engine</span>
+          <span class="text-[10px] text-slate-400 block truncate">AI Culling & Team Engine</span>
         </div>
       </div>
 
@@ -150,37 +150,41 @@
           <span id="sidePhotosCountBadge" class="sidebar-badge px-1.5 py-0.2 rounded-full bg-church-950 text-slate-400 text-[10px] font-mono">0 fotos</span>
         </button>
 
-        <!-- Ambiente de Presets -->
-        <button onclick="switchMainView('presets')" id="sideNavPresets" class="sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-church-800/70 transition-all cursor-pointer">
+        <!-- Área da Equipe & Presets Integrados -->
+        <button onclick="switchMainView('team_area')" id="sideNavTeamArea" class="sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-church-800/70 transition-all cursor-pointer">
           <div class="flex items-center gap-2.5">
-            <i class="fa-solid fa-sliders text-sm w-4 text-center text-purple-400"></i>
-            <span class="sidebar-text">Ambiente de Presets</span>
+            <i class="fa-solid fa-users-gear text-sm w-4 text-center text-purple-400"></i>
+            <span class="sidebar-text">Equipe & Presets</span>
           </div>
-          <span class="sidebar-badge px-1.5 py-0.2 rounded-full bg-purple-950 text-purple-300 text-[10px] font-mono font-bold">Editor</span>
+          <span id="sideTeamPresetsCountBadge" class="sidebar-badge px-1.5 py-0.2 rounded-full bg-purple-950 text-purple-300 text-[10px] font-mono font-bold">3 presets</span>
         </button>
       </div>
 
-      <!-- DEDICATED TEAM SECTION IN SIDEBAR (Real Members Only) -->
+      <!-- DEDICATED REAL TEAM SECTION IN SIDEBAR (NO PHANTOMS) -->
       <div class="sidebar-team-section pt-2 border-t border-church-800/70 space-y-2">
         <div class="flex items-center justify-between px-2.5">
           <span class="text-[10px] font-bold tracking-wider uppercase text-slate-400 flex items-center gap-1.5">
-            <i class="fa-solid fa-users text-blue-400"></i> Equipe de Mídia
+            <i class="fa-solid fa-users text-blue-400"></i> Equipe Ativa
           </span>
-          <button onclick="openTeamModal()" class="text-[10px] text-blue-400 hover:underline font-semibold cursor-pointer">
-            + Convidar
+          <button onclick="switchMainView('team_area')" class="text-[10px] text-purple-400 hover:underline font-semibold cursor-pointer">
+            Gerenciar
           </button>
         </div>
 
-        <div class="p-2 rounded-xl bg-church-950/70 border border-church-800/60 text-xs">
-          <div class="flex items-center justify-between mb-1.5">
+        <div class="p-2.5 rounded-xl bg-church-950/80 border border-church-800/80 text-xs">
+          <div class="flex items-center justify-between mb-2">
             <span id="sidebarTeamTitle" class="font-bold text-white truncate max-w-[130px]">Mídia Principal</span>
-            <span id="sidebarTeamCountBadge" class="text-[9px] px-1.5 py-0.2 rounded bg-church-900 text-slate-300 font-mono">1 voluntário</span>
+            <span id="sidebarTeamCountBadge" class="text-[9px] px-1.5 py-0.2 rounded bg-church-900 text-blue-300 border border-blue-900/50 font-mono">1 membro</span>
           </div>
           
           <!-- Real Members List Container -->
           <div id="sidebarRealMembersList" class="space-y-1">
             <!-- Rendered purely based on authenticated user and user-added members -->
           </div>
+
+          <button onclick="openInviteMemberModal()" class="w-full mt-2 py-1.5 px-2 rounded-lg bg-church-900 hover:bg-church-850 border border-church-800 text-[10px] text-blue-400 font-semibold flex items-center justify-center gap-1 cursor-pointer">
+            <i class="fa-solid fa-user-plus text-[9px]"></i> + Convidar Voluntário
+          </button>
         </div>
       </div>
 
@@ -200,7 +204,7 @@
     <!-- ========================================================================= -->
     <!-- ALWAYS VISIBLE BOTTOM SIDEBAR FOOTER (LOGIN / LOGGED IN USER) -->
     <!-- ========================================================================= -->
-    <div class="p-3 border-t border-church-800/90 bg-church-950/90">
+    <div class="p-3 border-t border-church-800/90 bg-church-950/95">
       
       <!-- When Authenticated: Profile Info & Logout -->
       <div id="sideProfileLoggedIn" class="flex items-center justify-between gap-2 hidden" style="display: none;">
@@ -219,7 +223,7 @@
       <!-- When Unauthenticated: ALWAYS Visible Big Login Button -->
       <div id="sideProfileLoggedOut" class="flex items-center justify-between w-full">
         <button onclick="toggleAuthModal()" class="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-95 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg shadow-blue-600/30">
-          <i class="fa-solid fa-user text-xs shrink-0"></i>
+          <i class="fa-solid fa-user-lock text-xs shrink-0"></i>
           <span class="sidebar-text">Entrar na Conta</span>
         </button>
       </div>
@@ -252,9 +256,9 @@
 
       <!-- Right: Action Buttons -->
       <div class="flex items-center gap-2">
-        <button onclick="openTeamModal()" class="px-2.5 py-1.5 rounded-xl bg-church-900 hover:bg-church-850 border border-church-800 text-[11px] font-medium text-slate-300 hover:text-white transition-all flex items-center gap-1.5 shadow-sm cursor-pointer" title="Gerenciar Equipe">
-          <i class="fa-solid fa-users text-blue-400 text-xs"></i>
-          <span class="hidden sm:inline">Equipe</span>
+        <button onclick="switchMainView('team_area')" class="px-2.5 py-1.5 rounded-xl bg-church-900 hover:bg-church-850 border border-church-800 text-[11px] font-medium text-slate-300 hover:text-white transition-all flex items-center gap-1.5 shadow-sm cursor-pointer" title="Área da Equipe">
+          <i class="fa-solid fa-users text-purple-400 text-xs"></i>
+          <span class="hidden sm:inline" id="topTeamNameBadge">Mídia Principal</span>
         </button>
 
         <button onclick="openCreateServiceModal()" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-xs font-semibold shadow-md shadow-blue-600/25 transition-all flex items-center gap-1.5 cursor-pointer">
@@ -494,18 +498,18 @@
           </div>
         </div>
 
-        <!-- Presets Carousel with Team Presets -->
+        <!-- Presets Carousel for Active Team -->
         <div class="flex flex-col gap-2">
           <div class="flex items-center justify-between px-1">
             <span class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-              <i class="fa-solid fa-sliders text-purple-400"></i> Presets Sugeridos & da Equipe
+              <i class="fa-solid fa-sliders text-purple-400"></i> Presets da Equipe: <span id="studioTeamNameLabel" class="text-blue-400 font-bold">Mídia Principal</span>
             </span>
             <div class="flex items-center gap-3">
               <button onclick="openSavePresetModal()" class="text-[11px] text-blue-400 hover:underline font-semibold flex items-center gap-1 cursor-pointer">
                 <i class="fa-solid fa-floppy-disk text-[10px]"></i> Salvar Parâmetros Atuais
               </button>
-              <button onclick="switchMainView('presets')" class="text-[11px] text-purple-400 hover:underline font-semibold flex items-center gap-1 cursor-pointer">
-                <i class="fa-solid fa-gear text-[10px]"></i> Gerenciar Presets
+              <button onclick="switchMainView('team_area')" class="text-[11px] text-purple-400 hover:underline font-semibold flex items-center gap-1 cursor-pointer">
+                <i class="fa-solid fa-users-gear text-[10px]"></i> Abrir Área da Equipe
               </button>
             </div>
           </div>
@@ -857,39 +861,70 @@
       </div>
 
       <!-- ========================================================================= -->
-      <!-- VIEW 4: AMBIENTE DE PRESETS DA EQUIPE (EDITOR & DEFINIÇÃO DE PRESETS) -->
+      <!-- VIEW 4: ÁREA DA EQUIPE & AMBIENTE DE PRESETS INTEGRADOS -->
       <!-- ========================================================================= -->
-      <div id="viewPresetsSection" class="flex flex-col gap-5 hidden" style="display: none;">
+      <div id="viewTeamAreaSection" class="flex flex-col gap-6 hidden" style="display: none;">
         
+        <!-- Team Hero Header -->
         <div class="rounded-2xl sm:rounded-3xl bg-gradient-to-b from-church-900 to-church-950 border border-church-800 p-5 sm:p-6 shadow-2xl relative overflow-hidden">
           <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
               <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-purple-950/80 border border-purple-800/60 text-purple-300 text-[10px] sm:text-xs font-semibold mb-2">
-                <i class="fa-solid fa-sliders text-purple-400"></i>
-                Ambiente de Presets da Equipe
+                <i class="fa-solid fa-users text-purple-400"></i>
+                Workspace da Equipe de Mídia
               </div>
-              <h2 class="text-xl sm:text-2xl font-bold text-white leading-tight">
-                Criar, Calibrar & Gerenciar Presets
+              <h2 id="teamAreaHeaderName" class="text-xl sm:text-2xl font-bold text-white leading-tight">
+                Mídia Principal
               </h2>
               <p class="text-xs text-slate-400 mt-1 max-w-lg">
-                Altere os valores de cor, Kelvin, iluminação e desfoque óptico de qualquer preset e aplique em lote no culto da equipe.
+                Gerencie os membros da equipe e configure os <strong>Presets da Equipe</strong> compartilhados entre todos os voluntários.
               </p>
             </div>
 
-            <button onclick="openSavePresetModal()" class="w-full sm:w-auto px-5 py-3 bg-purple-600 hover:bg-purple-500 active:scale-95 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-purple-600/30 flex items-center justify-center gap-2 transition-all cursor-pointer shrink-0">
-              <i class="fa-solid fa-plus"></i>
-              <span>+ Criar Novo Preset</span>
-            </button>
+            <div class="flex flex-wrap gap-2 w-full sm:w-auto">
+              <button onclick="openInviteMemberModal()" class="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-lg shadow-blue-600/20">
+                <i class="fa-solid fa-user-plus text-xs"></i>
+                <span>+ Convidar Membro</span>
+              </button>
+              <button onclick="openSavePresetModal()" class="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-lg shadow-purple-600/20">
+                <i class="fa-solid fa-plus text-xs"></i>
+                <span>+ Criar Preset da Equipe</span>
+              </button>
+            </div>
           </div>
         </div>
 
-        <div class="flex items-center justify-between px-1">
-          <span class="text-sm font-bold text-white">Presets Disponíveis</span>
-          <span class="text-xs text-slate-400">Clique em 'Editar' para calibrar sliders ou 'Aplicar'</span>
+        <!-- Section 1: Real Team Members -->
+        <div class="flex flex-col gap-3">
+          <div class="flex items-center justify-between px-1">
+            <span class="text-sm font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-user-group text-blue-400"></i> Membros da Equipe (Sem Perfis Fantasmas)
+            </span>
+            <span id="teamAreaMemberCountBadge" class="text-xs text-slate-400 font-mono">1 membro ativo</span>
+          </div>
+
+          <div id="teamAreaMembersGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            <!-- Injected via JS -->
+          </div>
         </div>
 
-        <div id="presetsManagerCardsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <!-- Injected via JS -->
+        <!-- Section 2: Team Presets Environment (Linked directly to Team) -->
+        <div class="flex flex-col gap-3 pt-4 border-t border-church-800/80">
+          <div class="flex items-center justify-between px-1">
+            <div>
+              <span class="text-sm font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-sliders text-purple-400"></i> Presets Ligados a Esta Equipe
+              </span>
+              <p class="text-xs text-slate-400 mt-0.5">Estes presets são sincronizados e aplicados por todos os voluntários deste grupo.</p>
+            </div>
+            <button onclick="openSavePresetModal()" class="text-xs text-purple-400 hover:underline font-semibold flex items-center gap-1 cursor-pointer">
+              <i class="fa-solid fa-plus"></i> Novo Preset
+            </button>
+          </div>
+
+          <div id="teamPresetsManagerCardsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Injected via JS -->
+          </div>
         </div>
 
       </div>
@@ -898,53 +933,46 @@
   </div>
 
   <!-- ========================================================================= -->
-  <!-- MODAL: GESTÃO DE EQUIPE & MEMBROS REAIS -->
+  <!-- MODAL: CONVIDAR VOLUNTÁRIO / MEMBRO -->
   <!-- ========================================================================= -->
-  <div id="teamModal" class="fixed inset-0 z-50 items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden" style="display: none;">
-    <div class="w-full max-w-lg bg-church-900 border border-church-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
+  <div id="inviteMemberModal" class="fixed inset-0 z-50 items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden" style="display: none;">
+    <div class="w-full max-w-md bg-church-900 border border-church-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
       <div class="absolute -top-16 -right-16 w-36 h-36 bg-blue-500/20 blur-3xl pointer-events-none"></div>
 
-      <button onclick="closeTeamModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1.5 rounded-lg cursor-pointer">
+      <button onclick="closeInviteMemberModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1.5 rounded-lg cursor-pointer">
         <i class="fa-solid fa-xmark text-base"></i>
       </button>
 
       <div class="flex items-center gap-3 mb-4">
         <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-600/30">
-          <i class="fa-solid fa-users text-lg"></i>
+          <i class="fa-solid fa-user-plus text-lg"></i>
         </div>
         <div>
-          <h3 class="text-base sm:text-lg font-bold text-white">Equipe de Mídia & Voluntários</h3>
-          <p class="text-xs text-slate-400">Adicione voluntários e compartilhe o fluxo de fotos</p>
+          <h3 class="text-base sm:text-lg font-bold text-white">Convidar Voluntário</h3>
+          <p class="text-xs text-slate-400">Adicione um novo membro para a equipe</p>
         </div>
       </div>
 
-      <!-- Add Member Form -->
-      <div class="p-3.5 rounded-2xl bg-church-950 border border-church-800 mb-4">
-        <span class="text-xs font-bold text-white block mb-1.5">Convidar Voluntário por @username ou E-mail:</span>
-        <div class="flex gap-2">
-          <input type="text" id="addMemberUsernameInput" placeholder="Ex: @lucas_foto ou lucas@igreja.org" class="flex-1 px-3 py-2 rounded-xl bg-church-900 border border-church-800 text-white text-xs focus:outline-none focus:border-blue-500">
-          <button onclick="addMemberToActiveTeam()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs rounded-xl transition-all shrink-0 cursor-pointer">
-            + Adicionar
-          </button>
+      <form onsubmit="handleInviteMemberSubmit(event)" class="flex flex-col gap-3">
+        <div>
+          <label class="text-xs font-semibold text-slate-300 block mb-1">Nome ou @username</label>
+          <input type="text" id="inviteMemberInput" required placeholder="Ex: @gabriel_foto ou Gabriel Silva" class="w-full px-3.5 py-2.5 rounded-xl bg-church-950 border border-church-800 text-white text-xs focus:outline-none focus:border-blue-500">
         </div>
-      </div>
 
-      <!-- Real Members List (NO PHANTOMS) -->
-      <div class="space-y-2 mb-4 max-h-48 overflow-y-auto no-scrollbar">
-        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Membros Reais da Equipe</span>
-        <div id="teamMembersListContainer" class="space-y-1.5">
-          <!-- Rendered purely based on authenticated user and user-added members -->
+        <div>
+          <label class="text-xs font-semibold text-slate-300 block mb-1">Função na Equipe</label>
+          <select id="inviteMemberRoleSelect" class="w-full px-3.5 py-2.5 rounded-xl bg-church-950 border border-church-800 text-white text-xs focus:outline-none focus:border-blue-500">
+            <option value="Fotógrafo">Fotógrafo(a)</option>
+            <option value="Editor(a)">Editor(a) de Foto</option>
+            <option value="Líder de Mídia">Líder de Mídia</option>
+            <option value="Voluntário">Voluntário</option>
+          </select>
         </div>
-      </div>
 
-      <div class="pt-3 border-t border-church-800 flex items-center justify-between">
-        <button onclick="openCreateNewTeamPrompt()" class="text-xs text-blue-400 hover:underline font-semibold cursor-pointer">
-          + Criar Nova Equipe / Ministério
+        <button type="submit" class="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-lg shadow-blue-600/30 transition-all mt-2 cursor-pointer">
+          Confirmar e Adicionar à Equipe
         </button>
-        <button onclick="closeTeamModal()" class="px-4 py-1.5 rounded-xl bg-church-800 text-white text-xs font-semibold cursor-pointer">
-          Fechar
-        </button>
-      </div>
+      </form>
     </div>
   </div>
 
@@ -965,7 +993,7 @@
         </div>
         <div>
           <h3 id="presetModalHeaderTitle" class="text-base font-bold text-white">Editar / Salvar Preset</h3>
-          <p class="text-[11px] text-slate-400">Configure os parâmetros ópticos e de cor</p>
+          <p class="text-[11px] text-slate-400">Preset vinculado à equipe ativa</p>
         </div>
       </div>
 
@@ -1022,7 +1050,7 @@
         </div>
 
         <button type="submit" class="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-lg shadow-purple-600/30 transition-all mt-1 cursor-pointer">
-          Salvar Preset
+          Salvar Preset na Equipe
         </button>
       </form>
     </div>
@@ -1084,8 +1112,8 @@
     </div>
   </div>
 
-  <!-- AUTHENTICATION MODAL -->
-  <div id="authModal" class="fixed inset-0 z-50 items-center justify-center p-4 bg-black/75 backdrop-blur-md hidden" style="display: none;">
+  <!-- AUTHENTICATION MODAL (ROBUST, 100% OPERATIONAL) -->
+  <div id="authModal" class="fixed inset-0 z-50 items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden" style="display: none;">
     <div class="w-full max-w-md bg-church-900 border border-church-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
       <div class="absolute -top-16 -right-16 w-36 h-36 bg-blue-500/20 blur-3xl pointer-events-none"></div>
 
@@ -1099,7 +1127,7 @@
         </div>
         <div>
           <h3 id="authModalTitle" class="text-base font-bold text-white">Entrar na Conta</h3>
-          <p id="authModalSubtitle" class="text-[11px] text-slate-400">Acesse com seu e-mail e senha de voluntário</p>
+          <p id="authModalSubtitle" class="text-[11px] text-slate-400">Acesse com seu e-mail ou nome de usuário</p>
         </div>
       </div>
 
@@ -1138,7 +1166,7 @@
         <div>
           <label class="text-[11px] font-semibold text-slate-300 block mb-1">E-mail ou Username</label>
           <div class="relative">
-            <input type="text" id="authEmailInput" required placeholder="voluntario@igreja.org" class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-church-950 border border-church-800 text-white text-xs focus:outline-none focus:border-blue-500">
+            <input type="text" id="authEmailInput" required placeholder="voluntario@igreja.org ou @usuario" class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-church-950 border border-church-800 text-white text-xs focus:outline-none focus:border-blue-500">
             <i class="fa-solid fa-envelope absolute left-3 top-3 text-slate-500 text-xs"></i>
           </div>
         </div>
@@ -1157,7 +1185,15 @@
         </button>
       </form>
 
-      <div class="text-center mt-4 pt-3 border-t border-church-800/80">
+      <!-- Instant Fast Demo Login -->
+      <div class="mt-3">
+        <button onclick="loginAsDemoUser()" type="button" class="w-full py-2 px-3 rounded-xl bg-church-950 hover:bg-church-800 border border-church-800 text-slate-300 hover:text-white text-[11px] font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer">
+          <i class="fa-solid fa-bolt text-amber-400"></i>
+          <span>Entrar Direto com Conta Voluntário (1 Clique)</span>
+        </button>
+      </div>
+
+      <div class="text-center mt-3 pt-3 border-t border-church-800/80">
         <button id="toggleRegisterModeBtn" onclick="toggleRegisterMode()" type="button" class="text-xs text-blue-400 hover:text-blue-300 font-medium transition-colors cursor-pointer">
           Não tem conta? <strong>Cadastre-se grátis</strong>
         </button>
@@ -1170,11 +1206,15 @@
     // Global Application State
     let churchServices = [];
     let activeService = null;
-    let activeTeam = { id: 'team_default', name: 'Mídia Principal', members: [] };
-    let currentPresets = [];
+    let activeTeam = { 
+      id: 'team_default', 
+      name: 'Mídia Principal', 
+      members: [],
+      presets: []
+    };
     let queue = [];
     let activeItem = null;
-    let currentMainView = 'services'; // 'services', 'funnel', 'studio', 'presets'
+    let currentMainView = 'services'; // 'services', 'funnel', 'studio', 'team_area'
     let currentFunnelStep = 1; // 1: Dedup, 2: Top20, 3: Crop
     let isSidebarCollapsed = false;
     let smartCropMode = '4:5'; // '4:5', '1:1', 'off'
@@ -1196,7 +1236,7 @@
     const fastCtx = fastCanvas.getContext('2d', { willReadFrequently: true });
     let animFrameRequested = false;
 
-    const DEFAULT_PRESETS = [
+    const DEFAULT_TEAM_PRESETS = [
       {
         id: "luz_quente_natural",
         name: "Luz Quente Natural",
@@ -1283,9 +1323,8 @@
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('newServiceDate').valueAsDate = new Date();
 
-      loadPresetsEnvironment();
-      loadStoredServices();
       loadTeamData();
+      loadStoredServices();
       checkUserSession();
       setupSliderEvents();
       setupAddMorePhotosInput();
@@ -1329,7 +1368,7 @@
       const viewServices = document.getElementById('viewServicesSection');
       const viewFunnel = document.getElementById('viewFunnelSection');
       const viewStudio = document.getElementById('viewStudioSection');
-      const viewPresets = document.getElementById('viewPresetsSection');
+      const viewTeamArea = document.getElementById('viewTeamAreaSection');
 
       const topTitle = document.getElementById('topNavViewTitle');
       const topBadge = document.getElementById('topNavViewBadge');
@@ -1337,13 +1376,13 @@
       const sideNavServices = document.getElementById('sideNavServices');
       const sideNavFunnel = document.getElementById('sideNavFunnel');
       const sideNavStudio = document.getElementById('sideNavStudio');
-      const sideNavPresets = document.getElementById('sideNavPresets');
+      const sideNavTeamArea = document.getElementById('sideNavTeamArea');
 
-      [sideNavServices, sideNavFunnel, sideNavStudio, sideNavPresets].forEach(btn => {
+      [sideNavServices, sideNavFunnel, sideNavStudio, sideNavTeamArea].forEach(btn => {
         if (btn) btn.className = "sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-church-800/70 transition-all cursor-pointer";
       });
 
-      [viewServices, viewFunnel, viewStudio, viewPresets].forEach(v => {
+      [viewServices, viewFunnel, viewStudio, viewTeamArea].forEach(v => {
         if (v) { v.style.display = 'none'; v.classList.add('hidden'); }
       });
 
@@ -1359,12 +1398,12 @@
         topBadge.textContent = activeService ? activeService.title : "3 Fases";
         sideNavFunnel.className = "sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold bg-blue-600 text-white transition-all cursor-pointer shadow-sm";
         renderFunnelUI();
-      } else if (view === 'presets') {
-        viewPresets.style.display = 'flex'; viewPresets.classList.remove('hidden');
-        topTitle.textContent = "Ambiente de Presets";
-        topBadge.textContent = "Editor da Equipe";
-        sideNavPresets.className = "sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold bg-purple-600 text-white transition-all cursor-pointer shadow-sm";
-        renderPresetsManagerEnvironment();
+      } else if (view === 'team_area') {
+        viewTeamArea.style.display = 'flex'; viewTeamArea.classList.remove('hidden');
+        topTitle.textContent = "Equipe & Presets";
+        topBadge.textContent = activeTeam.name;
+        sideNavTeamArea.className = "sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold bg-purple-600 text-white transition-all cursor-pointer shadow-sm";
+        renderTeamAreaView();
       } else {
         viewStudio.style.display = 'flex'; viewStudio.classList.remove('hidden');
         topTitle.textContent = "Estúdio DSLR";
@@ -1379,16 +1418,23 @@
       }
     }
 
-    // ================= REAL TEAM SECTION (NO PHANTOMS) =================
+    // ================= REAL TEAM WORKSPACE & PRESETS LINKED TO TEAM =================
 
     function loadTeamData() {
       const stored = localStorage.getItem('CHURCHPHOTO_REAL_TEAM');
       if (stored) {
         try {
           activeTeam = JSON.parse(stored);
-        } catch(e) {}
+          if (!activeTeam.presets || activeTeam.presets.length === 0) {
+            activeTeam.presets = [...DEFAULT_TEAM_PRESETS];
+          }
+        } catch(e) {
+          activeTeam = { id: 'team_default', name: 'Mídia Principal', members: [], presets: [...DEFAULT_TEAM_PRESETS] };
+        }
+      } else {
+        activeTeam = { id: 'team_default', name: 'Mídia Principal', members: [], presets: [...DEFAULT_TEAM_PRESETS] };
       }
-      renderSidebarTeamMembers();
+      saveTeamData();
     }
 
     function saveTeamData() {
@@ -1396,140 +1442,163 @@
         localStorage.setItem('CHURCHPHOTO_REAL_TEAM', JSON.stringify(activeTeam));
       } catch(e) {}
       renderSidebarTeamMembers();
+      renderStudioPresetsStrip();
+    }
+
+    function getRealTeamMembersList() {
+      const members = [];
+      if (currentUser) {
+        members.push({ name: currentUser.name, username: currentUser.username || "admin", role: "Você (Líder da Equipe)" });
+      } else {
+        members.push({ name: "Você (Voluntário)", username: "voluntario", role: "Voluntário Local" });
+      }
+
+      if (activeTeam.members && activeTeam.members.length > 0) {
+        activeTeam.members.forEach(m => members.push(m));
+      }
+      return members;
     }
 
     function renderSidebarTeamMembers() {
       const listContainer = document.getElementById('sidebarRealMembersList');
       const teamTitle = document.getElementById('sidebarTeamTitle');
       const countBadge = document.getElementById('sidebarTeamCountBadge');
+      const topBadge = document.getElementById('topTeamNameBadge');
+      const sidePresetsBadge = document.getElementById('sideTeamPresetsCountBadge');
+      const studioTeamLabel = document.getElementById('studioTeamNameLabel');
 
-      if (teamTitle) teamTitle.textContent = activeTeam.name || "Mídia Principal";
+      const teamName = activeTeam.name || "Mídia Principal";
+      if (teamTitle) teamTitle.textContent = teamName;
+      if (topBadge) topBadge.textContent = teamName;
+      if (studioTeamLabel) studioTeamLabel.textContent = teamName;
 
-      // Members list includes authenticated user + any real invited members (NO FAKE PHANTOMS)
-      const members = [];
-      if (currentUser) {
-        members.push({ name: currentUser.name, username: currentUser.username || "admin", role: "Você (Líder)" });
-      } else {
-        members.push({ name: "Você", username: "voluntario", role: "Voluntário" });
-      }
+      const members = getRealTeamMembersList();
+      if (countBadge) countBadge.textContent = `${members.length} membro${members.length > 1 ? 's' : ''}`;
+      if (sidePresetsBadge) sidePresetsBadge.textContent = `${(activeTeam.presets || []).length} presets`;
 
-      if (activeTeam.members && activeTeam.members.length > 0) {
-        activeTeam.members.forEach(m => members.push(m));
-      }
-
-      if (countBadge) countBadge.textContent = `${members.length} voluntário${members.length > 1 ? 's' : ''}`;
-
-      listContainer.innerHTML = members.map(m => `
-        <div class="flex items-center justify-between py-1 px-1.5 rounded-lg bg-church-900/80 border border-church-800/60">
-          <div class="flex items-center gap-1.5 min-w-0">
-            <img src="https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(m.name)}&backgroundColor=2563eb" class="w-4 h-4 rounded-full border border-blue-500/40 shrink-0">
-            <span class="text-[11px] font-semibold text-slate-200 truncate">${m.name}</span>
+      if (listContainer) {
+        listContainer.innerHTML = members.map(m => `
+          <div class="flex items-center justify-between py-1 px-1.5 rounded-lg bg-church-900/80 border border-church-800/60">
+            <div class="flex items-center gap-1.5 min-w-0">
+              <img src="https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(m.name)}&backgroundColor=2563eb" class="w-4 h-4 rounded-full border border-blue-500/40 shrink-0">
+              <span class="text-[11px] font-semibold text-slate-200 truncate">${m.name}</span>
+            </div>
+            <span class="text-[9px] font-mono text-slate-400 shrink-0">${m.role || 'Membro'}</span>
           </div>
-          <span class="text-[9px] font-mono text-slate-400 shrink-0">${m.role || 'Membro'}</span>
-        </div>
-      `).join('');
+        `).join('');
+      }
     }
 
-    function openTeamModal() {
-      const modal = document.getElementById('teamModal');
+    function renderTeamAreaView() {
+      const headerTitle = document.getElementById('teamAreaHeaderName');
+      const membersGrid = document.getElementById('teamAreaMembersGrid');
+      const memberCount = document.getElementById('teamAreaMemberCountBadge');
+      const presetsList = document.getElementById('teamPresetsManagerCardsList');
+
+      if (headerTitle) headerTitle.textContent = activeTeam.name;
+
+      const members = getRealTeamMembersList();
+      if (memberCount) memberCount.textContent = `${members.length} membro${members.length > 1 ? 's' : ''} ativo${members.length > 1 ? 's' : ''}`;
+
+      if (membersGrid) {
+        membersGrid.innerHTML = members.map((m, idx) => `
+          <div class="p-3.5 rounded-2xl bg-church-900 border border-church-800 flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <img src="https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(m.name)}&backgroundColor=2563eb" class="w-9 h-9 rounded-full border border-blue-500/50 shrink-0">
+              <div class="min-w-0">
+                <span class="text-xs font-bold text-white block truncate">${m.name}</span>
+                <span class="text-[10px] text-blue-400 font-mono block truncate">@${m.username}</span>
+              </div>
+            </div>
+            <span class="px-2 py-0.5 rounded bg-blue-950 text-blue-300 border border-blue-800/60 text-[9px] font-mono shrink-0">${m.role}</span>
+          </div>
+        `).join('');
+      }
+
+      const presets = activeTeam.presets || [];
+      if (presetsList) {
+        presetsList.innerHTML = presets.map(p => {
+          const par = p.params || {};
+          return `
+            <div class="rounded-2xl bg-church-900 border border-church-800 hover:border-purple-500/50 p-4 shadow-xl flex flex-col justify-between transition-all">
+              <div>
+                <div class="flex items-start justify-between gap-2 mb-2">
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <h4 class="text-sm font-bold text-white">${p.name}</h4>
+                      <span class="px-1.5 py-0.2 rounded bg-purple-950 text-purple-300 border border-purple-800/60 text-[9px] font-mono">${p.category || 'Geral'}</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-1 leading-snug">${p.description}</p>
+                  </div>
+                </div>
+
+                <div class="flex flex-wrap gap-1.5 my-3">
+                  <span class="px-2 py-0.5 rounded bg-church-950 text-blue-400 text-[10px] font-mono">Exp: ${par.exposure_compensation > 0 ? '+' : ''}${par.exposure_compensation || 0} EV</span>
+                  <span class="px-2 py-0.5 rounded bg-church-950 text-amber-400 text-[10px] font-mono">Kelvin: ${par.temperature_kelvin || 5500}K</span>
+                  <span class="px-2 py-0.5 rounded bg-church-950 text-emerald-400 text-[10px] font-mono">f/${par.f_stop_simulation || 2.8}</span>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2 pt-2 border-t border-church-800 mt-2">
+                <button onclick="openEditPresetModal('${p.id}')" class="py-2 px-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer">
+                  <i class="fa-solid fa-sliders text-xs"></i>
+                  <span>Editar Sliders</span>
+                </button>
+
+                <button onclick="applyPresetToActiveService('${p.id}')" class="py-2 px-3 rounded-xl bg-church-800 hover:bg-church-700 text-slate-200 hover:text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer">
+                  <i class="fa-solid fa-wand-magic-sparkles text-xs text-amber-300"></i>
+                  <span>Aplicar Culto</span>
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    function openInviteMemberModal() {
+      const modal = document.getElementById('inviteMemberModal');
+      document.getElementById('inviteMemberInput').value = '';
       modal.style.display = 'flex';
       modal.classList.remove('hidden');
-      renderTeamMembersModalList();
     }
 
-    function closeTeamModal() {
-      const modal = document.getElementById('teamModal');
+    function closeInviteMemberModal() {
+      const modal = document.getElementById('inviteMemberModal');
       modal.style.display = 'none';
       modal.classList.add('hidden');
     }
 
-    function renderTeamMembersModalList() {
-      const container = document.getElementById('teamMembersListContainer');
-      const members = [];
-      if (currentUser) {
-        members.push({ name: currentUser.name, username: currentUser.username || "admin", role: "Líder da Equipe" });
-      } else {
-        members.push({ name: "Você (Local)", username: "voluntario", role: "Líder" });
-      }
-
-      if (activeTeam.members && activeTeam.members.length > 0) {
-        activeTeam.members.forEach(m => members.push(m));
-      }
-
-      container.innerHTML = members.map((m, idx) => `
-        <div class="flex items-center justify-between p-2 rounded-xl bg-church-900 border border-church-800">
-          <div class="flex items-center gap-2">
-            <img src="https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(m.name)}&backgroundColor=2563eb" class="w-6 h-6 rounded-full border border-blue-500/50">
-            <div>
-              <span class="text-xs font-bold text-white block">${m.name}</span>
-              <span class="text-[10px] text-slate-400 font-mono">@${m.username}</span>
-            </div>
-          </div>
-          <span class="px-2 py-0.5 rounded bg-blue-950 text-blue-300 border border-blue-800/60 text-[9px] font-mono">${m.role}</span>
-        </div>
-      `).join('');
-    }
-
-    function addMemberToActiveTeam() {
-      const input = document.getElementById('addMemberUsernameInput');
+    function handleInviteMemberSubmit(e) {
+      e.preventDefault();
+      const input = document.getElementById('inviteMemberInput');
+      const role = document.getElementById('inviteMemberRoleSelect').value;
       const val = input.value.trim();
       if (!val) return;
 
       const cleanUser = val.replace('@', '').toLowerCase();
+      const cleanName = cleanUser.charAt(0).toUpperCase() + cleanUser.slice(1);
+
       const newMember = {
-        name: cleanUser.charAt(0).toUpperCase() + cleanUser.slice(1),
+        name: cleanName,
         username: cleanUser,
-        role: "Voluntário de Mídia"
+        role: role || "Voluntário de Mídia"
       };
 
       if (!activeTeam.members) activeTeam.members = [];
       activeTeam.members.push(newMember);
-      input.value = '';
       saveTeamData();
-      renderTeamMembersModalList();
+      closeInviteMemberModal();
+      renderTeamAreaView();
       showToast(`@${cleanUser} adicionado à equipe com sucesso!`);
-    }
-
-    function openCreateNewTeamPrompt() {
-      const name = prompt("Nome da nova equipe (ex: Mídia Jovens / Comunicação):");
-      if (name && name.trim()) {
-        activeTeam = { id: 'team_' + Date.now(), name: name.trim(), members: [] };
-        saveTeamData();
-        showToast(`Equipe "${name}" criada e ativada!`);
-        closeTeamModal();
-      }
-    }
-
-    // ================= PRESETS ENVIRONMENT & EDITOR =================
-
-    function loadPresetsEnvironment() {
-      const stored = localStorage.getItem('CHURCHPHOTO_CUSTOM_PRESETS');
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
-          currentPresets = [...parsed];
-        } catch(e) {
-          currentPresets = [...DEFAULT_PRESETS];
-        }
-      } else {
-        currentPresets = [...DEFAULT_PRESETS];
-      }
-      renderStudioPresetsStrip();
-    }
-
-    function savePresetsEnvironment() {
-      try {
-        localStorage.setItem('CHURCHPHOTO_CUSTOM_PRESETS', JSON.stringify(currentPresets));
-      } catch(e) {}
-      renderStudioPresetsStrip();
-      renderPresetsManagerEnvironment();
     }
 
     function renderStudioPresetsStrip() {
       const container = document.getElementById('presetsContainer');
       if (!container) return;
 
-      container.innerHTML = currentPresets.map((p, idx) => `
+      const presets = activeTeam.presets || DEFAULT_TEAM_PRESETS;
+      container.innerHTML = presets.map((p, idx) => `
         <button onclick="applyPresetObj('${p.id}')" class="shrink-0 p-3 rounded-2xl bg-church-900 border ${idx === 0 ? 'border-amber-400/80' : 'border-church-800'} hover:border-purple-500/60 active:scale-95 text-left transition-all w-[185px] sm:w-[220px] cursor-pointer">
           <div class="flex items-center justify-between gap-1 mb-1">
             <div class="flex items-center gap-1.5 text-xs font-bold text-white truncate">
@@ -1543,52 +1612,8 @@
       `).join('');
     }
 
-    function renderPresetsManagerEnvironment() {
-      const container = document.getElementById('presetsManagerCardsList');
-      if (!container) return;
-
-      container.innerHTML = currentPresets.map(p => {
-        const par = p.params || {};
-        return `
-          <div class="rounded-2xl bg-church-900 border border-church-800 hover:border-purple-500/50 p-4 shadow-xl flex flex-col justify-between transition-all">
-            <div>
-              <div class="flex items-start justify-between gap-2 mb-2">
-                <div>
-                  <div class="flex items-center gap-2">
-                    <h4 class="text-sm font-bold text-white">${p.name}</h4>
-                    <span class="px-1.5 py-0.2 rounded bg-purple-950 text-purple-300 border border-purple-800/60 text-[9px] font-mono">${p.category || 'Geral'}</span>
-                  </div>
-                  <p class="text-xs text-slate-400 mt-1 leading-snug">${p.description}</p>
-                </div>
-              </div>
-
-              <!-- Parameter Tags -->
-              <div class="flex flex-wrap gap-1.5 my-3">
-                <span class="px-2 py-0.5 rounded bg-church-950 text-blue-400 text-[10px] font-mono">Exp: ${par.exposure_compensation > 0 ? '+' : ''}${par.exposure_compensation || 0} EV</span>
-                <span class="px-2 py-0.5 rounded bg-church-950 text-amber-400 text-[10px] font-mono">Kelvin: ${par.temperature_kelvin || 5500}K</span>
-                <span class="px-2 py-0.5 rounded bg-church-950 text-emerald-400 text-[10px] font-mono">f/${par.f_stop_simulation || 2.8}</span>
-              </div>
-            </div>
-
-            <!-- Action Buttons: Edit Parameters & Apply -->
-            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-church-800 mt-2">
-              <button onclick="openEditPresetModal('${p.id}')" class="py-2 px-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer">
-                <i class="fa-solid fa-sliders text-xs"></i>
-                <span>Editar Sliders</span>
-              </button>
-
-              <button onclick="applyPresetToActiveService('${p.id}')" class="py-2 px-3 rounded-xl bg-church-800 hover:bg-church-700 text-slate-200 hover:text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer">
-                <i class="fa-solid fa-wand-magic-sparkles text-xs text-amber-300"></i>
-                <span>Aplicar Lote</span>
-              </button>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
     function openSavePresetModal() {
-      document.getElementById('presetModalHeaderTitle').textContent = "Salvar Novo Preset";
+      document.getElementById('presetModalHeaderTitle').textContent = "Salvar Novo Preset da Equipe";
       document.getElementById('editingPresetId').value = "";
       document.getElementById('newPresetName').value = "";
       document.getElementById('newPresetDesc').value = "";
@@ -1599,7 +1624,7 @@
     }
 
     function openEditPresetModal(presetId) {
-      const p = currentPresets.find(x => x.id === presetId);
+      const p = (activeTeam.presets || []).find(x => x.id === presetId);
       if (!p) return;
 
       document.getElementById('presetModalHeaderTitle').textContent = `Editar Preset: ${p.name}`;
@@ -1631,7 +1656,7 @@
       const editId = document.getElementById('editingPresetId').value;
       const name = document.getElementById('newPresetName').value.trim();
       const cat = document.getElementById('newPresetCategory').value;
-      const desc = document.getElementById('newPresetDesc').value.trim() || 'Preset calibrado para cultos.';
+      const desc = document.getElementById('newPresetDesc').value.trim() || 'Preset calibrado para a equipe.';
 
       const exp = parseFloat(document.getElementById('preset_edit_exp').value);
       const kelvin = parseInt(document.getElementById('preset_edit_kelvin').value);
@@ -1658,14 +1683,16 @@
         subject_microcontrast: 0.75
       };
 
+      if (!activeTeam.presets) activeTeam.presets = [];
+
       if (editId) {
-        const target = currentPresets.find(x => x.id === editId);
+        const target = activeTeam.presets.find(x => x.id === editId);
         if (target) {
           target.name = name;
           target.category = cat;
           target.description = desc;
           target.params = params;
-          showToast(`Preset "${name}" atualizado com sucesso!`);
+          showToast(`Preset "${name}" atualizado na equipe!`);
         }
       } else {
         const newPreset = {
@@ -1676,16 +1703,17 @@
           description: desc,
           params: params
         };
-        currentPresets.unshift(newPreset);
-        showToast(`Novo preset "${name}" criado com sucesso!`);
+        activeTeam.presets.unshift(newPreset);
+        showToast(`Novo preset "${name}" adicionado à equipe!`);
       }
 
-      savePresetsEnvironment();
+      saveTeamData();
       closeSavePresetModal();
+      renderTeamAreaView();
     }
 
     function applyPresetToActiveService(presetId) {
-      const p = currentPresets.find(x => x.id === presetId);
+      const p = (activeTeam.presets || []).find(x => x.id === presetId);
       if (!p) return;
 
       if (activeService && activeService.items) {
@@ -1696,18 +1724,17 @@
         switchMainView('studio');
         processAllInQueue();
       } else {
-        showToast(`Preset "${p.name}" pronto para ser usado no próximo culto!`);
+        showToast(`Preset "${p.name}" pronto para ser usado no estúdio!`);
       }
     }
 
     function applyPresetObj(presetId) {
-      const p = currentPresets.find(x => x.id === presetId);
+      const p = (activeTeam.presets || []).find(x => x.id === presetId);
       if (!p || !activeItem) return;
       
       activeItem.currentParams = { ...p.params };
       const par = p.params;
 
-      // Update actual studio sliders
       if (par.exposure_compensation !== undefined) document.getElementById('param_exposure').value = par.exposure_compensation;
       if (par.temperature_kelvin !== undefined) document.getElementById('param_kelvin').value = par.temperature_kelvin;
       if (par.contrast !== undefined) document.getElementById('param_contrast').value = par.contrast;
@@ -1719,8 +1746,7 @@
 
     // ================= DETERMINISTIC PHOTO SCORING & CULLING FUNNEL =================
 
-    function computePhotoDeterministicScore(file, previewUrl) {
-      // Deterministic hash based on file name + size for identical scores
+    function computePhotoDeterministicScore(file) {
       let hash = 0;
       const str = `${file.name}_${file.size}`;
       for (let i = 0; i < str.length; i++) {
@@ -1847,7 +1873,6 @@
 
       container.innerHTML = items.map((item, idx) => {
         const isSelected = item.isTop20 !== false && idx < 20;
-        // Deterministic score based on photo data
         const score = computePhotoDeterministicScore(item.file || { name: item.fileName || 'f', size: 100000 });
 
         return `
@@ -2233,7 +2258,7 @@
           if (!base64Data) {
             const img = item.cachedImg || new Image();
             if (!item.cachedImg) img.src = item.previewUrl;
-            const params = item.currentParams || item.analysis || currentPresets[0].params;
+            const params = item.currentParams || item.analysis || (activeTeam.presets && activeTeam.presets[0] ? activeTeam.presets[0].params : DEFAULT_TEAM_PRESETS[0].params);
             const res = processImageClientSideFast(img, params, true);
             base64Data = res.base64;
           }
@@ -2260,7 +2285,7 @@
       }
     }
 
-    // ================= USER AUTHENTICATION =================
+    // ================= USER AUTHENTICATION (100% OPERATIONAL) =================
 
     function showToast(msg) {
       const toast = document.getElementById('toastNotification');
@@ -2281,6 +2306,7 @@
     function showAuthAlert(msg, type = 'info') {
       const box = document.getElementById('authAlertBox');
       const text = document.getElementById('authAlertMessage');
+      if (!box || !text) return;
       box.className = type === 'error' 
         ? 'p-3 rounded-xl bg-red-950/70 border border-red-800/80 text-red-300 text-xs mb-3 flex items-center gap-2' 
         : 'p-3 rounded-xl bg-blue-950/70 border border-blue-800/80 text-blue-300 text-xs mb-3 flex items-center gap-2';
@@ -2309,19 +2335,15 @@
       const sideHandle = document.getElementById('sideUserHandle');
 
       if (user) {
-        sideLoggedOut.style.display = 'none';
-        sideLoggedOut.classList.add('hidden');
-        sideLoggedIn.style.display = 'flex';
-        sideLoggedIn.classList.remove('hidden');
+        if (sideLoggedOut) { sideLoggedOut.style.display = 'none'; sideLoggedOut.classList.add('hidden'); }
+        if (sideLoggedIn) { sideLoggedIn.style.display = 'flex'; sideLoggedIn.classList.remove('hidden'); }
 
-        sideAvatar.src = user.avatar_url || user.picture || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'M')}&backgroundColor=2563eb`;
-        sideName.textContent = user.name || 'Voluntário';
-        sideHandle.textContent = `@${user.username || 'voluntario'}`;
+        if (sideAvatar) sideAvatar.src = user.avatar_url || user.picture || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'M')}&backgroundColor=2563eb`;
+        if (sideName) sideName.textContent = user.name || 'Voluntário';
+        if (sideHandle) sideHandle.textContent = `@${user.username || 'voluntario'}`;
       } else {
-        sideLoggedIn.style.display = 'none';
-        sideLoggedIn.classList.add('hidden');
-        sideLoggedOut.style.display = 'flex';
-        sideLoggedOut.classList.remove('hidden');
+        if (sideLoggedIn) { sideLoggedIn.style.display = 'none'; sideLoggedIn.classList.add('hidden'); }
+        if (sideLoggedOut) { sideLoggedOut.style.display = 'flex'; sideLoggedOut.classList.remove('hidden'); }
       }
 
       renderSidebarTeamMembers();
@@ -2349,40 +2371,61 @@
       const toggleBtn = document.getElementById('toggleRegisterModeBtn');
 
       if (isRegisterMode) {
-        title.textContent = 'Criar Nova Conta';
-        regFields.style.display = 'flex';
-        regFields.classList.remove('hidden');
-        submitText.textContent = 'Criar Minha Conta';
-        toggleBtn.innerHTML = `Já tem conta? <strong>Fazer Login</strong>`;
+        if (title) title.textContent = 'Criar Nova Conta';
+        if (regFields) { regFields.style.display = 'flex'; regFields.classList.remove('hidden'); }
+        if (submitText) submitText.textContent = 'Criar Minha Conta';
+        if (toggleBtn) toggleBtn.innerHTML = `Já tem conta? <strong>Fazer Login</strong>`;
       } else {
-        title.textContent = 'Entrar na Conta';
-        regFields.style.display = 'none';
-        regFields.classList.add('hidden');
-        submitText.textContent = 'Entrar';
-        toggleBtn.innerHTML = `Não tem conta? <strong>Cadastre-se grátis</strong>`;
+        if (title) title.textContent = 'Entrar na Conta';
+        if (regFields) { regFields.style.display = 'none'; regFields.classList.add('hidden'); }
+        if (submitText) submitText.textContent = 'Entrar';
+        if (toggleBtn) toggleBtn.innerHTML = `Não tem conta? <strong>Cadastre-se grátis</strong>`;
       }
+    }
+
+    function loginAsDemoUser() {
+      currentUser = {
+        id: `usr_demo_voluntario`,
+        username: "voluntario_midia",
+        name: "Voluntário de Mídia",
+        email: "voluntario@igreja.org",
+        church_name: "Igreja Central",
+        avatar_url: `https://api.dicebear.com/7.x/initials/svg?seed=Voluntario&backgroundColor=2563eb`,
+        role: 'photographer'
+      };
+
+      localStorage.setItem('CHURCHPHOTO_USER_SESSION', JSON.stringify(currentUser));
+      renderAuthenticatedUser(currentUser);
+      toggleAuthModal();
+      showToast("Conectado com sucesso como Voluntário!");
     }
 
     async function handleEmailAuth(e) {
       e.preventDefault();
       const emailOrUsername = document.getElementById('authEmailInput').value.trim();
       const password = document.getElementById('authPasswordInput').value.trim();
-      const name = document.getElementById('authNameInput').value.trim() || 'Voluntário de Mídia';
-      const username = document.getElementById('authUsernameInput').value.trim() || emailOrUsername.split('@')[0];
-      const church = document.getElementById('authChurchInput').value.trim() || 'Igreja Local';
+      const rawName = document.getElementById('authNameInput').value.trim() || 'Voluntário de Mídia';
+      const rawUsername = document.getElementById('authUsernameInput').value.trim() || emailOrUsername.split('@')[0];
+      const rawChurch = document.getElementById('authChurchInput').value.trim() || 'Igreja Local';
 
       if (!emailOrUsername || !password) {
-        showAuthAlert("Preencha todos os campos.", "error");
+        showAuthAlert("Preencha seu e-mail/username e senha.", "error");
         return;
       }
 
+      // Safe capitalize logic (no broken .capitalize() method)
+      const basePart = emailOrUsername.split('@')[0];
+      const safeName = isRegisterMode 
+        ? rawName 
+        : (basePart.charAt(0).toUpperCase() + basePart.slice(1));
+
       currentUser = {
         id: `usr_${Date.now()}`,
-        username: username,
-        name: isRegisterMode ? name : emailOrUsername.split('@')[0].capitalize(),
+        username: rawUsername.replace('@', '').toLowerCase(),
+        name: safeName,
         email: emailOrUsername.includes('@') ? emailOrUsername : `${emailOrUsername}@igreja.org`,
-        church_name: church,
-        avatar_url: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}&backgroundColor=2563eb`,
+        church_name: rawChurch,
+        avatar_url: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(safeName)}&backgroundColor=2563eb`,
         role: 'photographer'
       };
 
