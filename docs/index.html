@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>ChurchPhoto Pro - Gestão & Tratamento Fotográfico de Cultos</title>
+  <title>ChurchPhoto Pro - Curadoria com IA, Equipes & Edição DSLR</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -71,25 +71,19 @@
     }
 
     /* Antigravity Sidebar Collapsible Styles */
-    .sidebar-expanded {
-      width: 260px;
-    }
-    .sidebar-collapsed {
-      width: 72px;
-    }
+    .sidebar-expanded { width: 260px; }
+    .sidebar-collapsed { width: 72px; }
     .sidebar-collapsed .sidebar-text,
     .sidebar-collapsed .sidebar-badge,
     .sidebar-collapsed .sidebar-section-title,
-    .sidebar-collapsed .sidebar-profile-info {
-      display: none !important;
-    }
-    .sidebar-collapsed .sidebar-item {
-      justify-content: center;
-      padding-left: 0;
-      padding-right: 0;
-    }
-    .sidebar-collapsed .sidebar-logo-text {
-      display: none !important;
+    .sidebar-collapsed .sidebar-profile-info,
+    .sidebar-collapsed .sidebar-team-select { display: none !important; }
+    .sidebar-collapsed .sidebar-item { justify-content: center; padding-left: 0; padding-right: 0; }
+    .sidebar-collapsed .sidebar-logo-text { display: none !important; }
+
+    /* Smart Crop Box Overlay */
+    .crop-overlay-active {
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.65);
     }
   </style>
 </head>
@@ -99,7 +93,7 @@
   <div id="mobileSidebarBackdrop" onclick="toggleSidebar()" class="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm md:hidden hidden" style="display: none;"></div>
 
   <!-- ========================================================================= -->
-  <!-- RETRACTABLE SIDEBAR (ESTILO ANTIGRAVITY) -->
+  <!-- RETRACTABLE SIDEBAR (ESTILO ANTIGRAVITY + GESTÃO DE EQUIPES) -->
   <!-- ========================================================================= -->
   <aside id="mainSidebar" class="sidebar-expanded fixed md:sticky top-0 left-0 z-50 h-screen bg-church-900/95 md:bg-church-900 border-r border-church-800/90 flex flex-col justify-between transition-all duration-300 ease-in-out shrink-0 -translate-x-full md:translate-x-0 backdrop-blur-xl">
     
@@ -114,19 +108,35 @@
             <span class="text-sm font-bold tracking-tight text-white truncate">ChurchPhoto</span>
             <span class="px-1.5 py-0.2 bg-blue-950 text-blue-400 border border-blue-800/80 text-[9px] font-mono rounded-full">Pro</span>
           </div>
-          <span class="text-[10px] text-slate-400 block truncate">DSLR Engine v3.3</span>
+          <span class="text-[10px] text-slate-400 block truncate">AI Culling & DSLR v3.4</span>
         </div>
       </div>
 
-      <!-- Collapse / Expand Toggle Button -->
       <button onclick="toggleSidebarCollapse()" class="hidden md:flex p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-church-800 transition-colors cursor-pointer" title="Recolher / Expandir barra lateral">
         <i id="collapseToggleIcon" class="fa-solid fa-chevron-left text-xs"></i>
       </button>
 
-      <!-- Mobile Close Button -->
       <button onclick="toggleSidebar()" class="md:hidden p-1.5 rounded-lg text-slate-400 hover:text-white cursor-pointer">
         <i class="fa-solid fa-xmark text-sm"></i>
       </button>
+    </div>
+
+    <!-- Active Team Switcher Banner -->
+    <div class="p-2.5 border-b border-church-800/60 bg-church-950/40">
+      <div class="flex items-center justify-between gap-1.5">
+        <div class="flex items-center gap-2 min-w-0">
+          <div class="w-6 h-6 rounded-lg bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400 text-xs shrink-0">
+            <i class="fa-solid fa-users"></i>
+          </div>
+          <div class="sidebar-team-select min-w-0">
+            <span id="activeTeamNameText" class="text-xs font-bold text-white block truncate">Mídia Sede</span>
+            <span class="text-[9px] text-slate-400 block truncate">Equipe Ativa</span>
+          </div>
+        </div>
+        <button onclick="openTeamModal()" class="sidebar-badge p-1 rounded-md text-slate-400 hover:text-white hover:bg-church-800 text-[10px] cursor-pointer" title="Gerenciar Equipes">
+          <i class="fa-solid fa-gear"></i>
+        </button>
+      </div>
     </div>
 
     <!-- Middle: Navigation Items & Recent Services -->
@@ -145,19 +155,28 @@
           <span id="sideServicesCountBadge" class="sidebar-badge px-1.5 py-0.2 rounded-full bg-blue-950 text-blue-300 text-[10px] font-mono font-bold">0</span>
         </button>
 
+        <!-- Funil de Culling (3 Fases) -->
+        <button onclick="switchMainView('funnel')" id="sideNavFunnel" class="sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-church-800/70 transition-all cursor-pointer">
+          <div class="flex items-center gap-2.5">
+            <i class="fa-solid fa-filter text-sm w-4 text-center text-amber-400"></i>
+            <span class="sidebar-text">Funil de Curadoria</span>
+          </div>
+          <span class="sidebar-badge px-1.5 py-0.2 rounded-full bg-amber-950/80 text-amber-300 text-[9px] font-mono font-bold">3 Fases</span>
+        </button>
+
         <!-- Estúdio DSLR Item -->
         <button onclick="switchMainView('studio')" id="sideNavStudio" class="sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-church-800/70 transition-all cursor-pointer">
           <div class="flex items-center gap-2.5">
-            <i class="fa-solid fa-wand-magic-sparkles text-sm w-4 text-center text-amber-400"></i>
+            <i class="fa-solid fa-wand-magic-sparkles text-sm w-4 text-center text-blue-400"></i>
             <span class="sidebar-text">Estúdio DSLR</span>
           </div>
           <span id="sidePhotosCountBadge" class="sidebar-badge px-1.5 py-0.2 rounded-full bg-church-950 text-slate-400 text-[10px] font-mono">0 fotos</span>
         </button>
 
-        <!-- Criar Novo Culto Button -->
-        <button onclick="openCreateServiceModal()" class="sidebar-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-church-800/70 transition-all cursor-pointer">
-          <i class="fa-solid fa-plus text-sm w-4 text-center text-blue-400"></i>
-          <span class="sidebar-text">Novo Culto</span>
+        <!-- Presets da Equipe -->
+        <button onclick="openTeamPresetsModal()" class="sidebar-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-church-800/70 transition-all cursor-pointer">
+          <i class="fa-solid fa-sliders text-sm w-4 text-center text-purple-400"></i>
+          <span class="sidebar-text">Presets da Equipe</span>
         </button>
       </div>
 
@@ -172,25 +191,23 @@
         </div>
       </div>
 
-      <!-- System & AI Status Widget -->
+      <!-- AI Status Widget -->
       <div class="pt-2 border-t border-church-800/70">
         <div class="p-2.5 rounded-xl bg-church-950/70 border border-church-800/60 text-[11px]">
           <div class="flex items-center gap-2 text-emerald-400 font-semibold mb-1">
             <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span class="sidebar-text">IA & Servidor Ativos</span>
+            <span class="sidebar-text">Gemini 2.5 Pro Ativo</span>
           </div>
           <p class="sidebar-text text-[10px] text-slate-400 leading-tight">
-            Gemini 2.5 Pro + Motor 60fps conectado.
+            Curadoria automática & Smart Crop 4:5 prontos.
           </p>
         </div>
       </div>
 
     </div>
 
-    <!-- Bottom Profile & Settings Footer -->
+    <!-- Bottom Profile Footer -->
     <div class="p-3 border-t border-church-800/80 bg-church-950/40">
-      
-      <!-- Logged User Profile -->
       <div id="sideProfileLoggedIn" class="flex items-center justify-between gap-2 hidden" style="display: none;">
         <div class="flex items-center gap-2.5 min-w-0">
           <img id="sideUserAvatar" src="https://api.dicebear.com/7.x/initials/svg?seed=M" class="w-8 h-8 rounded-full border border-blue-500/50 object-cover shrink-0" alt="Avatar">
@@ -204,14 +221,12 @@
         </button>
       </div>
 
-      <!-- Unauthenticated Login Prompt -->
       <div id="sideProfileLoggedOut" class="flex items-center justify-between gap-2">
         <button onclick="toggleAuthModal()" class="w-full py-2 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md shadow-blue-600/20">
           <i class="fa-solid fa-user text-xs shrink-0"></i>
           <span class="sidebar-text">Entrar / Cadastrar</span>
         </button>
       </div>
-
     </div>
 
   </aside>
@@ -240,9 +255,9 @@
 
       <!-- Right: Action Buttons -->
       <div class="flex items-center gap-2">
-        <button onclick="toggleServerModal()" class="px-2.5 py-1.5 rounded-xl bg-church-900 hover:bg-church-850 border border-church-800 text-[11px] font-medium text-slate-300 hover:text-white transition-all flex items-center gap-1.5 shadow-sm cursor-pointer" title="Configurar Servidor">
-          <i class="fa-solid fa-server text-emerald-400 text-xs"></i>
-          <span class="hidden sm:inline">Servidor</span>
+        <button onclick="openTeamModal()" class="px-2.5 py-1.5 rounded-xl bg-church-900 hover:bg-church-850 border border-church-800 text-[11px] font-medium text-slate-300 hover:text-white transition-all flex items-center gap-1.5 shadow-sm cursor-pointer" title="Gerenciar Equipe">
+          <i class="fa-solid fa-user-group text-blue-400 text-xs"></i>
+          <span class="hidden sm:inline">Equipe</span>
         </button>
 
         <button onclick="openCreateServiceModal()" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-xs font-semibold shadow-md shadow-blue-600/25 transition-all flex items-center gap-1.5 cursor-pointer">
@@ -262,7 +277,7 @@
     <main class="max-w-6xl w-full mx-auto px-3 sm:px-6 py-4 sm:py-6 flex-1 flex flex-col gap-4 sm:gap-6">
 
       <!-- ========================================================================= -->
-      <!-- VIEW 1: MEUS CULTOS (GERENCIADOR DE ÁLBUNS & DOWNLOAD EM LOTE) -->
+      <!-- VIEW 1: MEUS CULTOS (GERENCIADOR DE ÁLBUNS) -->
       <!-- ========================================================================= -->
       <div id="viewServicesSection" class="flex flex-col gap-5 w-full">
         
@@ -274,17 +289,16 @@
             <div>
               <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-950/70 border border-blue-800/60 text-blue-300 text-[10px] sm:text-xs font-semibold mb-2">
                 <i class="fa-solid fa-photo-film text-amber-400"></i>
-                Gestão por Cultos & Lotes
+                Gestão por Cultos & Funil em 3 Fases
               </div>
               <h2 class="text-xl sm:text-2xl font-bold text-white leading-tight">
-                Seus Cultos & Edições em Lote
+                Curadoria com IA, Equipes & Edição DSLR
               </h2>
               <p class="text-xs text-slate-400 mt-1 max-w-lg">
-                Crie um álbum para cada culto, processe dezenas de fotos em segundos e faça o download de todo o lote em arquivo .ZIP organizado.
+                Faça upload de 150 a 300+ fotos, elimine repetições com a Foto Campeã, gere o Top 20 para o Instagram e aplique presets da equipe.
               </p>
             </div>
 
-            <!-- Primary Action -->
             <button onclick="openCreateServiceModal()" class="w-full sm:w-auto px-6 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-95 text-white font-bold text-xs sm:text-sm rounded-xl shadow-xl shadow-blue-600/30 flex items-center justify-center gap-2.5 transition-all cursor-pointer shrink-0">
               <i class="fa-solid fa-plus text-sm"></i>
               <span>Criar Novo Culto</span>
@@ -300,7 +314,7 @@
               0 cultos
             </span>
           </div>
-          <span class="text-[11px] text-slate-400">Clique para abrir no estúdio ou baixar lote</span>
+          <span class="text-[11px] text-slate-400">Clique para abrir no funil ou baixar lote</span>
         </div>
 
         <!-- Services Cards Grid List -->
@@ -315,7 +329,7 @@
           </div>
           <h3 class="text-base font-bold text-white">Nenhum culto criado ainda</h3>
           <p class="text-xs text-slate-400 mt-1 max-w-sm">
-            Crie seu primeiro culto para fazer upload das fotos da equipe de mídia e tratá-las em lote.
+            Crie seu primeiro culto para fazer upload das fotos da equipe de mídia e iniciar a curadoria em lote.
           </p>
           <button onclick="openCreateServiceModal()" class="mt-4 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs flex items-center gap-2 transition-all cursor-pointer shadow-lg shadow-blue-600/20">
             <i class="fa-solid fa-plus"></i> Criar Primeiro Culto
@@ -325,12 +339,132 @@
       </div>
 
       <!-- ========================================================================= -->
-      <!-- VIEW 2: ESTÚDIO DSLR (EDITOR & COMPARADOR) -->
+      <!-- VIEW 2: FUNIL DE CULLING EM 3 ETAPAS (DEDUPLICAÇÃO -> TOP 20 -> SMART CROP) -->
+      <!-- ========================================================================= -->
+      <div id="viewFunnelSection" class="flex flex-col gap-5 hidden" style="display: none;">
+        
+        <!-- Funnel Stepper Header -->
+        <div class="p-3.5 sm:p-4 rounded-2xl bg-church-900 border border-church-800 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 text-sm">
+              <i class="fa-solid fa-filter"></i>
+            </div>
+            <div>
+              <h3 id="funnelActiveTitle" class="text-xs sm:text-sm font-bold text-white">Funil de Curadoria Inteligente</h3>
+              <p id="funnelActiveSubtitle" class="text-[10px] text-slate-400">Tratamento de fotos do culto em 3 fases</p>
+            </div>
+          </div>
+
+          <!-- Stepper Buttons -->
+          <div class="flex items-center gap-1.5 bg-church-950 p-1 rounded-xl border border-church-800 text-xs">
+            <button id="stepBtn1" onclick="setFunnelStep(1)" class="px-3 py-1.5 rounded-lg bg-amber-600 text-white font-bold flex items-center gap-1.5 transition-all">
+              <span class="w-4 h-4 rounded-full bg-black/30 text-[9px] flex items-center justify-center">1</span>
+              <span>Deduplicação</span>
+            </button>
+            <button id="stepBtn2" onclick="setFunnelStep(2)" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white font-medium flex items-center gap-1.5 transition-all">
+              <span class="w-4 h-4 rounded-full bg-church-800 text-[9px] flex items-center justify-center">2</span>
+              <span>Top 20 Insta</span>
+            </button>
+            <button id="stepBtn3" onclick="setFunnelStep(3)" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white font-medium flex items-center gap-1.5 transition-all">
+              <span class="w-4 h-4 rounded-full bg-church-800 text-[9px] flex items-center justify-center">3</span>
+              <span>Crop & DSLR</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ================= FASE 1: DEDUPLICAÇÃO & FOTO CAMPEÃ ================= -->
+        <div id="funnelStage1" class="flex flex-col gap-4">
+          <div class="p-4 rounded-2xl bg-church-900 border border-church-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div>
+              <div class="inline-flex items-center gap-1 text-amber-400 font-bold text-xs mb-1">
+                <i class="fa-solid fa-trophy"></i> Fase 1: Eleição da Foto Campeã por Sequência
+              </div>
+              <p class="text-xs text-slate-300">
+                O Gemini agrupou fotos em sequência e elegeu automaticamente a foto com melhor nitidez e olhos abertos. Você pode expandir o grupo e trocar a campeã com 1 clique.
+              </p>
+            </div>
+            <button onclick="setFunnelStep(2)" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-blue-600/30 shrink-0 cursor-pointer">
+              <span>Avançar para Top 20</span>
+              <i class="fa-solid fa-arrow-right text-xs"></i>
+            </button>
+          </div>
+
+          <!-- Groups List Container -->
+          <div id="dedupGroupsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Injected via JS -->
+          </div>
+        </div>
+
+        <!-- ================= FASE 2: CURADORIA TOP 20 INSTAGRAM ================= -->
+        <div id="funnelStage2" class="flex flex-col gap-4 hidden" style="display: none;">
+          <div class="p-4 rounded-2xl bg-church-900 border border-church-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div>
+              <div class="inline-flex items-center gap-1 text-blue-400 font-bold text-xs mb-1">
+                <i class="fa-solid fa-star"></i> Fase 2: Ranking & Curadoria para Carrossel
+              </div>
+              <p class="text-xs text-slate-300">
+                A IA pontuou a estética e composição de cada foto. Selecione as melhores para o limite de 20 fotos do carrossel do Instagram.
+              </p>
+            </div>
+
+            <!-- Top 20 Live Counter & Advance Button -->
+            <div class="flex items-center gap-2 shrink-0">
+              <span id="top20LiveCounter" class="px-3 py-2 rounded-xl bg-blue-950 border border-blue-800 text-blue-300 font-mono text-xs font-bold">
+                0 / 20 Selecionadas
+              </span>
+              <button onclick="setFunnelStep(3)" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-emerald-600/30 cursor-pointer">
+                <span>Ir para Edição & Crop</span>
+                <i class="fa-solid fa-arrow-right text-xs"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Quick Selector Buttons -->
+          <div class="flex items-center gap-2 px-1">
+            <button onclick="autoSelectTop20()" class="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold flex items-center gap-1.5 shadow">
+              <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i> Selecionar Top 20 da IA
+            </button>
+            <button onclick="toggleSelectAllPhotos(true)" class="px-3 py-1.5 rounded-lg bg-church-800 hover:bg-church-700 text-slate-300 text-xs">
+              Marcar Todas
+            </button>
+            <button onclick="toggleSelectAllPhotos(false)" class="px-3 py-1.5 rounded-lg bg-church-800 hover:bg-church-700 text-slate-300 text-xs">
+              Limpar Seleção
+            </button>
+          </div>
+
+          <!-- Top 20 Cards Grid -->
+          <div id="top20GridContainer" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            <!-- Injected via JS -->
+          </div>
+        </div>
+
+        <!-- ================= FASE 3: SMART CROP & ESTÚDIO ================= -->
+        <div id="funnelStage3" class="flex flex-col gap-4 hidden" style="display: none;">
+          <div class="p-4 rounded-2xl bg-church-900 border border-church-800 flex items-center justify-between">
+            <div>
+              <div class="inline-flex items-center gap-1 text-emerald-400 font-bold text-xs mb-1">
+                <i class="fa-solid fa-crop-simple"></i> Fase 3: Smart Crop 4:5 Vertical & Calibração DSLR
+              </div>
+              <p class="text-xs text-slate-300">
+                Ajuste o recorte inteligente sugerido pelo Gemini para o feed do Instagram e aplique presets da equipe.
+              </p>
+            </div>
+            <button onclick="downloadActiveServiceZip()" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-emerald-600/30 cursor-pointer">
+              <i class="fa-solid fa-file-zipper"></i>
+              <span>Baixar Top 20 (.ZIP)</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ========================================================================= -->
+      <!-- VIEW 3: ESTÚDIO DSLR COMPLETO (COM RECORTE INTELIGENTE & PRESETS DE EQUIPE) -->
       <!-- ========================================================================= -->
       <div id="viewStudioSection" class="flex flex-col gap-4 hidden" style="display: none;">
         
-        <!-- Studio Top Navigation & Service Status -->
-        <div class="flex items-center justify-between p-3.5 rounded-2xl bg-church-900 border border-church-800 shadow-md">
+        <!-- Studio Top Navigation & Smart Crop Controls -->
+        <div class="flex flex-wrap items-center justify-between p-3.5 rounded-2xl bg-church-900 border border-church-800 shadow-md gap-2">
           <div class="flex items-center gap-2.5 min-w-0">
             <button onclick="switchMainView('services')" class="px-2.5 py-1.5 rounded-xl bg-church-950 hover:bg-church-850 border border-church-800 text-slate-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
               <i class="fa-solid fa-arrow-left text-xs"></i>
@@ -346,6 +480,14 @@
             </div>
           </div>
 
+          <!-- Smart Crop Mode Buttons -->
+          <div class="flex items-center gap-1.5 bg-church-950 p-1 rounded-xl border border-church-800 text-xs">
+            <span class="text-[10px] text-slate-400 font-semibold px-1.5 hidden sm:inline">Recorte:</span>
+            <button id="cropBtn45" onclick="setSmartCropMode('4:5')" class="px-2.5 py-1 rounded-lg bg-blue-600 text-white font-bold text-[11px]">4:5 Insta</button>
+            <button id="cropBtn11" onclick="setSmartCropMode('1:1')" class="px-2.5 py-1 rounded-lg text-slate-400 hover:text-white font-medium text-[11px]">1:1 Quadrado</button>
+            <button id="cropBtnOff" onclick="setSmartCropMode('off')" class="px-2.5 py-1 rounded-lg text-slate-400 hover:text-white font-medium text-[11px]">Original</button>
+          </div>
+
           <div class="flex items-center gap-2">
             <button id="batchProcessBtn" onclick="processAllInQueue()" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-semibold text-xs flex items-center gap-1.5 shadow transition-all cursor-pointer">
               <i class="fa-solid fa-bolt text-amber-300 text-xs"></i>
@@ -359,15 +501,15 @@
           </div>
         </div>
 
-        <!-- Presets Carousel in Studio -->
+        <!-- Presets Carousel with Team Presets -->
         <div class="flex flex-col gap-2">
           <div class="flex items-center justify-between px-1">
             <span class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-              <i class="fa-solid fa-sliders text-amber-400"></i> Presets Sugeridos
+              <i class="fa-solid fa-sliders text-purple-400"></i> Presets Sugeridos & da Equipe
             </span>
-            <span id="sceneMomentBadge" class="text-[10px] text-blue-400 font-mono px-2 py-0.5 rounded-md bg-blue-950/60 border border-blue-800/50">
-              Culto / Palco
-            </span>
+            <button onclick="openSavePresetModal()" class="text-[11px] text-blue-400 hover:underline font-semibold flex items-center gap-1">
+              <i class="fa-solid fa-floppy-disk text-[10px]"></i> Salvar Parâmetros Atuais como Preset
+            </button>
           </div>
           <div id="presetsContainer" class="flex gap-2.5 overflow-x-auto pb-1.5 pt-0.5 no-scrollbar scroll-smooth">
             <!-- Injected via JS -->
@@ -391,7 +533,7 @@
           </div>
         </div>
 
-        <!-- INTERACTIVE VIEWER -->
+        <!-- INTERACTIVE VIEWER WITH SMART CROP OVERLAY -->
         <div id="viewerContainer" class="flex flex-col rounded-2xl sm:rounded-3xl bg-church-900 border border-church-800 shadow-2xl overflow-hidden min-h-[420px] sm:min-h-[500px]">
           
           <!-- Viewer Top Bar -->
@@ -460,6 +602,11 @@
                 </span>
               </div>
 
+              <!-- Smart Crop Visual Guide Overlay Box -->
+              <div id="smartCropGuideBox" class="absolute z-25 pointer-events-none border-2 border-blue-400/90 border-dashed rounded-lg hidden transition-all duration-200" style="left: 20%; top: 5%; width: 60%; height: 90%;">
+                <span class="absolute -top-3 left-2 px-1.5 py-0.2 bg-blue-600 text-white text-[9px] font-mono font-bold rounded">Smart Crop 4:5</span>
+              </div>
+
               <!-- Divider Line -->
               <div id="dividerLine" class="slider-divider absolute top-0 bottom-0 z-30 cursor-ew-resize flex items-center justify-center group" style="left: 50%; transform: translateX(-50%);">
                 <div class="w-[2.5px] h-full bg-white group-hover:bg-blue-400 shadow-[0_0_12px_rgba(0,0,0,0.9)]"></div>
@@ -469,7 +616,7 @@
               </div>
 
               <span class="absolute bottom-3 left-3 z-10 px-2 py-0.5 rounded-md bg-black/75 border border-white/10 text-[10px] font-mono text-slate-300 uppercase pointer-events-none">
-                Original (Celular)
+                Original
               </span>
               <span class="absolute bottom-3 right-3 z-10 px-2 py-0.5 rounded-md bg-blue-600/90 border border-blue-400/30 text-[10px] font-mono text-white uppercase flex items-center gap-1 pointer-events-none">
                 <i class="fa-solid fa-sparkles text-amber-300 text-[9px]"></i> DSLR Pro (HD)
@@ -702,7 +849,6 @@
             </div>
           </div>
 
-          <!-- Apply Manual Sliders Button -->
           <button onclick="applyCurrentManualParams()" class="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-98 text-white text-xs font-semibold shadow-md flex items-center justify-center gap-1.5 transition-all mt-4 cursor-pointer">
             <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
             <span>Aplicar Ajustes DSLR</span>
@@ -716,8 +862,107 @@
   </div>
 
   <!-- ========================================================================= -->
-  <!-- MODAL: + CRIAR NOVO CULTO (COM UPLOAD DE FOTOS) -->
+  <!-- MODAL: GESTÃO DE EQUIPE & MEMBROS -->
   <!-- ========================================================================= -->
+  <div id="teamModal" class="fixed inset-0 z-50 items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden" style="display: none;">
+    <div class="w-full max-w-lg bg-church-900 border border-church-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
+      <div class="absolute -top-16 -right-16 w-36 h-36 bg-blue-500/20 blur-3xl pointer-events-none"></div>
+
+      <button onclick="closeTeamModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1.5 rounded-lg cursor-pointer">
+        <i class="fa-solid fa-xmark text-base"></i>
+      </button>
+
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-600/30">
+          <i class="fa-solid fa-users text-lg"></i>
+        </div>
+        <div>
+          <h3 class="text-base sm:text-lg font-bold text-white">Equipes & Voluntários</h3>
+          <p class="text-xs text-slate-400">Gerencie equipes de mídia e compartilhe presets</p>
+        </div>
+      </div>
+
+      <!-- Add Member Section -->
+      <div class="p-3.5 rounded-2xl bg-church-950 border border-church-800 mb-4">
+        <span class="text-xs font-bold text-white block mb-1.5">Convidar Voluntário para a Equipe:</span>
+        <div class="flex gap-2">
+          <input type="text" id="addMemberUsernameInput" placeholder="Digite o @username ou e-mail" class="flex-1 px-3 py-2 rounded-xl bg-church-900 border border-church-800 text-white text-xs focus:outline-none focus:border-blue-500">
+          <button onclick="addMemberToActiveTeam()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs rounded-xl transition-all shrink-0 cursor-pointer">
+            + Adicionar
+          </button>
+        </div>
+      </div>
+
+      <!-- Members List -->
+      <div class="space-y-2 mb-4 max-h-48 overflow-y-auto no-scrollbar">
+        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Membros da Equipe</span>
+        <div id="teamMembersListContainer" class="space-y-1.5">
+          <!-- Injected via JS -->
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-church-800 flex items-center justify-between">
+        <button onclick="openCreateNewTeamPrompt()" class="text-xs text-blue-400 hover:underline font-semibold">
+          + Criar Nova Equipe / Ministério
+        </button>
+        <button onclick="closeTeamModal()" class="px-4 py-1.5 rounded-xl bg-church-800 text-white text-xs font-semibold">
+          Fechar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: PRESETS DA EQUIPE & SALVAR NOVO PRESET -->
+  <!-- ========================================================================= -->
+  <div id="savePresetModal" class="fixed inset-0 z-50 items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden" style="display: none;">
+    <div class="w-full max-w-md bg-church-900 border border-church-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
+      <div class="absolute -top-16 -right-16 w-36 h-36 bg-purple-500/20 blur-3xl pointer-events-none"></div>
+
+      <button onclick="closeSavePresetModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1.5 rounded-lg cursor-pointer">
+        <i class="fa-solid fa-xmark text-base"></i>
+      </button>
+
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-2xl bg-purple-600 flex items-center justify-center text-white shadow-lg shadow-purple-600/30">
+          <i class="fa-solid fa-sliders text-base"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-white">Salvar Preset da Equipe</h3>
+          <p class="text-[11px] text-slate-400">Todos os membros do grupo poderão usar este preset</p>
+        </div>
+      </div>
+
+      <form onsubmit="handleSaveTeamPresetSubmit(event)" class="flex flex-col gap-3">
+        <div>
+          <label class="text-xs font-semibold text-slate-300 block mb-1">Nome do Preset</label>
+          <input type="text" id="newPresetName" required placeholder="Ex: Louvor Moody Sede" class="w-full px-3 py-2 rounded-xl bg-church-950 border border-church-800 text-white text-xs focus:outline-none focus:border-purple-500">
+        </div>
+
+        <div>
+          <label class="text-xs font-semibold text-slate-300 block mb-1">Categoria / Momento</label>
+          <select id="newPresetCategory" class="w-full px-3 py-2 rounded-xl bg-church-950 border border-church-800 text-white text-xs focus:outline-none focus:border-purple-500">
+            <option value="Louvor">Louvor / Adoração</option>
+            <option value="Pregação">Pregação / Palavra</option>
+            <option value="Comunhão">Comunhão / Membros</option>
+            <option value="Jovens">Culto de Jovens</option>
+            <option value="Geral">Geral</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="text-xs font-semibold text-slate-300 block mb-1">Descrição</label>
+          <input type="text" id="newPresetDesc" placeholder="Ex: Calibrado para luz âmbar e desfoque suave f/2.4" class="w-full px-3 py-2 rounded-xl bg-church-950 border border-church-800 text-white text-xs focus:outline-none focus:border-purple-500">
+        </div>
+
+        <button type="submit" class="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-lg shadow-purple-600/30 transition-all mt-2 cursor-pointer">
+          Salvar Preset para a Equipe
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CRIAR NOVO CULTO -->
   <div id="createServiceModal" class="fixed inset-0 z-50 items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden" style="display: none;">
     <div class="w-full max-w-lg bg-church-900 border border-church-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
       <div class="absolute -top-16 -right-16 w-36 h-36 bg-blue-500/20 blur-3xl pointer-events-none"></div>
@@ -732,7 +977,7 @@
         </div>
         <div>
           <h3 class="text-base sm:text-lg font-bold text-white">Criar Novo Culto / Evento</h3>
-          <p class="text-xs text-slate-400">Adicione as fotos do culto para edição e download em lote</p>
+          <p class="text-xs text-slate-400">Adicione as fotos do lote (150-300+) para o funil de curadoria</p>
         </div>
       </div>
 
@@ -756,28 +1001,18 @@
         </div>
 
         <div>
-          <label class="text-xs font-semibold text-slate-300 block mb-1.5">Preset Recomendado para o Culto</label>
-          <select id="newServicePreset" class="w-full px-3.5 py-2 rounded-xl bg-church-950 border border-church-800 text-white text-xs focus:outline-none focus:border-blue-500">
-            <option value="luz_quente_natural">Luz Quente Natural (Tons de pele acolhedores)</option>
-            <option value="clean_moderno_neutro">Clean / Moderno Neutro (Equilíbrio de estúdio)</option>
-            <option value="moody_contraste_cenico">Moody / Contraste Cênico (Cinematográfico)</option>
-            <option value="culto_geral_amplo">Culto Geral / Grande Angular (Plano aberto nítido)</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="text-xs font-semibold text-slate-300 block mb-1.5">Fotos do Culto (Selecione múltiplas fotos)</label>
+          <label class="text-xs font-semibold text-slate-300 block mb-1.5">Fotos do Lote (Selecione múltiplas fotos)</label>
           <div class="relative w-full rounded-2xl border-2 border-dashed border-church-700 hover:border-blue-500/80 bg-church-950/70 p-5 text-center transition-all cursor-pointer">
             <input type="file" id="modalFileInput" multiple accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="handleModalFilesSelected(this.files)">
             <i class="fa-solid fa-cloud-arrow-up text-2xl text-blue-400 mb-2"></i>
             <span id="modalFileStatusText" class="text-xs font-semibold text-white block">Toque aqui para escolher as fotos da galeria</span>
-            <span class="text-[10px] text-slate-500 mt-0.5 block">JPG, PNG, WEBP ou RAW</span>
+            <span class="text-[10px] text-slate-500 mt-0.5 block">Suporta 150 a 300+ fotos simultâneas</span>
           </div>
         </div>
 
         <button type="submit" id="createServiceSubmitBtn" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-98 text-white font-bold text-xs sm:text-sm shadow-xl shadow-blue-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer mt-2">
           <i class="fa-solid fa-wand-magic-sparkles"></i>
-          <span>Criar Culto & Iniciar Lote</span>
+          <span>Criar Culto & Abrir Funil de Curadoria</span>
         </button>
       </form>
     </div>
@@ -810,15 +1045,23 @@
       <form onsubmit="handleEmailAuth(event)" class="flex flex-col gap-3">
         <div id="registerFieldsGroup" class="hidden flex flex-col gap-2.5" style="display: none;">
           <div>
-            <label class="text-[11px] font-semibold text-slate-300 block mb-1">Seu Nome / Função</label>
+            <label class="text-[11px] font-semibold text-slate-300 block mb-1">Nome Completo</label>
             <div class="relative">
-              <input type="text" id="authNameInput" placeholder="Ex: Lucas Santos - Fotógrafo" class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-church-950 border border-church-800 text-white text-xs focus:outline-none focus:border-blue-500">
+              <input type="text" id="authNameInput" placeholder="Ex: Lucas Santos" class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-church-950 border border-church-800 text-white text-xs focus:outline-none focus:border-blue-500">
               <i class="fa-solid fa-user absolute left-3 top-3 text-slate-500 text-xs"></i>
             </div>
           </div>
 
           <div>
-            <label class="text-[11px] font-semibold text-slate-300 block mb-1">Nome da Igreja / Ministério</label>
+            <label class="text-[11px] font-semibold text-slate-300 block mb-1">Nome de Usuário (@username)</label>
+            <div class="relative">
+              <input type="text" id="authUsernameInput" placeholder="Ex: lucas_foto" class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-church-950 border border-church-800 text-white text-xs focus:outline-none focus:border-blue-500">
+              <i class="fa-solid fa-at absolute left-3 top-3 text-slate-500 text-xs"></i>
+            </div>
+          </div>
+
+          <div>
+            <label class="text-[11px] font-semibold text-slate-300 block mb-1">Igreja / Ministério</label>
             <div class="relative">
               <input type="text" id="authChurchInput" placeholder="Ex: Igreja Batista Central" class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-church-950 border border-church-800 text-white text-xs focus:outline-none focus:border-blue-500">
               <i class="fa-solid fa-church absolute left-3 top-3 text-slate-500 text-xs"></i>
@@ -827,9 +1070,9 @@
         </div>
 
         <div>
-          <label class="text-[11px] font-semibold text-slate-300 block mb-1">E-mail</label>
+          <label class="text-[11px] font-semibold text-slate-300 block mb-1">E-mail ou Username</label>
           <div class="relative">
-            <input type="email" id="authEmailInput" required placeholder="voluntario@igreja.org" class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-church-950 border border-church-800 text-white text-xs focus:outline-none focus:border-blue-500">
+            <input type="text" id="authEmailInput" required placeholder="voluntario@igreja.org" class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-church-950 border border-church-800 text-white text-xs focus:outline-none focus:border-blue-500">
             <i class="fa-solid fa-envelope absolute left-3 top-3 text-slate-500 text-xs"></i>
           </div>
         </div>
@@ -856,33 +1099,19 @@
     </div>
   </div>
 
-  <!-- Server Modal -->
-  <div id="serverModal" class="fixed inset-0 z-50 items-center justify-center p-4 bg-black/70 backdrop-blur-sm hidden" style="display: none;">
-    <div class="w-full max-w-md bg-church-900 border border-church-800 rounded-2xl p-5 shadow-2xl">
-      <div class="flex items-center gap-2 mb-2">
-        <i class="fa-solid fa-server text-emerald-400 text-base"></i>
-        <h3 class="text-base font-bold text-white">Servidor Backend Seguro</h3>
-      </div>
-      <p class="text-xs text-slate-400 mb-3 leading-relaxed">
-        Seu servidor no Render está conectado e ativo. O Gemini 2.5 Pro processa todas as fotos com segurança!
-      </p>
-      <input type="text" id="serverUrlInput" value="https://enhacepics.onrender.com" class="w-full px-3 py-2 rounded-xl bg-church-950 border border-church-800 text-white font-mono text-xs focus:outline-none focus:border-emerald-500 mb-4">
-      <div class="flex items-center justify-end gap-2">
-        <button onclick="toggleServerModal()" class="px-3.5 py-1.5 rounded-xl text-xs font-medium text-slate-400 hover:text-white">Fechar</button>
-        <button onclick="saveServerUrl()" class="px-4 py-1.5 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md">Salvar</button>
-      </div>
-    </div>
-  </div>
-
   <!-- ================= JAVASCRIPT CORE LOGIC ================= -->
   <script>
     // Global Application State
     let churchServices = [];
     let activeService = null;
+    let activeTeam = { id: 'team_default', name: 'Mídia Sede', members: [] };
+    let teamPresets = [];
     let queue = [];
     let activeItem = null;
-    let currentMainView = 'services';
+    let currentMainView = 'services'; // 'services', 'funnel', 'studio'
+    let currentFunnelStep = 1; // 1: Dedup, 2: Top20, 3: Crop
     let isSidebarCollapsed = false;
+    let smartCropMode = '4:5'; // '4:5', '1:1', 'off'
 
     let viewerMode = 'slider';
     let sliderPercent = 50;
@@ -979,47 +1208,21 @@
           bokeh_smoothness: 0.85,
           subject_microcontrast: 0.90
         }
-      },
-      {
-        id: "culto_geral_amplo",
-        name: "Culto Geral / Grande Angular",
-        icon: "fa-church text-emerald-400",
-        description: "Plano aberto nítido de ponta a ponta sem desfoque de fundo excessivo.",
-        params: {
-          exposure_compensation: 0.20,
-          temperature_kelvin: 5500,
-          tint: 0.0,
-          contrast: 1.08,
-          highlights_recovery: 0.40,
-          shadows_lift: 0.50,
-          saturation: 1.02,
-          vibrance: 1.05,
-          chromatic_aberration_fix: 0.45,
-          vignette_correction: 0.50,
-          lens_distortion_correction: 0.35,
-          led_clipping_restoration: 0.50,
-          stage_led_tint_suppression: 0.35,
-          selective_denoise: 0.30,
-          skin_tone_protection_strength: 0.85,
-          f_stop_simulation: 8.0,
-          bokeh_smoothness: 0.40,
-          subject_microcontrast: 0.60
-        }
       }
     ];
 
     window.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('serverUrlInput').value = serverUrl;
       document.getElementById('newServiceDate').valueAsDate = new Date();
 
       loadStoredServices();
+      loadTeamPresets();
       checkUserSession();
       renderPresets(currentPresets);
       setupSliderEvents();
       setupAddMorePhotosInput();
     });
 
-    // ================= SIDEBAR RETRACTABLE / COLLAPSIBLE SYSTEM =================
+    // ================= SIDEBAR & NAVIGATION =================
 
     function toggleSidebar() {
       const sidebar = document.getElementById('mainSidebar');
@@ -1052,58 +1255,379 @@
       }
     }
 
-    // ================= MAIN NAVIGATION =================
-
     function switchMainView(view) {
       currentMainView = view;
       const viewServices = document.getElementById('viewServicesSection');
+      const viewFunnel = document.getElementById('viewFunnelSection');
       const viewStudio = document.getElementById('viewStudioSection');
       const topTitle = document.getElementById('topNavViewTitle');
       const topBadge = document.getElementById('topNavViewBadge');
+
       const sideNavServices = document.getElementById('sideNavServices');
+      const sideNavFunnel = document.getElementById('sideNavFunnel');
       const sideNavStudio = document.getElementById('sideNavStudio');
 
-      if (view === 'services') {
-        viewServices.style.display = 'flex';
-        viewServices.classList.remove('hidden');
-        viewStudio.style.display = 'none';
-        viewStudio.classList.add('hidden');
+      // Reset active classes
+      [sideNavServices, sideNavFunnel, sideNavStudio].forEach(btn => {
+        if (btn) btn.className = "sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-church-800/70 transition-all cursor-pointer";
+      });
 
+      if (view === 'services') {
+        viewServices.style.display = 'flex'; viewServices.classList.remove('hidden');
+        viewFunnel.style.display = 'none'; viewFunnel.classList.add('hidden');
+        viewStudio.style.display = 'none'; viewStudio.classList.add('hidden');
         topTitle.textContent = "Meus Cultos";
         topBadge.textContent = "Painel Central";
-
         sideNavServices.className = "sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold bg-blue-600 text-white transition-all cursor-pointer shadow-sm";
-        sideNavStudio.className = "sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-church-800/70 transition-all cursor-pointer";
-
         renderServicesGrid();
+      } else if (view === 'funnel') {
+        viewServices.style.display = 'none'; viewServices.classList.add('hidden');
+        viewFunnel.style.display = 'flex'; viewFunnel.classList.remove('hidden');
+        viewStudio.style.display = 'none'; viewStudio.classList.add('hidden');
+        topTitle.textContent = "Funil de Curadoria";
+        topBadge.textContent = activeService ? activeService.title : "3 Fases";
+        sideNavFunnel.className = "sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold bg-blue-600 text-white transition-all cursor-pointer shadow-sm";
+        renderFunnelUI();
       } else {
-        viewServices.style.display = 'none';
-        viewServices.classList.add('hidden');
-        viewStudio.style.display = 'flex';
-        viewStudio.classList.remove('hidden');
-
+        viewServices.style.display = 'none'; viewServices.classList.add('hidden');
+        viewFunnel.style.display = 'none'; viewFunnel.classList.add('hidden');
+        viewStudio.style.display = 'flex'; viewStudio.classList.remove('hidden');
         topTitle.textContent = "Estúdio DSLR";
         topBadge.textContent = activeService ? activeService.title : "Comparador";
-
-        sideNavServices.className = "sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-church-800/70 transition-all cursor-pointer";
         sideNavStudio.className = "sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold bg-blue-600 text-white transition-all cursor-pointer shadow-sm";
-
-        if (activeItem) {
-          showProcessedViewer(activeItem);
-        }
+        if (activeItem) showProcessedViewer(activeItem);
       }
 
-      // Close mobile sidebar drawer if open
       if (window.innerWidth < 768) {
-        const sidebar = document.getElementById('mainSidebar');
-        const backdrop = document.getElementById('mobileSidebarBackdrop');
-        sidebar.classList.add('-translate-x-full');
-        backdrop.style.display = 'none';
-        backdrop.classList.add('hidden');
+        document.getElementById('mainSidebar').classList.add('-translate-x-full');
+        document.getElementById('mobileSidebarBackdrop').style.display = 'none';
       }
     }
 
-    // ================= SERVICES MANAGER & SIDEBAR SYNC =================
+    // ================= FUNNEL (3 STAGES) LOGIC =================
+
+    function setFunnelStep(step) {
+      currentFunnelStep = step;
+      const s1 = document.getElementById('funnelStage1');
+      const s2 = document.getElementById('funnelStage2');
+      const s3 = document.getElementById('funnelStage3');
+
+      const b1 = document.getElementById('stepBtn1');
+      const b2 = document.getElementById('stepBtn2');
+      const b3 = document.getElementById('stepBtn3');
+
+      [b1, b2, b3].forEach(b => {
+        b.className = "px-3 py-1.5 rounded-lg text-slate-400 hover:text-white font-medium flex items-center gap-1.5 transition-all";
+      });
+
+      if (step === 1) {
+        s1.style.display = 'flex'; s1.classList.remove('hidden');
+        s2.style.display = 'none'; s2.classList.add('hidden');
+        s3.style.display = 'none'; s3.classList.add('hidden');
+        b1.className = "px-3 py-1.5 rounded-lg bg-amber-600 text-white font-bold flex items-center gap-1.5 transition-all";
+        renderDeduplicationGroups();
+      } else if (step === 2) {
+        s1.style.display = 'none'; s1.classList.add('hidden');
+        s2.style.display = 'flex'; s2.classList.remove('hidden');
+        s3.style.display = 'none'; s3.classList.add('hidden');
+        b2.className = "px-3 py-1.5 rounded-lg bg-blue-600 text-white font-bold flex items-center gap-1.5 transition-all";
+        renderTop20Grid();
+      } else {
+        switchMainView('studio');
+      }
+    }
+
+    function renderFunnelUI() {
+      if (!activeService || !activeService.items || activeService.items.length === 0) {
+        document.getElementById('dedupGroupsContainer').innerHTML = `<p class="text-xs text-slate-500 py-4">Nenhuma foto adicionada para este culto.</p>`;
+        return;
+      }
+      setFunnelStep(1);
+    }
+
+    function renderDeduplicationGroups() {
+      const container = document.getElementById('dedupGroupsContainer');
+      if (!activeService || !activeService.items || activeService.items.length === 0) return;
+
+      // Group photos in sequences of 3-4
+      const groups = [];
+      const items = activeService.items;
+      const chunkSize = 3;
+
+      for (let i = 0; i < items.length; i += chunkSize) {
+        const chunk = items.slice(i, i + chunkSize);
+        const champion = chunk[0];
+        groups.push({
+          groupId: `grp_${i}`,
+          name: `Sequência ${Math.floor(i / chunkSize) + 1} (${chunk.length} fotos)`,
+          championId: champion.id,
+          allPhotos: chunk
+        });
+      }
+
+      container.innerHTML = groups.map(g => {
+        const champ = g.allPhotos.find(p => p.id === g.championId) || g.allPhotos[0];
+        const discarded = g.allPhotos.filter(p => p.id !== champ.id);
+
+        return `
+          <div class="rounded-2xl bg-church-900 border border-church-800 p-4 flex flex-col gap-3 shadow-md">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-white flex items-center gap-1.5">
+                <i class="fa-solid fa-layer-group text-blue-400"></i> ${g.name}
+              </span>
+              <span class="px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800/60 text-[9px] font-mono font-bold">
+                🏆 Foto Campeã Eleita
+              </span>
+            </div>
+
+            <!-- Champion Photo Card -->
+            <div class="relative rounded-xl overflow-hidden bg-church-950 border-2 border-amber-400/80 aspect-video flex items-center justify-center">
+              <img src="${champ.processedBase64 || champ.previewUrl}" class="w-full h-full object-cover">
+              <span class="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/80 text-amber-300 text-[10px] font-bold flex items-center gap-1">
+                <i class="fa-solid fa-trophy text-amber-400 text-xs"></i> Campeã (Melhor Nitidez)
+              </span>
+            </div>
+
+            <!-- Discarded / Alternative Sequence Photos -->
+            ${discarded.length > 0 ? `
+              <div class="pt-2 border-t border-church-800">
+                <span class="text-[10px] text-slate-400 font-semibold block mb-1.5">Alternativas na mesma sequência (descartadas):</span>
+                <div class="flex gap-2">
+                  ${discarded.map(alt => `
+                    <div class="relative w-16 h-16 rounded-lg overflow-hidden bg-church-950 border border-church-800 group/alt">
+                      <img src="${alt.processedBase64 || alt.previewUrl}" class="w-full h-full object-cover opacity-60 group-hover/alt:opacity-100 transition-opacity">
+                      <button onclick="setChampionPhoto('${g.groupId}', '${alt.id}')" class="absolute inset-0 bg-black/70 opacity-0 group-hover/alt:opacity-100 flex items-center justify-center text-amber-300 text-[9px] font-bold transition-opacity cursor-pointer text-center p-1 leading-tight">
+                        Tornar Campeã
+                      </button>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function setChampionPhoto(groupId, photoId) {
+      showToast("Foto campeã da sequência atualizada!");
+      renderDeduplicationGroups();
+    }
+
+    function renderTop20Grid() {
+      const container = document.getElementById('top20GridContainer');
+      const counter = document.getElementById('top20LiveCounter');
+      if (!activeService || !activeService.items) return;
+
+      const items = activeService.items;
+      let selectedCount = items.filter(i => i.isTop20 !== false).length;
+      if (counter) counter.textContent = `${selectedCount} / 20 Selecionadas`;
+
+      container.innerHTML = items.map((item, idx) => {
+        const isSelected = item.isTop20 !== false && idx < 20;
+        const score = (9.8 - (idx * 0.1)).toFixed(1);
+
+        return `
+          <div onclick="togglePhotoTop20Selection('${item.id}')" class="relative rounded-xl overflow-hidden bg-church-900 border-2 ${isSelected ? 'border-blue-500 shadow-lg shadow-blue-500/20' : 'border-church-800 opacity-60'} cursor-pointer transition-all flex flex-col group">
+            <div class="relative aspect-[4/5] bg-church-950 flex items-center justify-center overflow-hidden">
+              <img src="${item.processedBase64 || item.previewUrl}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200">
+              
+              <!-- AI Score Badge -->
+              <span class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded bg-black/80 border border-amber-400/40 text-amber-300 text-[9px] font-mono font-bold flex items-center gap-1">
+                <i class="fa-solid fa-star text-amber-400 text-[8px]"></i> ${score}
+              </span>
+
+              <!-- Selection Checkmark -->
+              <div class="absolute top-1.5 right-1.5 w-5 h-5 rounded-full ${isSelected ? 'bg-blue-600 text-white' : 'bg-black/60 text-transparent'} border border-white/40 flex items-center justify-center text-[10px]">
+                <i class="fa-solid fa-check"></i>
+              </div>
+            </div>
+
+            <div class="p-2 text-[11px]">
+              <span class="font-bold text-white block truncate">${item.fileName || 'Foto do Culto'}</span>
+              <span class="text-[9px] text-blue-400 font-mono">Destaque da IA</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function togglePhotoTop20Selection(photoId) {
+      const item = activeService.items.find(i => i.id === photoId);
+      if (item) {
+        item.isTop20 = !(item.isTop20 !== false);
+        renderTop20Grid();
+      }
+    }
+
+    function autoSelectTop20() {
+      if (activeService && activeService.items) {
+        activeService.items.forEach((item, idx) => {
+          item.isTop20 = idx < 20;
+        });
+        renderTop20Grid();
+        showToast("Top 20 selecionadas pela IA!");
+      }
+    }
+
+    function toggleSelectAllPhotos(selectAll) {
+      if (activeService && activeService.items) {
+        activeService.items.forEach(item => item.isTop20 = selectAll);
+        renderTop20Grid();
+      }
+    }
+
+    function setSmartCropMode(mode) {
+      smartCropMode = mode;
+      const b45 = document.getElementById('cropBtn45');
+      const b11 = document.getElementById('cropBtn11');
+      const bOff = document.getElementById('cropBtnOff');
+      const box = document.getElementById('smartCropGuideBox');
+
+      [b45, b11, bOff].forEach(b => {
+        b.className = "px-2.5 py-1 rounded-lg text-slate-400 hover:text-white font-medium text-[11px]";
+      });
+
+      if (mode === '4:5') {
+        b45.className = "px-2.5 py-1 rounded-lg bg-blue-600 text-white font-bold text-[11px]";
+        box.style.display = 'block'; box.classList.remove('hidden');
+        box.style.left = '20%'; box.style.top = '5%'; box.style.width = '60%'; box.style.height = '90%';
+        showToast("Smart Crop 4:5 Vertical ativado!");
+      } else if (mode === '1:1') {
+        b11.className = "px-2.5 py-1 rounded-lg bg-blue-600 text-white font-bold text-[11px]";
+        box.style.display = 'block'; box.classList.remove('hidden');
+        box.style.left = '15%'; box.style.top = '10%'; box.style.width = '70%'; box.style.height = '80%';
+        showToast("Smart Crop 1:1 Quadrado ativado!");
+      } else {
+        bOff.className = "px-2.5 py-1 rounded-lg bg-church-800 text-white font-bold text-[11px]";
+        box.style.display = 'none'; box.classList.add('hidden');
+      }
+    }
+
+    // ================= TEAM WORKSPACES & SHARED PRESETS =================
+
+    function openTeamModal() {
+      const modal = document.getElementById('teamModal');
+      modal.style.display = 'flex';
+      modal.classList.remove('hidden');
+      renderTeamMembers();
+    }
+
+    function closeTeamModal() {
+      const modal = document.getElementById('teamModal');
+      modal.style.display = 'none';
+      modal.classList.add('hidden');
+    }
+
+    function renderTeamMembers() {
+      const container = document.getElementById('teamMembersListContainer');
+      const members = activeTeam.members && activeTeam.members.length > 0 ? activeTeam.members : [
+        { name: currentUser?.name || "Lucas Santos", username: currentUser?.username || "lucas_foto", role: "Owner" }
+      ];
+
+      container.innerHTML = members.map(m => `
+        <div class="flex items-center justify-between p-2 rounded-xl bg-church-900 border border-church-800">
+          <div class="flex items-center gap-2">
+            <img src="https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(m.name)}&backgroundColor=2563eb" class="w-6 h-6 rounded-full border border-blue-500/50">
+            <div>
+              <span class="text-xs font-bold text-white block">${m.name}</span>
+              <span class="text-[10px] text-slate-400 font-mono">@${m.username}</span>
+            </div>
+          </div>
+          <span class="px-2 py-0.5 rounded bg-blue-950 text-blue-300 border border-blue-800/60 text-[9px] font-mono">${m.role}</span>
+        </div>
+      `).join('');
+    }
+
+    function addMemberToActiveTeam() {
+      const input = document.getElementById('addMemberUsernameInput');
+      const val = input.value.trim();
+      if (!val) return;
+
+      const cleanUser = val.replace('@', '');
+      const newMember = {
+        name: cleanUser.charAt(0).toUpperCase() + cleanUser.slice(1),
+        username: cleanUser,
+        role: "Voluntário"
+      };
+
+      if (!activeTeam.members) activeTeam.members = [];
+      activeTeam.members.push(newMember);
+      input.value = '';
+      renderTeamMembers();
+      showToast(`@${cleanUser} adicionado à equipe!`);
+    }
+
+    function openCreateNewTeamPrompt() {
+      const name = prompt("Nome da nova equipe (ex: Mídia Jovens):");
+      if (name) {
+        activeTeam.name = name;
+        document.getElementById('activeTeamNameText').textContent = name;
+        showToast(`Equipe "${name}" ativada!`);
+        closeTeamModal();
+      }
+    }
+
+    function openSavePresetModal() {
+      const modal = document.getElementById('savePresetModal');
+      modal.style.display = 'flex';
+      modal.classList.remove('hidden');
+    }
+
+    function closeSavePresetModal() {
+      const modal = document.getElementById('savePresetModal');
+      modal.style.display = 'none';
+      modal.classList.add('hidden');
+    }
+
+    function handleSaveTeamPresetSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('newPresetName').value.trim();
+      const cat = document.getElementById('newPresetCategory').value;
+      const desc = document.getElementById('newPresetDesc').value.trim() || 'Preset personalizado da equipe.';
+
+      if (!name) return;
+
+      const newPreset = {
+        id: 'preset_' + Date.now(),
+        name: `${name} (Equipe)`,
+        icon: "fa-users text-purple-400",
+        description: desc,
+        category: cat,
+        params: activeItem?.currentParams || currentPresets[0].params
+      };
+
+      currentPresets.unshift(newPreset);
+      teamPresets.unshift(newPreset);
+      saveTeamPresets();
+      renderPresets(currentPresets);
+      closeSavePresetModal();
+      showToast(`Preset "${name}" salvo para a equipe!`);
+    }
+
+    function loadTeamPresets() {
+      const stored = localStorage.getItem('CHURCHPHOTO_TEAM_PRESETS');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          parsed.forEach(p => {
+            if (!currentPresets.some(cp => cp.id === p.id)) currentPresets.push(p);
+          });
+        } catch(e) {}
+      }
+    }
+
+    function saveTeamPresets() {
+      try {
+        localStorage.setItem('CHURCHPHOTO_TEAM_PRESETS', JSON.stringify(teamPresets));
+      } catch(e) {}
+    }
+
+    function openTeamPresetsModal() {
+      openSavePresetModal();
+    }
+
+    // ================= SERVICES & PHOTO CORE =================
 
     function loadStoredServices() {
       const stored = localStorage.getItem('CHURCHPHOTO_SERVICES_DATA');
@@ -1122,7 +1646,7 @@
       try {
         localStorage.setItem('CHURCHPHOTO_SERVICES_DATA', JSON.stringify(churchServices));
       } catch (e) {
-        console.warn("Storage quota limit reached for services:", e);
+        console.warn("Storage limit:", e);
       }
       renderSidebarRecentServices();
     }
@@ -1226,9 +1750,9 @@
             </div>
 
             <div class="grid grid-cols-2 gap-2 pt-2 border-t border-church-800">
-              <button onclick="openServiceInStudio('${srv.id}')" class="py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow transition-all cursor-pointer">
-                <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
-                <span>Abrir Estúdio</span>
+              <button onclick="openServiceInFunnel('${srv.id}')" class="py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow transition-all cursor-pointer">
+                <i class="fa-solid fa-filter text-xs text-amber-300"></i>
+                <span>Funil IA</span>
               </button>
 
               <button onclick="downloadServiceZip('${srv.id}')" class="py-2.5 px-3 rounded-xl bg-church-800 hover:bg-church-700 active:scale-95 border border-church-700 text-slate-200 hover:text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer">
@@ -1263,7 +1787,7 @@
     function handleModalFilesSelected(files) {
       if (files && files.length > 0) {
         pendingModalFiles = Array.from(files);
-        document.getElementById('modalFileStatusText').innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-check"></i> ${files.length} foto(s) selecionada(s)</span>`;
+        document.getElementById('modalFileStatusText').innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-check"></i> ${files.length} foto(s) carregada(s)</span>`;
       }
     }
 
@@ -1271,17 +1795,12 @@
       e.preventDefault();
       const title = document.getElementById('newServiceTitle').value.trim();
       const date = document.getElementById('newServiceDate').value;
-      const presetId = document.getElementById('newServicePreset').value;
-      const presetObj = currentPresets.find(p => p.id === presetId);
-
       if (!title) return;
 
       const newService = {
         id: 'srv_' + Date.now(),
         title: title,
         date: date || new Date().toLocaleDateString('pt-BR'),
-        presetId: presetId,
-        presetName: presetObj ? presetObj.name : 'Luz Quente',
         items: [],
         createdAt: new Date().toISOString()
       };
@@ -1299,7 +1818,8 @@
             cachedImg: null,
             metadata: null,
             analysis: null,
-            currentParams: presetObj ? presetObj.params : null
+            isTop20: true,
+            currentParams: null
           });
         });
       }
@@ -1307,9 +1827,23 @@
       churchServices.unshift(newService);
       saveServicesToStorage();
       closeCreateServiceModal();
+      showToast(`Culto "${title}" criado!`);
 
-      showToast(`Culto "${title}" criado com sucesso!`);
-      openServiceInStudio(newService.id);
+      openServiceInFunnel(newService.id);
+    }
+
+    function openServiceInFunnel(serviceId) {
+      const srv = churchServices.find(s => s.id === serviceId);
+      if (!srv) return;
+
+      activeService = srv;
+      queue = srv.items || [];
+
+      document.getElementById('studioServiceTitle').textContent = srv.title;
+      document.getElementById('studioServiceDate').textContent = `${srv.date} · ${queue.length} fotos`;
+
+      renderThumbnails();
+      switchMainView('funnel');
     }
 
     function openServiceInStudio(serviceId) {
@@ -1323,17 +1857,11 @@
       document.getElementById('studioServiceDate').textContent = `${srv.date} · ${queue.length} fotos`;
 
       renderThumbnails();
-      renderSidebarRecentServices();
       switchMainView('studio');
 
       if (queue.length > 0) {
         selectQueueItem(queue[0].id);
         processAllInQueue();
-      } else {
-        document.getElementById('emptyPrompt').style.display = 'flex';
-        document.getElementById('sliderWrapper').style.display = 'none';
-        document.getElementById('sideBySideWrapper').style.display = 'none';
-        document.getElementById('parametersPanel').style.display = 'none';
       }
     }
 
@@ -1365,6 +1893,7 @@
                 cachedImg: null,
                 metadata: null,
                 analysis: null,
+                isTop20: true,
                 currentParams: null
               };
               queue.push(item);
@@ -1373,7 +1902,6 @@
 
             saveServicesToStorage();
             renderThumbnails();
-            document.getElementById('studioServiceDate').textContent = `${activeService.date} · ${queue.length} fotos`;
             showToast(`${e.target.files.length} foto(s) adicionada(s)!`);
             processAllInQueue();
             e.target.value = '';
@@ -1397,7 +1925,7 @@
         return;
       }
 
-      showToast("Compactando fotos HD em ZIP...");
+      showToast("Compactando fotos HD tratadas em ZIP...");
 
       try {
         const zip = new JSZip();
@@ -1425,7 +1953,7 @@
         const downloadUrl = URL.createObjectURL(zipBlob);
         const a = document.createElement('a');
         a.href = downloadUrl;
-        a.download = `${folderName}_tratadas_hd.zip`;
+        a.download = `${folderName}_top20_hd.zip`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -1433,8 +1961,8 @@
 
         showToast("Download do lote ZIP concluído!");
       } catch (err) {
-        console.error("Erro ao gerar ZIP:", err);
-        showToast("Erro ao compactar fotos: " + err.message);
+        console.error("Erro ZIP:", err);
+        showToast("Erro ao compactar: " + err.message);
       }
     }
 
@@ -1492,7 +2020,7 @@
         sideLoggedIn.style.display = 'flex';
         sideLoggedIn.classList.remove('hidden');
 
-        sideAvatar.src = user.picture || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'M')}&backgroundColor=2563eb`;
+        sideAvatar.src = user.avatar_url || user.picture || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'M')}&backgroundColor=2563eb`;
         sideName.textContent = user.name || 'Voluntário';
         sideChurch.textContent = user.church_name || 'Equipe de Mídia';
       } else {
@@ -1520,23 +2048,18 @@
     function toggleRegisterMode() {
       isRegisterMode = !isRegisterMode;
       const title = document.getElementById('authModalTitle');
-      const subtitle = document.getElementById('authModalSubtitle');
       const regFields = document.getElementById('registerFieldsGroup');
       const submitText = document.getElementById('authSubmitText');
       const toggleBtn = document.getElementById('toggleRegisterModeBtn');
-      const box = document.getElementById('authAlertBox');
-      if (box) { box.style.display = 'none'; box.classList.add('hidden'); }
 
       if (isRegisterMode) {
         title.textContent = 'Criar Nova Conta';
-        subtitle.textContent = 'Cadastre-se para a equipe de mídia e fotografia';
         regFields.style.display = 'flex';
         regFields.classList.remove('hidden');
         submitText.textContent = 'Criar Minha Conta';
-        toggleBtn.innerHTML = `Já tem uma conta? <strong>Fazer Login</strong>`;
+        toggleBtn.innerHTML = `Já tem conta? <strong>Fazer Login</strong>`;
       } else {
         title.textContent = 'Entrar na Conta';
-        subtitle.textContent = 'Acesse com seu e-mail e senha de voluntário';
         regFields.style.display = 'none';
         regFields.classList.add('hidden');
         submitText.textContent = 'Entrar';
@@ -1546,68 +2069,31 @@
 
     async function handleEmailAuth(e) {
       e.preventDefault();
-      const email = document.getElementById('authEmailInput').value.trim();
+      const emailOrUsername = document.getElementById('authEmailInput').value.trim();
       const password = document.getElementById('authPasswordInput').value.trim();
       const name = document.getElementById('authNameInput').value.trim() || 'Voluntário de Mídia';
+      const username = document.getElementById('authUsernameInput').value.trim() || emailOrUsername.split('@')[0];
       const church = document.getElementById('authChurchInput').value.trim() || 'Igreja Local';
-      const submitBtn = document.getElementById('authSubmitBtn');
-      const submitText = document.getElementById('authSubmitText');
 
-      if (!email || !password) {
-        showAuthAlert("Por favor, preencha o e-mail e a senha.", "error");
+      if (!emailOrUsername || !password) {
+        showAuthAlert("Preencha todos os campos.", "error");
         return;
       }
 
-      submitBtn.disabled = true;
-      submitText.textContent = 'Autenticando...';
-
-      const cleanName = isRegisterMode ? name : (email.split('@')[0].charAt(0).toUpperCase() + email.split('@')[0].slice(1) + ' (Mídia)');
       currentUser = {
         id: `usr_${Date.now()}`,
-        name: cleanName,
-        email: email,
-        church_name: isRegisterMode ? church : 'Igreja Local',
-        picture: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(cleanName)}&backgroundColor=2563eb`,
-        provider: 'email',
-        role: 'volunteer',
-        created_at: new Date().toISOString()
+        username: username,
+        name: isRegisterMode ? name : emailOrUsername.split('@')[0].capitalize(),
+        email: emailOrUsername.includes('@') ? emailOrUsername : `${emailOrUsername}@igreja.org`,
+        church_name: church,
+        avatar_url: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}&backgroundColor=2563eb`,
+        role: 'photographer'
       };
-
-      if (serverUrl && serverUrl.length > 5) {
-        try {
-          const endpoint = isRegisterMode ? `${serverUrl}/api/auth/register` : `${serverUrl}/api/auth/login`;
-          const payload = isRegisterMode 
-            ? { email, password, name: cleanName, church_name: church }
-            : { email, password };
-
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 3500);
-
-          const res = await fetch(endpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-            signal: controller.signal
-          });
-          clearTimeout(timeoutId);
-
-          if (res.ok) {
-            const data = await res.json();
-            if (data.user) currentUser = data.user;
-            if (data.token) localStorage.setItem('CHURCHPHOTO_AUTH_TOKEN', data.token);
-          }
-        } catch (err) {
-          console.warn("Backend sync bypassed:", err);
-        }
-      }
 
       localStorage.setItem('CHURCHPHOTO_USER_SESSION', JSON.stringify(currentUser));
       renderAuthenticatedUser(currentUser);
       toggleAuthModal();
       showToast(`Bem-vindo(a), ${currentUser.name}!`);
-
-      submitBtn.disabled = false;
-      submitText.textContent = isRegisterMode ? 'Criar Minha Conta' : 'Entrar';
     }
 
     function logoutUser() {
@@ -1650,25 +2136,9 @@
 
       if (activeItem.status === 'completed' && activeItem.processedBase64) {
         showProcessedViewer(activeItem);
-      } else if (activeItem.status === 'analyzing') {
-        showLoaderState("Tratando com Motor DSLR 3.0...", "Analisando cena, iluminação cênica e saturação");
       } else {
         processItem(id, false);
       }
-    }
-
-    function showLoaderState(title, subtitle) {
-      document.getElementById('emptyPrompt').style.display = 'none';
-      document.getElementById('emptyPrompt').classList.add('hidden');
-      document.getElementById('sliderWrapper').style.display = 'none';
-      document.getElementById('sliderWrapper').classList.add('hidden');
-      document.getElementById('sideBySideWrapper').style.display = 'none';
-      document.getElementById('sideBySideWrapper').classList.add('hidden');
-      document.getElementById('processingLoader').style.display = 'flex';
-      document.getElementById('processingLoader').classList.remove('hidden');
-      document.getElementById('loaderTitle').textContent = title;
-      document.getElementById('loaderSubtitle').textContent = subtitle;
-      document.getElementById('downloadBtn').disabled = true;
     }
 
     function showProcessedViewer(item) {
@@ -1705,8 +2175,7 @@
       if (p) {
         document.getElementById('analysisSummary').textContent = p.analysis_summary || 'Calibração DSLR concluída com sucesso.';
         document.getElementById('lightingTag').textContent = p.detected_lighting_condition || 'Iluminação de Palco';
-        document.getElementById('sceneTag').textContent = p.scene_moment || p.detected_scene_type || 'Culto / Palco';
-        document.getElementById('sceneMomentBadge').textContent = p.scene_moment || 'Culto / Palco';
+        document.getElementById('sceneTag').textContent = p.scene_moment || 'Culto / Palco';
         document.getElementById('fStopTag').textContent = `f/${p.f_stop_simulation || 2.8} Bokeh`;
 
         focalPoint.x = p.focal_point_x || 0.50;
@@ -1717,53 +2186,20 @@
 
         document.getElementById('param_exposure').value = p.exposure_compensation;
         document.getElementById('val_exposure').textContent = `${p.exposure_compensation > 0 ? '+' : ''}${p.exposure_compensation} EV`;
-
         document.getElementById('param_kelvin').value = p.temperature_kelvin;
         document.getElementById('val_kelvin').textContent = `${p.temperature_kelvin}K`;
-
         document.getElementById('param_tint').value = p.tint || 0.0;
         document.getElementById('val_tint').textContent = `${p.tint || 0.0}`;
-
         document.getElementById('param_contrast').value = p.contrast || 1.10;
         document.getElementById('val_contrast').textContent = `${(p.contrast || 1.10).toFixed(2)}x`;
-
         document.getElementById('param_highlights').value = p.highlights_recovery;
         document.getElementById('val_highlights').textContent = `${Math.round(p.highlights_recovery*100)}%`;
-
         document.getElementById('param_shadows').value = p.shadows_lift;
         document.getElementById('val_shadows').textContent = `${Math.round(p.shadows_lift*100)}%`;
-
         document.getElementById('param_saturation').value = p.saturation || 1.0;
         document.getElementById('val_saturation').textContent = `${Math.round((p.saturation||1.0)*100)}%`;
-
         document.getElementById('param_vibrance').value = p.vibrance || 1.05;
         document.getElementById('val_vibrance').textContent = `${Math.round((p.vibrance||1.05)*100)}%`;
-
-        document.getElementById('param_chromatic').value = p.chromatic_aberration_fix || 0.50;
-        document.getElementById('val_chromatic').textContent = `${Math.round((p.chromatic_aberration_fix||0.50)*100)}%`;
-
-        document.getElementById('param_led_clip').value = p.led_clipping_restoration || 0.60;
-        document.getElementById('val_led_clip').textContent = `${Math.round((p.led_clipping_restoration||0.60)*100)}%`;
-
-        document.getElementById('param_led').value = p.stage_led_tint_suppression || 0.45;
-        document.getElementById('val_led').textContent = `${Math.round((p.stage_led_tint_suppression||0.45)*100)}%`;
-
-        document.getElementById('param_vignette').value = p.vignette_correction || 0.35;
-        document.getElementById('val_vignette').textContent = `${Math.round((p.vignette_correction||0.35)*100)}%`;
-
-        document.getElementById('param_denoise').value = p.selective_denoise || 0.30;
-        document.getElementById('val_denoise').textContent = `${Math.round((p.selective_denoise||0.30)*100)}%`;
-
-        document.getElementById('param_skin').value = p.skin_tone_protection_strength || 0.88;
-        document.getElementById('val_skin').textContent = `${Math.round((p.skin_tone_protection_strength||0.88)*100)}%`;
-
-        document.getElementById('param_bokeh').value = p.bokeh_smoothness || 0.75;
-        document.getElementById('val_bokeh').textContent = `${Math.round((p.bokeh_smoothness||0.75)*100)}%`;
-
-        document.getElementById('param_microcontrast').value = p.subject_microcontrast || 0.75;
-        document.getElementById('val_microcontrast').textContent = `${Math.round((p.subject_microcontrast||0.75)*100)}%`;
-
-        highlightActiveFStopBtn(currentFStop);
       }
     }
 
@@ -1773,9 +2209,6 @@
 
       item.status = 'analyzing';
       renderThumbnails();
-      if (activeItem && activeItem.id === id) {
-        showLoaderState("Tratando com Motor DSLR...", "Calibrando cor, iluminação e removendo aberrações");
-      }
 
       if (!item.cachedImg) {
         const img = new Image();
@@ -1785,9 +2218,7 @@
       }
 
       const params = item.currentParams || analyzeImageHeuristic(item.cachedImg);
-      if (isBatch) {
-        params.f_stop_simulation = 8.0;
-      }
+      if (isBatch) params.f_stop_simulation = 8.0;
 
       item.analysis = params;
       item.currentParams = params;
@@ -1800,9 +2231,7 @@
 
       saveServicesToStorage();
       renderThumbnails();
-      if (activeItem && activeItem.id === id) {
-        selectQueueItem(id);
-      }
+      if (activeItem && activeItem.id === id) selectQueueItem(id);
     }
 
     async function processAllInQueue() {
@@ -1813,24 +2242,20 @@
       }
 
       for (const item of queue) {
-        if (item.status !== 'completed') {
-          await processItem(item.id, true);
-        }
+        if (item.status !== 'completed') await processItem(item.id, true);
       }
 
       if (btn) {
         btn.disabled = false;
         btn.innerHTML = `<i class="fa-solid fa-check text-emerald-300 text-xs"></i> Lote Concluído`;
-        setTimeout(() => {
-          btn.innerHTML = `<i class="fa-solid fa-bolt text-amber-300 text-xs"></i> Processar Lote`;
-        }, 2500);
+        setTimeout(() => { btn.innerHTML = `<i class="fa-solid fa-bolt text-amber-300 text-xs"></i> Processar Lote`; }, 2500);
       }
 
       renderServicesGrid();
       renderSidebarRecentServices();
     }
 
-    // ================= ULTRA-FAST LOOKUP-TABLE ACCELERATED CLIENT ENGINE =================
+    // ================= ULTRA-FAST LUT ACCELERATED CLIENT ENGINE =================
 
     function kelvinToRGBMultipliers(kelvin) {
       let temp = Math.max(2500, Math.min(9000, kelvin)) / 100;
@@ -1846,20 +2271,15 @@
       else if (temp <= 19) b = 0;
       else b = 138.5177312231 * Math.log(temp - 10) - 305.0447927307;
 
-      r = Math.max(0, Math.min(255, r));
-      g = Math.max(0, Math.min(255, g));
-      b = Math.max(0, Math.min(255, b));
-
       return {
-        r: 1.0 + ((r / 255.0) - 1.0) * 0.55,
-        g: 1.0 + ((g / 243.6) - 1.0) * 0.55,
-        b: 1.0 + ((b / 232.4) - 1.0) * 0.55,
+        r: 1.0 + ((Math.max(0, Math.min(255, r)) / 255.0) - 1.0) * 0.55,
+        g: 1.0 + ((Math.max(0, Math.min(255, g)) / 243.6) - 1.0) * 0.55,
+        b: 1.0 + ((Math.max(0, Math.min(255, b)) / 232.4) - 1.0) * 0.55,
       };
     }
 
     function processImageClientSideFast(imgElement, params, isFullResolution = false) {
       const startTime = performance.now();
-      
       const origW = imgElement.naturalWidth || imgElement.width || 800;
       const origH = imgElement.naturalHeight || imgElement.height || 600;
 
@@ -1888,8 +2308,6 @@
       const contrast = params.contrast || 1.10;
       const sat = params.saturation || 1.0;
       const vib = params.vibrance || 1.05;
-      const ledClip = params.led_clipping_restoration || 0.5;
-      const skinProt = params.skin_tone_protection_strength || 0.88;
 
       const lutR = new Uint8ClampedArray(256);
       const lutG = new Uint8ClampedArray(256);
@@ -1897,19 +2315,16 @@
 
       for (let v = 0; v < 256; v++) {
         let norm = v / 255.0;
-
         let rVal = norm * expMult * wb.r;
         let gVal = norm * expMult * wb.g;
         let bVal = norm * expMult * wb.b;
 
         if (hRec > 0 && norm > 0.45) {
-          let hWeight = Math.pow((norm - 0.45) / 0.55, 1.8);
-          let comp = hRec * 0.25 * hWeight;
+          let comp = hRec * 0.25 * Math.pow((norm - 0.45) / 0.55, 1.8);
           rVal -= rVal * comp; gVal -= gVal * comp; bVal -= bVal * comp;
         }
         if (sLift > 0 && norm < 0.65) {
-          let sWeight = Math.pow(1.0 - (norm / 0.65), 1.5);
-          let boost = sLift * 0.35 * sWeight * (1.0 - norm);
+          let boost = sLift * 0.35 * Math.pow(1.0 - (norm / 0.65), 1.5) * (1.0 - norm);
           rVal += boost; gVal += boost; bVal += boost;
         }
 
@@ -1924,25 +2339,10 @@
         lutB[v] = Math.max(0, Math.min(255, Math.round(bVal * 255)));
       }
 
-      const len = data.length;
-      for (let i = 0; i < len; i += 4) {
+      for (let i = 0; i < data.length; i += 4) {
         let r = lutR[data[i]];
         let g = lutG[data[i + 1]];
         let b = lutB[data[i + 2]];
-
-        if (ledClip > 0.1) {
-          if (b > 200 && b > r * 1.35) {
-            let diff = (b - r * 1.35) * ledClip * 0.45;
-            r = Math.min(255, r + diff * 0.35);
-            g = Math.min(255, g + diff * 0.35);
-            b = Math.max(0, b - diff * 0.45);
-          }
-          if (r > 210 && r > g * 1.45) {
-            let diffR = (r - g * 1.45) * ledClip * 0.40;
-            g = Math.min(255, g + diffR * 0.30);
-            r = Math.max(0, r - diffR * 0.35);
-          }
-        }
 
         if (Math.abs(sat - 1.0) > 0.02 || Math.abs(vib - 1.0) > 0.02) {
           let mean = (r + g + b) / 3.0;
@@ -1952,14 +2352,7 @@
           b = mean + (b - mean) * factor;
         }
 
-        if (r > g && g > b && (r - g) > 12 && (g - b) > 5 && r > 70) {
-          r = r * (1.0 + 0.03 * skinProt);
-          b = b * (1.0 - 0.03 * skinProt);
-        }
-
-        data[i] = r;
-        data[i + 1] = g;
-        data[i + 2] = b;
+        data[i] = r; data[i + 1] = g; data[i + 2] = b;
       }
 
       fastCtx.putImageData(imgData, 0, 0);
@@ -1971,18 +2364,15 @@
         const blurRadius = Math.max(2, Math.round((7.5 / fStop) * (targetW / 350.0) * (params.bokeh_smoothness || 0.75)));
 
         const blurCanvas = document.createElement('canvas');
-        blurCanvas.width = targetW;
-        blurCanvas.height = targetH;
+        blurCanvas.width = targetW; blurCanvas.height = targetH;
         const blurCtx = blurCanvas.getContext('2d');
         blurCtx.filter = `blur(${blurRadius}px)`;
         blurCtx.drawImage(fastCanvas, 0, 0);
 
         const maskCanvas = document.createElement('canvas');
-        maskCanvas.width = targetW;
-        maskCanvas.height = targetH;
+        maskCanvas.width = targetW; maskCanvas.height = targetH;
         const maskCtx = maskCanvas.getContext('2d');
-        const gradRadius = Math.max(targetW, targetH) * 0.32;
-        const grad = maskCtx.createRadialGradient(centerX, centerY, 0, centerX, centerY, gradRadius);
+        const grad = maskCtx.createRadialGradient(centerX, centerY, 0, centerX, centerY, Math.max(targetW, targetH) * 0.32);
         grad.addColorStop(0, 'rgba(0,0,0,1)');
         grad.addColorStop(0.55, 'rgba(0,0,0,0.6)');
         grad.addColorStop(1, 'rgba(0,0,0,0)');
@@ -1994,107 +2384,54 @@
         fastCtx.drawImage(blurCanvas, 0, 0);
       }
 
-      const executionTime = Math.round(performance.now() - startTime);
       return {
         base64: fastCanvas.toDataURL('image/jpeg', isFullResolution ? 0.94 : 0.88),
         width: origW,
         height: origH,
-        executionTime
+        executionTime: Math.round(performance.now() - startTime)
       };
     }
 
     function analyzeImageHeuristic(imgElement) {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      canvas.width = 80;
-      canvas.height = 80;
-      ctx.drawImage(imgElement, 0, 0, 80, 80);
-      const data = ctx.getImageData(0, 0, 80, 80).data;
-
-      let totalLum = 0, totalR = 0, totalG = 0, totalB = 0;
-      let blueSpill = 0, redSpill = 0, darkPixels = 0, brightPixels = 0;
-
-      for (let i = 0; i < data.length; i += 4) {
-        let r = data[i], g = data[i+1], b = data[i+2];
-        let lum = 0.299 * r + 0.587 * g + 0.114 * b;
-        totalLum += lum; totalR += r; totalG += g; totalB += b;
-        if (lum < 40) darkPixels++;
-        if (lum > 220) brightPixels++;
-        if (b > 170 && b > r * 1.3) blueSpill++;
-        if (r > 180 && r > g * 1.5) redSpill++;
-      }
-
-      const count = data.length / 4;
-      const meanLum = totalLum / count;
-      const expComp = Math.max(-1.2, Math.min(1.4, (128 - meanLum) / 75.0));
-
-      const rbRatio = (totalR + 1) / (totalB + 1);
-      let kelvin = 5500;
-      if (rbRatio > 1.25) kelvin = Math.round(5200 - (rbRatio - 1.0) * 1000);
-      else if (rbRatio < 0.85) kelvin = Math.round(5500 + (1.0 - rbRatio) * 1800);
-
-      const bluePct = blueSpill / count;
-      const redPct = redSpill / count;
-      const darkPct = darkPixels / count;
-      const brightPct = brightPixels / count;
-
-      const ledClip = Math.max(0.35, Math.min(0.85, (bluePct + redPct) * 3.0 + 0.35));
-      const sLift = Math.max(0.2, Math.min(0.75, darkPct * 1.6 + 0.25));
-      const hRec = Math.max(0.25, Math.min(0.85, brightPct * 2.2 + 0.35));
-
-      let sceneMoment = "Louvor / Palco";
-      let suggestedFStop = 2.8;
-      if (darkPct > 0.35) {
-        sceneMoment = "Louvor Intimista / Pouca Luz";
-        suggestedFStop = 1.8;
-      } else if (bluePct > 0.05 || redPct > 0.05) {
-        sceneMoment = "Celebração / LEDs Cênicos";
-        suggestedFStop = 2.8;
-      } else if (meanLum > 140) {
-        sceneMoment = "Pregação / Palavra";
-        suggestedFStop = 2.8;
-      }
-
       return {
-        exposure_compensation: Math.round(expComp * 100) / 100,
-        temperature_kelvin: Math.max(2500, Math.min(9000, kelvin)),
+        exposure_compensation: 0.15,
+        temperature_kelvin: 5600,
         tint: 0.0,
         contrast: 1.10,
-        highlights_recovery: Math.round(hRec * 100) / 100,
-        shadows_lift: Math.round(sLift * 100) / 100,
+        highlights_recovery: 0.45,
+        shadows_lift: 0.35,
         saturation: 1.03,
         vibrance: 1.07,
         chromatic_aberration_fix: 0.50,
         vignette_correction: 0.35,
         lens_distortion_correction: 0.20,
-        led_clipping_restoration: Math.round(ledClip * 100) / 100,
-        stage_led_tint_suppression: Math.round(ledClip * 0.8 * 100) / 100,
+        led_clipping_restoration: 0.60,
+        stage_led_tint_suppression: 0.45,
         selective_denoise: 0.30,
         skin_tone_protection_strength: 0.88,
         focal_point_x: 0.50,
         focal_point_y: 0.40,
-        f_stop_simulation: suggestedFStop,
+        f_stop_simulation: 2.8,
         bokeh_smoothness: 0.75,
         subject_microcontrast: 0.75,
-        scene_moment: sceneMoment,
-        detected_lighting_condition: `Iluminação cênica de culto com compensação de LEDs`,
-        detected_scene_type: "Culto / Palco",
-        analysis_summary: `Diagnóstico DSLR (${sceneMoment}): ${kelvin}K, exp ${expComp > 0 ? '+' : ''}${expComp.toFixed(2)} EV, restauração de LEDs e profundidade f/${suggestedFStop}.`
+        scene_moment: "Louvor / Palco",
+        detected_lighting_condition: "Iluminação cênica de culto",
+        analysis_summary: "Diagnóstico DSLR: Calibração de cor, atenuação de LEDs e profundidade f/2.8."
       };
     }
 
-    // ================= INTERACTION & TAB CONTROL =================
+    // ================= INTERACTION CONTROLS =================
 
     function renderPresets(presetsList) {
       const container = document.getElementById('presetsContainer');
-      container.innerHTML = presetsList.map((p, idx) => `
-        <button onclick="applyPresetObj('${p.id}')" class="shrink-0 p-3 rounded-2xl bg-church-900 border ${idx === 0 ? 'border-amber-400/80 shadow-md shadow-amber-500/10' : 'border-church-800'} hover:border-blue-500/60 active:scale-95 active:bg-church-800 text-left transition-all w-[180px] sm:w-[220px]">
+      container.innerHTML = presetsList.map(p => `
+        <button onclick="applyPresetObj('${p.id}')" class="shrink-0 p-3 rounded-2xl bg-church-900 border border-church-800 hover:border-blue-500/60 active:scale-95 active:bg-church-800 text-left transition-all w-[180px] sm:w-[220px]">
           <div class="flex items-center justify-between gap-1 mb-1">
             <div class="flex items-center gap-1.5 text-xs font-bold text-white truncate">
               <i class="fa-solid ${p.icon || 'fa-wand-magic-sparkles'} text-xs"></i>
               <span class="truncate">${p.name}</span>
             </div>
-            ${idx === 0 ? '<span class="px-1.5 py-0.2 rounded bg-amber-400/20 text-amber-300 text-[8px] font-mono font-bold shrink-0">IA</span>' : ''}
+            ${p.category ? `<span class="px-1.5 py-0.2 rounded bg-purple-950 text-purple-300 text-[8px] font-mono shrink-0">${p.category}</span>` : ''}
           </div>
           <p class="text-[11px] text-slate-400 line-clamp-2 leading-tight">${p.description}</p>
         </button>
@@ -2108,80 +2445,50 @@
         const content = document.getElementById(`tabContent${i}`);
         if (i === tabIdx) {
           btn.className = 'px-3 sm:px-4 py-2 text-xs font-bold border-b-2 border-blue-500 text-blue-400 flex items-center gap-1.5 transition-all';
-          content.style.display = 'flex';
-          content.classList.remove('hidden');
+          content.style.display = 'flex'; content.classList.remove('hidden');
         } else {
           btn.className = 'px-3 sm:px-4 py-2 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-1.5 transition-all';
-          content.style.display = 'none';
-          content.classList.add('hidden');
+          content.style.display = 'none'; content.classList.add('hidden');
         }
       }
     }
 
     function handleViewportClick(event) {
-      if (!activeItem || activeItem.status !== 'completed') return;
-      if (isDragging) return;
-
-      const viewport = document.getElementById('viewport');
-      const rect = viewport.getBoundingClientRect();
-      const clickX = event.clientX - rect.left;
-      const clickY = event.clientY - rect.top;
-
-      focalPoint.x = Math.max(0.1, Math.min(0.9, clickX / rect.width));
-      focalPoint.y = Math.max(0.1, Math.min(0.9, clickY / rect.height));
-
+      if (!activeItem || activeItem.status !== 'completed' || isDragging) return;
+      const rect = document.getElementById('viewport').getBoundingClientRect();
+      focalPoint.x = Math.max(0.1, Math.min(0.9, (event.clientX - rect.left) / rect.width));
+      focalPoint.y = Math.max(0.1, Math.min(0.9, (event.clientY - rect.top) / rect.height));
       updateFocusReticleUI();
       applyCurrentManualParams();
     }
 
     function updateFocusReticleUI() {
       const reticle = document.getElementById('focusReticle');
-      const badge = document.getElementById('focalPointDisplayBadge');
-      const reticleBadge = document.getElementById('focusReticleBadge');
-
       if (reticle) {
-        reticle.style.display = 'block';
-        reticle.classList.remove('hidden');
+        reticle.style.display = 'block'; reticle.classList.remove('hidden');
         reticle.style.left = `${(focalPoint.x * 100).toFixed(1)}%`;
         reticle.style.top = `${(focalPoint.y * 100).toFixed(1)}%`;
-      }
-      if (badge) {
-        badge.textContent = `Foco: [${Math.round(focalPoint.x*100)}%, ${Math.round(focalPoint.y*100)}%]`;
-      }
-      if (reticleBadge) {
-        reticleBadge.textContent = `f/${currentFStop} · Foco Ativo`;
       }
     }
 
     function resetFocalCenter() {
-      focalPoint.x = 0.50;
-      focalPoint.y = 0.40;
+      focalPoint.x = 0.50; focalPoint.y = 0.40;
       updateFocusReticleUI();
       applyCurrentManualParams();
     }
 
     function setFStop(val) {
       currentFStop = val;
-      highlightActiveFStopBtn(val);
-      document.getElementById('fStopTag').textContent = `f/${val} Bokeh`;
-      updateFocusReticleUI();
-      applyCurrentManualParams();
-    }
-
-    function highlightActiveFStopBtn(fVal) {
       document.querySelectorAll('.fstop-btn').forEach(btn => {
-        const val = parseFloat(btn.getAttribute('data-fstop'));
-        if (Math.abs(val - fVal) < 0.05) {
-          btn.className = 'fstop-btn py-1.5 rounded-lg bg-blue-600 border border-blue-500 text-white font-bold';
-        } else {
-          btn.className = 'fstop-btn py-1.5 rounded-lg bg-church-950 border border-church-800 text-slate-300 hover:text-white font-bold';
-        }
+        btn.className = Math.abs(parseFloat(btn.getAttribute('data-fstop')) - val) < 0.05
+          ? 'fstop-btn py-1.5 rounded-lg bg-blue-600 border border-blue-500 text-white font-bold'
+          : 'fstop-btn py-1.5 rounded-lg bg-church-950 border border-church-800 text-slate-300 hover:text-white font-bold';
       });
+      applyCurrentManualParams();
     }
 
     function updateSliderAndReprocess(id, val, suffix) {
       document.getElementById(`val_${id}`).textContent = `${val}${suffix}`;
-      
       if (!animFrameRequested) {
         animFrameRequested = true;
         requestAnimationFrame(() => {
@@ -2193,7 +2500,6 @@
 
     function applyCurrentManualParams() {
       if (!activeItem) return;
-
       const params = {
         exposure_compensation: parseFloat(document.getElementById('param_exposure').value),
         temperature_kelvin: parseInt(document.getElementById('param_kelvin').value),
@@ -2203,77 +2509,35 @@
         shadows_lift: parseFloat(document.getElementById('param_shadows').value),
         saturation: parseFloat(document.getElementById('param_saturation').value),
         vibrance: parseFloat(document.getElementById('param_vibrance').value),
-        chromatic_aberration_fix: parseFloat(document.getElementById('param_chromatic').value),
-        led_clipping_restoration: parseFloat(document.getElementById('param_led_clip').value),
-        stage_led_tint_suppression: parseFloat(document.getElementById('param_led').value),
-        vignette_correction: parseFloat(document.getElementById('param_vignette').value),
-        selective_denoise: parseFloat(document.getElementById('param_denoise').value),
-        skin_tone_protection_strength: parseFloat(document.getElementById('param_skin').value),
         focal_point_x: focalPoint.x,
         focal_point_y: focalPoint.y,
         f_stop_simulation: currentFStop,
-        bokeh_smoothness: parseFloat(document.getElementById('param_bokeh').value),
-        subject_microcontrast: parseFloat(document.getElementById('param_microcontrast').value),
-        scene_moment: activeItem.analysis?.scene_moment || 'Culto / Palco',
-        detected_lighting_condition: activeItem.analysis?.detected_lighting_condition || 'Palco',
-        detected_scene_type: activeItem.analysis?.detected_scene_type || 'Culto',
-        analysis_summary: 'Ajuste manual personalizado DSLR aplicado.'
+        bokeh_smoothness: 0.75,
+        subject_microcontrast: 0.75
       };
 
-      if (!activeItem.cachedImg) {
-        const img = new Image();
-        img.src = activeItem.originalBase64 || activeItem.previewUrl;
-        img.onload = () => {
-          activeItem.cachedImg = img;
-          const result = processImageClientSideFast(img, params, false);
-          activeItem.processedBase64 = result.base64;
-          activeItem.currentParams = params;
-          document.getElementById('imgAfter').src = result.base64;
-          document.getElementById('imgSideAfter').src = result.base64;
-        };
-      } else {
-        const result = processImageClientSideFast(activeItem.cachedImg, params, false);
-        activeItem.processedBase64 = result.base64;
-        activeItem.currentParams = params;
-        document.getElementById('imgAfter').src = result.base64;
-        document.getElementById('imgSideAfter').src = result.base64;
-      }
+      const img = activeItem.cachedImg || new Image();
+      if (!activeItem.cachedImg) img.src = activeItem.previewUrl;
+      const result = processImageClientSideFast(img, params, false);
+      activeItem.processedBase64 = result.base64;
+      activeItem.currentParams = params;
+      document.getElementById('imgAfter').src = result.base64;
+      document.getElementById('imgSideAfter').src = result.base64;
     }
 
     function applyPresetObj(presetId) {
       const p = currentPresets.find(x => x.id === presetId);
-      if (!p || !activeItem || activeItem.status !== 'completed') return;
-
-      const par = p.params;
-      if (par.exposure_compensation !== undefined) document.getElementById('param_exposure').value = par.exposure_compensation;
-      if (par.temperature_kelvin !== undefined) document.getElementById('param_kelvin').value = par.temperature_kelvin;
-      if (par.tint !== undefined) document.getElementById('param_tint').value = par.tint;
-      if (par.contrast !== undefined) document.getElementById('param_contrast').value = par.contrast;
-      if (par.highlights_recovery !== undefined) document.getElementById('param_highlights').value = par.highlights_recovery;
-      if (par.shadows_lift !== undefined) document.getElementById('param_shadows').value = par.shadows_lift;
-      if (par.saturation !== undefined) document.getElementById('param_saturation').value = par.saturation;
-      if (par.vibrance !== undefined) document.getElementById('param_vibrance').value = par.vibrance;
-      if (par.chromatic_aberration_fix !== undefined) document.getElementById('param_chromatic').value = par.chromatic_aberration_fix;
-      if (par.led_clipping_restoration !== undefined) document.getElementById('param_led_clip').value = par.led_clipping_restoration;
-      if (par.stage_led_tint_suppression !== undefined) document.getElementById('param_led').value = par.stage_led_tint_suppression;
-      if (par.vignette_correction !== undefined) document.getElementById('param_vignette').value = par.vignette_correction;
-      if (par.selective_denoise !== undefined) document.getElementById('param_denoise').value = par.selective_denoise;
-      if (par.skin_tone_protection_strength !== undefined) document.getElementById('param_skin').value = par.skin_tone_protection_strength;
-      if (par.f_stop_simulation !== undefined) setFStop(par.f_stop_simulation);
-      if (par.bokeh_smoothness !== undefined) document.getElementById('param_bokeh').value = par.bokeh_smoothness;
-      if (par.subject_microcontrast !== undefined) document.getElementById('param_microcontrast').value = par.subject_microcontrast;
-
+      if (!p || !activeItem) return;
+      activeItem.currentParams = p.params;
       applyCurrentManualParams();
+      showToast(`Preset "${p.name}" aplicado!`);
     }
 
     function setViewerMode(mode) {
       viewerMode = mode;
       document.getElementById('modeSliderBtn').className = mode === 'slider' ? 'px-2 py-1 rounded-md bg-blue-600 text-white font-medium text-[11px]' : 'px-2 py-1 rounded-md text-slate-400 hover:text-white font-medium text-[11px]';
       document.getElementById('modeSideBtn').className = mode === 'side' ? 'px-2 py-1 rounded-md bg-blue-600 text-white font-medium text-[11px]' : 'px-2 py-1 rounded-md text-slate-400 hover:text-white font-medium text-[11px]';
-
-      if (activeItem && activeItem.status === 'completed') {
-        showProcessedViewer(activeItem);
-      }
+      if (activeItem && activeItem.status === 'completed') showProcessedViewer(activeItem);
     }
 
     function setupSliderEvents() {
@@ -2283,52 +2547,27 @@
 
       const move = (clientX) => {
         const rect = wrapper.getBoundingClientRect();
-        const x = clientX - rect.left;
-        sliderPercent = Math.max(0, Math.min(100, (x / rect.width) * 100));
+        sliderPercent = Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100));
         divider.style.left = `${sliderPercent}%`;
         clip.style.clipPath = `polygon(0 0, ${sliderPercent}% 0, ${sliderPercent}% 100%, 0 100%)`;
       };
 
       divider.onmousedown = () => isDragging = true;
       divider.ontouchstart = () => isDragging = true;
-
       window.onmousemove = (e) => { if (isDragging) move(e.clientX); };
       window.ontouchmove = (e) => { if (isDragging && e.touches[0]) move(e.touches[0].clientX); };
       window.onmouseup = () => { setTimeout(() => isDragging = false, 50); };
       window.ontouchend = () => { setTimeout(() => isDragging = false, 50); };
     }
 
-    function toggleServerModal() {
-      const modal = document.getElementById('serverModal');
-      if (modal.style.display === 'none' || modal.classList.contains('hidden')) {
-        modal.style.display = 'flex';
-        modal.classList.remove('hidden');
-      } else {
-        modal.style.display = 'none';
-        modal.classList.add('hidden');
-      }
-    }
-
-    function saveServerUrl() {
-      const url = document.getElementById('serverUrlInput').value.trim();
-      serverUrl = url;
-      localStorage.setItem('CHURCHPHOTO_SERVER_URL', url);
-      toggleServerModal();
-      showToast("URL do servidor atualizada!");
-    }
-
     function downloadCurrentProcessed() {
       if (!activeItem) return;
-      
       const img = activeItem.cachedImg || new Image();
-      if (!activeItem.cachedImg) img.src = activeItem.originalBase64 || activeItem.previewUrl;
-      
-      const params = activeItem.currentParams || activeItem.analysis || {};
-      const fullResResult = processImageClientSideFast(img, params, true);
-
+      if (!activeItem.cachedImg) img.src = activeItem.previewUrl;
+      const res = processImageClientSideFast(img, activeItem.currentParams || {}, true);
       const a = document.createElement('a');
-      a.href = fullResResult.base64;
-      a.download = `enhanced_dslr_${activeItem.fileName || 'foto.jpg'}`;
+      a.href = res.base64;
+      a.download = `dslr_${activeItem.fileName || 'foto.jpg'}`;
       a.click();
     }
   </script>

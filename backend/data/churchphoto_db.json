@@ -1,0 +1,162 @@
+{
+  "users": {
+    "usr_5f8950fe9323": {
+      "id": "usr_5f8950fe9323",
+      "username": "lucas_video",
+      "email": "lucas_video@igreja.org",
+      "name": "Lucas_video",
+      "password_hash": "432ddce6f9d85f3292a3d340fe22ba62129c8683790fba1ec0c88e3ee8586a00",
+      "church_name": "Igreja Local",
+      "role": "photographer",
+      "avatar_url": "https://api.dicebear.com/7.x/initials/svg?seed=Lucas_video&backgroundColor=2563eb",
+      "created_at": "2026-08-24T00:22:21.161049"
+    },
+    "usr_80ddfb9d1a91": {
+      "id": "usr_80ddfb9d1a91",
+      "username": "fotografo_teste",
+      "email": "fotografo@igreja.org",
+      "name": "Fotógrafo Teste",
+      "password_hash": "e9a777d0f21627ca8fd5b8b8bb0a9b0e2f2630ef21484baa66e51a2d25f64e9a",
+      "church_name": "Igreja Batista Central",
+      "role": "photographer",
+      "avatar_url": "https://api.dicebear.com/7.x/initials/svg?seed=Fotógrafo Teste&backgroundColor=2563eb",
+      "created_at": "2026-08-24T00:22:21.167005"
+    }
+  },
+  "teams": {
+    "team_ff586983c5": {
+      "id": "team_ff586983c5",
+      "name": "Mídia Jovens",
+      "description": "Cobertura de cultos de jovens",
+      "church_name": "Igreja Batista Central",
+      "owner_id": "usr_fotografo_teste",
+      "members": [
+        {
+          "user_id": "usr_fotografo_teste",
+          "username": "user",
+          "name": "Voluntário",
+          "avatar_url": null,
+          "role": "owner",
+          "joined_at": "2026-08-24T00:22:21.158686"
+        },
+        {
+          "user_id": "usr_5f8950fe9323",
+          "username": "lucas_video",
+          "name": "Lucas_video",
+          "avatar_url": "https://api.dicebear.com/7.x/initials/svg?seed=Lucas_video&backgroundColor=2563eb",
+          "role": "member",
+          "joined_at": "2026-08-24T00:22:21.161123"
+        }
+      ],
+      "created_at": "2026-08-24T00:22:21.158742"
+    },
+    "team_usr_80dd": {
+      "id": "team_usr_80dd",
+      "name": "Mídia Igreja Batista Central",
+      "description": "Equipe principal de fotografia e cobertura de cultos.",
+      "church_name": "Igreja Batista Central",
+      "owner_id": "usr_80ddfb9d1a91",
+      "members": [
+        {
+          "user_id": "usr_80ddfb9d1a91",
+          "username": "fotografo_teste",
+          "name": "Fotógrafo Teste",
+          "avatar_url": "https://api.dicebear.com/7.x/initials/svg?seed=Fotógrafo Teste&backgroundColor=2563eb",
+          "role": "owner",
+          "joined_at": "2026-08-24T00:22:21.167057"
+        }
+      ],
+      "created_at": "2026-08-24T00:22:21.167089"
+    }
+  },
+  "presets": {
+    "preset_luz_quente": {
+      "id": "preset_luz_quente",
+      "team_id": "global",
+      "name": "Luz Quente Natural (Equipe)",
+      "description": "Tons de pele acolhedores e calor orgânico para louvor e palavra.",
+      "category": "Louvor",
+      "params": {
+        "exposure_compensation": 0.2,
+        "temperature_kelvin": 5700,
+        "tint": -2.0,
+        "contrast": 1.06,
+        "highlights_recovery": 0.45,
+        "shadows_lift: 0.40": 0.4,
+        "saturation": 1.04,
+        "vibrance": 1.08,
+        "chromatic_aberration_fix": 0.5,
+        "led_clipping_restoration": 0.6,
+        "stage_led_tint_suppression": 0.45,
+        "vignette_correction": 0.35,
+        "selective_denoise": 0.28,
+        "skin_tone_protection_strength": 0.92,
+        "f_stop_simulation": 2.4,
+        "bokeh_smoothness": 0.75,
+        "subject_microcontrast": 0.8,
+        "target_aspect_ratio": "4:5"
+      },
+      "created_by_name": "Sistema",
+      "created_at": "2026-08-24T00:22:21.144421"
+    },
+    "preset_clean_neutro": {
+      "id": "preset_clean_neutro",
+      "team_id": "global",
+      "name": "Clean / Moderno Neutro (Equipe)",
+      "description": "Equilíbrio de estúdio limpo com atenuação precisa de reflexos de LED.",
+      "category": "Pregação",
+      "params": {
+        "exposure_compensation": 0.1,
+        "temperature_kelvin": 5400,
+        "tint": 0.0,
+        "contrast": 1.1,
+        "highlights_recovery": 0.55,
+        "shadows_lift": 0.35,
+        "saturation": 0.98,
+        "vibrance": 1.02,
+        "chromatic_aberration_fix": 0.65,
+        "led_clipping_restoration": 0.7,
+        "stage_led_tint_suppression": 0.55,
+        "vignette_correction": 0.4,
+        "selective_denoise": 0.35,
+        "skin_tone_protection_strength": 0.88,
+        "f_stop_simulation": 2.8,
+        "bokeh_smoothness": 0.75,
+        "subject_microcontrast": 0.75,
+        "target_aspect_ratio": "4:5"
+      },
+      "created_by_name": "Sistema",
+      "created_at": "2026-08-24T00:22:21.144441"
+    },
+    "preset_324b302245": {
+      "id": "preset_324b302245",
+      "team_id": "team_ff586983c5",
+      "name": "Moody Jovens Pro",
+      "description": "Preset quente com alto contraste",
+      "category": "Louvor",
+      "params": {
+        "exposure_compensation": 0.15,
+        "temperature_kelvin": 5800,
+        "tint": 0.0,
+        "contrast": 1.18,
+        "highlights_recovery": 0.45,
+        "shadows_lift": 0.35,
+        "saturation": 1.0,
+        "vibrance": 1.05,
+        "chromatic_aberration_fix": 0.5,
+        "led_clipping_restoration": 0.6,
+        "stage_led_tint_suppression": 0.45,
+        "vignette_correction": 0.35,
+        "selective_denoise": 0.3,
+        "skin_tone_protection_strength": 0.88,
+        "f_stop_simulation": 2.0,
+        "bokeh_smoothness": 0.75,
+        "subject_microcontrast": 0.75,
+        "target_aspect_ratio": "4:5"
+      },
+      "created_by_name": "Fotógrafo Teste",
+      "created_at": "2026-08-24T00:22:21.164347"
+    }
+  },
+  "projects": {}
+}

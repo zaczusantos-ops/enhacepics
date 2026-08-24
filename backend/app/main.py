@@ -1,42 +1,34 @@
 """
-ChurchPhoto Pro - FastAPI Application & REST API Endpoints with Authentication
+ChurchPhoto Pro - Main FastAPI Application
+Includes Authentication, Team Workspaces, Shared Presets, Culling Funnel & DSLR Processing.
 """
 
-import time
-import json
-from typing import Optional, List, Dict
-from fastapi import FastAPI, UploadFile, File, Form, Header, HTTPException, Query, Depends, status
+from typing import List, Optional
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Depends, Header
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, Response, FileResponse
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from fastapi.staticfiles import StaticFiles
-from pathlib import Path
+from fastapi.responses import JSONResponse
 
 from .config import settings
-from .schemas.colorimetry import (
-    ColorimetryParameters,
-    AnalysisResponse,
-    ProcessedImageMetadata,
-    FullPipelineResponse,
-)
-from .schemas.auth import (
-    GoogleLoginRequest,
-    EmailLoginRequest,
-    EmailRegisterRequest,
-    UserProfile,
-    AuthResponse,
-)
-from .services.gemini_analyzer import GeminiColorimetryAnalyzer
 from .services.auth_service import auth_service
-from .engine.processor import ChurchPhotoProcessor
+from .services.db_service import db_service
+from .services.culling_service import culling_service
+from .services.dslr_processor import dslr_processor
+from .services.gemini_analyzer import gemini_analyzer
+from .schemas.photo import PhotoAnalysisResponse, BatchProcessingResponse
+from .schemas.enterprise import (
+    UserRegisterRequest, UserLoginRequest, AuthTokenResponse, UserPublicProfile,
+    TeamCreateRequest, TeamAddMemberRequest, TeamResponse,
+    TeamPresetCreateRequest, TeamPresetResponse,
+    PhotoCandidate, CullingDeduplicateResponse, CullingRankingResponse, SmartCropResponse
+)
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
-    version=settings.VERSION,
-    description="Sistema de Pós-Processamento Fotográfico para Cultos e Eventos de Igreja",
+    description="Motor Profissional de Curadoria, Equipes e Edição DSLR para Fotos de Culto",
+    version="3.3.0"
 )
 
-# Enable CORS for Next.js frontend and local dev environments
+# Enable CORS for frontend clients (GitHub Pages, localhost, Render)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -45,291 +37,150 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Security bearer scheme
-security = HTTPBearer(auto_error=False)
 
-# Initialize singletons
-analyzer = GeminiColorimetryAnalyzer()
-processor = ChurchPhotoProcessor()
-
-# Built-in Church Event Presets
-CHURCH_PRESETS = [
-    {
-        "id": "luz_quente_natural",
-        "name": "Luz Quente Natural",
-        "description": "Tons de pele acolhedores e calor orgânico para louvor e palavra.",
-        "params": ColorimetryParameters(
-            exposure_compensation=0.20,
-            temperature_kelvin=5700,
-            tint=-2.0,
-            contrast=1.06,
-            highlights_recovery=0.45,
-            shadows_lift=0.40,
-            saturation=1.04,
-            vibrance=1.08,
-            chromatic_aberration_fix=0.50,
-            vignette_correction=0.35,
-            lens_distortion_correction=0.20,
-            led_clipping_restoration=0.60,
-            stage_led_tint_suppression=0.45,
-            selective_denoise=0.28,
-            skin_tone_protection_strength=0.92,
-            f_stop_simulation=2.4,
-            bokeh_smoothness: 0.75,
-            subject_microcontrast: 0.80,
-            scene_moment="Louvor / Palco",
-            analysis_summary="Equilíbrio de calor humano com proteção de pele e profundidade f/2.4."
-        )
-    },
-    {
-        "id": "clean_moderno_neutro",
-        "name": "Clean / Moderno Neutro",
-        "description": "Balanço de estúdio limpo com atenuação precisa de reflexos de LED.",
-        "params": ColorimetryParameters(
-            exposure_compensation=0.10,
-            temperature_kelvin=5400,
-            tint=0.0,
-            contrast=1.10,
-            highlights_recovery=0.55,
-            shadows_lift=0.35,
-            saturation=0.98,
-            vibrance=1.02,
-            chromatic_aberration_fix=0.65,
-            vignette_correction=0.40,
-            lens_distortion_correction=0.20,
-            led_clipping_restoration=0.70,
-            stage_led_tint_suppression=0.55,
-            selective_denoise=0.35,
-            skin_tone_protection_strength=0.88,
-            f_stop_simulation=2.8,
-            bokeh_smoothness: 0.75,
-            subject_microcontrast: 0.75,
-            scene_moment="Celebração / LEDs Cênicos",
-            analysis_summary="Balanço neutro de estúdio com alta fidelidade de cor."
-        )
-    },
-    {
-        "id": "moody_contraste_cenico",
-        "name": "Moody / Contraste Cênico",
-        "description": "Visual cinematográfico com sombras profundas e isolamento cênico.",
-        "params": ColorimetryParameters(
-            exposure_compensation=-0.05,
-            temperature_kelvin=5100,
-            tint=4.0,
-            contrast=1.22,
-            highlights_recovery=0.65,
-            shadows_lift=0.25,
-            saturation=1.06,
-            vibrance=1.12,
-            chromatic_aberration_fix=0.55,
-            vignette_correction=0.20,
-            lens_distortion_correction=0.20,
-            led_clipping_restoration=0.60,
-            stage_led_tint_suppression=0.40,
-            selective_denoise=0.25,
-            skin_tone_protection_strength=0.85,
-            f_stop_simulation=1.8,
-            bokeh_smoothness: 0.85,
-            subject_microcontrast: 0.90,
-            scene_moment="Louvor Intimista / Pouca Luz",
-            analysis_summary="Visual cinematográfico com profundidade bokeh f/1.8."
-        )
-    }
-]
+# Dependency to extract optional user from JWT Bearer Token
+def get_current_user_optional(authorization: Optional[str] = Header(None)) -> Optional[dict]:
+    if not authorization or not authorization.startswith("Bearer "):
+        return None
+    token = authorization.split(" ", 1)[1]
+    return db_service.verify_jwt_token(token)
 
 
-# Dependency to get currently authenticated user (optional)
-async def get_optional_user(credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)) -> Optional[UserProfile]:
-    if credentials and credentials.credentials:
-        payload = auth_service.verify_jwt_token(credentials.credentials)
-        if payload and "sub" in payload:
-            return auth_service.get_user_by_id(payload["sub"])
-    return None
-
+# ================= HEALTH & STATUS =================
 
 @app.get("/api/health")
 async def health_check():
-    """Health check and status API."""
     return {
         "status": "healthy",
-        "service": settings.PROJECT_NAME,
-        "version": settings.VERSION,
-        "gemini_configured": bool(settings.GEMINI_API_KEY and len(settings.GEMINI_API_KEY) > 10),
-        "model": settings.GEMINI_MODEL,
-        "auth_enabled": True,
+        "version": "3.3.0",
+        "gemini_api_configured": bool(settings.GEMINI_API_KEY),
+        "engine": "DSLR 3.0 LUT Accelerated + 3-Stage Culling Funnel"
     }
 
 
-# =========================================================================
-# AUTHENTICATION ENDPOINTS (Google OAuth & Email/Password)
-# =========================================================================
+# ================= AUTHENTICATION & USERS =================
 
-@app.post("/api/auth/google", response_model=AuthResponse)
-async def auth_google(request: GoogleLoginRequest):
-    """
-    Login / Registration using Google Identity Services (GIS) Credential Token.
-    """
+@app.post("/api/auth/register", response_model=AuthTokenResponse)
+async def register(req: UserRegisterRequest):
     try:
-        response = auth_service.authenticate_google(request)
-        return response
+        return db_service.register_user(req)
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e))
 
 
-@app.post("/api/auth/register", response_model=AuthResponse)
-async def auth_register_email(request: EmailRegisterRequest):
-    """
-    Register new user with email and password.
-    """
+@app.post("/api/auth/login", response_model=AuthTokenResponse)
+async def login(req: UserLoginRequest):
     try:
-        response = auth_service.register_email(request)
-        return response
+        return db_service.login_user(req)
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(status_code=401, detail=str(e))
 
 
-@app.post("/api/auth/login", response_model=AuthResponse)
-async def auth_login_email(request: EmailLoginRequest):
-    """
-    Login with email and password.
-    """
-    try:
-        response = auth_service.login_email(request)
-        return response
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
-
-
-@app.get("/api/auth/me", response_model=UserProfile)
-async def auth_get_me(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    """
-    Get profile of the currently logged-in user.
-    """
-    if not credentials or not credentials.credentials:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token não fornecido.")
-
-    payload = auth_service.verify_jwt_token(credentials.credentials)
-    if not payload or "sub" not in payload:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token inválido ou expirado.")
-
-    user = auth_service.get_user_by_id(payload["sub"])
+@app.get("/api/auth/me")
+async def get_me(user: Optional[dict] = Depends(get_current_user_optional)):
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuário não encontrado.")
-
+        raise HTTPException(status_code=401, detail="Não autenticado.")
     return user
 
 
-# =========================================================================
-# PRESETS & IMAGE PROCESSING ENDPOINTS
-# =========================================================================
-
-@app.get("/api/presets")
-async def get_presets():
-    """Returns curated church photo presets."""
-    return {"presets": CHURCH_PRESETS}
+@app.get("/api/users/search", response_model=List[UserPublicProfile])
+async def search_users(q: str):
+    return db_service.search_users_by_username(q)
 
 
-@app.post("/api/analyze-and-process", response_model=FullPipelineResponse)
-async def analyze_and_process_photo(
+# ================= TEAMS & WORKSPACES =================
+
+@app.get("/api/teams", response_model=List[TeamResponse])
+async def list_teams(user: Optional[dict] = Depends(get_current_user_optional)):
+    user_id = user.get("sub") if user else "guest"
+    return db_service.get_user_teams(user_id)
+
+
+@app.post("/api/teams", response_model=TeamResponse)
+async def create_team(req: TeamCreateRequest, user: Optional[dict] = Depends(get_current_user_optional)):
+    user_id = user.get("sub") if user else "guest"
+    return db_service.create_team(user_id, req)
+
+
+@app.post("/api/teams/{team_id}/members", response_model=TeamResponse)
+async def add_team_member(team_id: str, req: TeamAddMemberRequest):
+    try:
+        return db_service.add_member_to_team(team_id, req.username, req.role)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+
+# ================= TEAM SHARED PRESETS =================
+
+@app.get("/api/teams/{team_id}/presets", response_model=List[TeamPresetResponse])
+async def list_team_presets(team_id: str):
+    return db_service.get_team_presets(team_id)
+
+
+@app.post("/api/teams/{team_id}/presets", response_model=TeamPresetResponse)
+async def create_team_preset(
+    team_id: str,
+    req: TeamPresetCreateRequest,
+    user: Optional[dict] = Depends(get_current_user_optional)
+):
+    creator = user.get("name") if user else "Voluntário"
+    return db_service.create_team_preset(team_id, creator, req)
+
+
+# ================= CULLING FUNNEL (3 STAGES) =================
+
+@app.post("/api/culling/deduplicate", response_model=CullingDeduplicateResponse)
+async def culling_deduplicate(photos: List[PhotoCandidate]):
+    """
+    Phase 1: Groups burst / sequence shots and elects the Champion (Best Shot).
+    """
+    return culling_service.deduplicate_and_group(photos)
+
+
+@app.post("/api/culling/ranking", response_model=CullingRankingResponse)
+async def culling_ranking(photos: List[PhotoCandidate]):
+    """
+    Phase 2: Ranks unique photos and selects the Instagram Top 20 for carousels.
+    """
+    return culling_service.rank_top_photos(photos)
+
+
+@app.get("/api/culling/smart-crop", response_model=SmartCropResponse)
+async def culling_smart_crop(photo_id: str, width: int = 1920, height: int = 1080):
+    """
+    Phase 3: Computes optimal 4:5 vertical and 1:1 square crop coordinates.
+    """
+    return culling_service.calculate_smart_crop(photo_id, width, height)
+
+
+# ================= DSLR IMAGE PROCESSING =================
+
+@app.post("/api/analyze-and-process")
+async def analyze_and_process(
     file: UploadFile = File(...),
     output_format: str = Form("JPEG"),
-    output_quality: int = Form(92),
-    x_gemini_key: Optional[str] = Header(None, alias="X-Gemini-Key"),
-    current_user: Optional[UserProfile] = Depends(get_optional_user),
+    output_quality: int = Form(90),
+    user: Optional[dict] = Depends(get_current_user_optional)
 ):
-    """
-    Complete hybrid pipeline:
-    1. Receives uploaded church photo (JPEG, PNG, RAW).
-    2. Sends to Gemini API for structured JSON colorimetric analysis.
-    3. Applies deterministic Python image processing engine (OpenCV/Pillow/NumPy).
-    4. Returns processed image base64, before/after preview, telemetry metadata and applied parameters.
-    """
-    try:
-        contents = await file.read()
-        if len(contents) == 0:
-            raise HTTPException(status_code=400, detail="Arquivo de imagem vazio.")
+    contents = await file.read()
+    if not contents:
+        raise HTTPException(status_code=400, detail="Arquivo vazio.")
 
-        # Step 1: Gemini Analysis
-        gemini_key = x_gemini_key or settings.GEMINI_API_KEY
-        params = analyzer.analyze_image(
-            image_bytes=contents,
-            mime_type=file.content_type or "image/jpeg",
-            api_key_override=gemini_key
-        )
+    # 1. AI Analysis
+    analysis = gemini_analyzer.analyze_church_scene(contents, file.filename or "culto.jpg")
 
-        # Step 2: Deterministic Image Processing
-        _, processed_b64, metadata, orig_b64 = processor.process(
-            image_bytes=contents,
-            params=params,
-            filename=file.filename or "photo.jpg",
-            output_format=output_format,
-            output_quality=output_quality,
-            include_original_preview=True
-        )
+    # 2. DSLR Processing
+    result = dslr_processor.process_image(
+        image_bytes=contents,
+        params=analysis,
+        output_format=output_format,
+        output_quality=output_quality
+    )
 
-        if current_user:
-            auth_service.increment_processed_count(current_user.id)
-
-        return FullPipelineResponse(
-            success=True,
-            image_base64=processed_b64,
-            original_base64=orig_b64,
-            metadata=metadata,
-            analysis=params
-        )
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Erro no processamento da imagem: {str(e)}")
-
-
-@app.post("/api/process-manual", response_model=FullPipelineResponse)
-async def process_manual_adjustments(
-    file: UploadFile = File(...),
-    parameters_json: str = Form(...),
-    output_format: str = Form("JPEG"),
-    output_quality: int = Form(92),
-):
-    """
-    Reprocesses the photo with custom/fine-tuned parameters from user sliders in real-time.
-    """
-    try:
-        contents = await file.read()
-        if len(contents) == 0:
-            raise HTTPException(status_code=400, detail="Arquivo de imagem vazio.")
-
-        # Parse parameters JSON
-        params_dict = json.loads(parameters_json)
-        params = ColorimetryParameters(**params_dict)
-
-        _, processed_b64, metadata, orig_b64 = processor.process(
-            image_bytes=contents,
-            params=params,
-            filename=file.filename or "photo.jpg",
-            output_format=output_format,
-            output_quality=output_quality,
-            include_original_preview=True
-        )
-
-        return FullPipelineResponse(
-            success=True,
-            image_base64=processed_b64,
-            original_base64=orig_b64,
-            metadata=metadata,
-            analysis=params
-        )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erro no reprocessamento: {str(e)}")
-
-
-# Serve static web frontend if available
-static_dir = Path(__file__).resolve().parent.parent / "static"
-if static_dir.exists():
-    app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
-
-    @app.get("/")
-    async def serve_index():
-        index_file = static_dir / "index.html"
-        if index_file.exists():
-            return FileResponse(index_file)
-        return {"message": "ChurchPhoto Pro API Backend está operando com sucesso."}
+    return {
+        "success": True,
+        "image_base64": result.image_base64,
+        "original_base64": result.original_base64,
+        "analysis": analysis.dict(),
+        "metadata": result.metadata.dict(),
+    }
