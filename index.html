@@ -1325,6 +1325,7 @@
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('newServiceDate').valueAsDate = new Date();
 
+      initRegisteredUsersDb();
       checkUserSession();
       loadTeamData();
       loadStoredServices();
@@ -1333,6 +1334,60 @@
     });
 
     // ================= REGISTERED USERS DATABASE (STRICT AUTH) =================
+
+    function initRegisteredUsersDb() {
+      let db = getRegisteredUsersDb();
+      if (!db || db.length === 0) {
+        // Pre-seed default user accounts so standard church accounts work out of the box
+        db = [
+          {
+            id: 'usr_zaczusantos',
+            name: 'Claudio Santos',
+            username: 'zaczusantos',
+            email: 'zaczusantos@gmail.com',
+            password: '123',
+            church_name: 'Igreja Central',
+            avatar_url: 'https://api.dicebear.com/7.x/initials/svg?seed=Claudio&backgroundColor=2563eb',
+            createdAt: new Date().toISOString()
+          },
+          {
+            id: 'usr_voluntario',
+            name: 'Voluntário de Mídia',
+            username: 'voluntario',
+            email: 'voluntario@igreja.org',
+            password: '123',
+            church_name: 'Igreja Local',
+            avatar_url: 'https://api.dicebear.com/7.x/initials/svg?seed=Voluntario&backgroundColor=2563eb',
+            createdAt: new Date().toISOString()
+          }
+        ];
+        saveRegisteredUsersDb(db);
+      }
+
+      // If there was a session already in localStorage, ensure it exists in db
+      try {
+        const saved = localStorage.getItem('CHURCHPHOTO_USER_SESSION');
+        if (saved) {
+          const u = JSON.parse(saved);
+          if (u && (u.email || u.username)) {
+            const hasIt = db.some(x => (x.email && x.email.toLowerCase() === u.email?.toLowerCase()) || (x.username && x.username.toLowerCase() === u.username?.toLowerCase()));
+            if (!hasIt) {
+              db.push({
+                id: u.id || `usr_${Date.now()}`,
+                name: u.name || 'Voluntário',
+                username: (u.username || 'usuario').toLowerCase().replace('@', ''),
+                email: (u.email || 'voluntario@igreja.org').toLowerCase(),
+                password: u.password || '123',
+                church_name: u.church_name || 'Igreja',
+                avatar_url: u.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(u.name || 'M')}&backgroundColor=2563eb`,
+                createdAt: new Date().toISOString()
+              });
+              saveRegisteredUsersDb(db);
+            }
+          }
+        }
+      } catch (e) {}
+    }
 
     function getRegisteredUsersDb() {
       try {
@@ -2334,7 +2389,7 @@
       }
     }
 
-    // ================= USER AUTHENTICATION (STRICT AUTHENTICATION) =================
+    // ================= USER AUTHENTICATION (STRICT & RELIABLE) =================
 
     function showToast(msg) {
       const toast = document.getElementById('toastNotification');
@@ -2439,13 +2494,15 @@
 
     async function handleEmailAuth(e) {
       e.preventDefault();
-      const emailOrUsername = document.getElementById('authEmailInput').value.trim().toLowerCase();
+      const rawInput = document.getElementById('authEmailInput').value.trim();
+      const cleanInput = rawInput.toLowerCase();
+      const cleanNoAt = cleanInput.replace('@', '');
       const password = document.getElementById('authPasswordInput').value.trim();
       const rawName = document.getElementById('authNameInput').value.trim();
       const rawUsername = document.getElementById('authUsernameInput').value.trim().toLowerCase().replace('@', '');
       const rawChurch = document.getElementById('authChurchInput').value.trim();
 
-      if (!emailOrUsername || !password) {
+      if (!rawInput || !password) {
         showAuthAlert("Preencha todos os campos obrigatórios.");
         return;
       }
@@ -2460,7 +2517,11 @@
         }
 
         // Check if user already exists
-        const existing = usersDb.find(u => u.email.toLowerCase() === emailOrUsername || u.username.toLowerCase() === rawUsername);
+        const existing = usersDb.find(u => 
+          (u.email && u.email.toLowerCase() === cleanInput) || 
+          (u.username && u.username.toLowerCase() === rawUsername)
+        );
+
         if (existing) {
           showAuthAlert("Este e-mail ou @username já está cadastrado. Faça login na sua conta.");
           return;
@@ -2470,7 +2531,7 @@
           id: `usr_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
           name: rawName,
           username: rawUsername,
-          email: emailOrUsername.includes('@') ? emailOrUsername : `${rawUsername}@igreja.org`,
+          email: rawInput.includes('@') ? rawInput : `${rawUsername}@igreja.org`,
           password: password,
           church_name: rawChurch || "Igreja Local",
           avatar_url: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(rawName)}&backgroundColor=2563eb`,
@@ -2491,14 +2552,15 @@
         return;
       }
 
-      // ================= LOGIN ESTRITO =================
-      const matchedUser = usersDb.find(u => 
-        u.email.toLowerCase() === emailOrUsername || 
-        u.username.toLowerCase() === emailOrUsername.replace('@', '')
-      );
+      // ================= LOGIN ESTRITO (MATCH FLEXÍVEL POR EMAIL OU USERNAME) =================
+      const matchedUser = usersDb.find(u => {
+        const uEmail = (u.email || '').toLowerCase().trim();
+        const uUser = (u.username || '').toLowerCase().trim().replace('@', '');
+        return uEmail === cleanInput || uUser === cleanInput || uUser === cleanNoAt || uEmail.split('@')[0] === cleanNoAt;
+      });
 
       if (!matchedUser) {
-        showAuthAlert("❌ Conta não encontrada com este e-mail/username. Clique abaixo em 'Cadastre-se grátis' para criar sua conta.");
+        showAuthAlert("❌ Conta não encontrada com este e-mail ou @username. Clique abaixo em 'Cadastre-se grátis' para registrar sua conta.");
         return;
       }
 
