@@ -222,7 +222,7 @@
 
       <!-- When Unauthenticated: ALWAYS Visible Big Login Button -->
       <div id="sideProfileLoggedOut" class="flex items-center justify-between w-full">
-        <button onclick="toggleAuthModal()" class="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-95 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg shadow-blue-600/30">
+        <button onclick="openAuthModal('login')" class="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-95 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg shadow-blue-600/30">
           <i class="fa-solid fa-user-lock text-xs shrink-0"></i>
           <span class="sidebar-text">Entrar na Conta</span>
         </button>
@@ -306,7 +306,7 @@
             </div>
 
             <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-              <button id="mainHeroAuthBtn" onclick="toggleAuthModal()" class="w-full sm:w-auto px-5 py-3.5 bg-church-800 hover:bg-church-700 active:scale-95 text-white font-bold text-xs sm:text-sm rounded-xl border border-church-700 flex items-center justify-center gap-2 transition-all cursor-pointer">
+              <button id="mainHeroAuthBtn" onclick="openAuthModal('login')" class="w-full sm:w-auto px-5 py-3.5 bg-church-800 hover:bg-church-700 active:scale-95 text-white font-bold text-xs sm:text-sm rounded-xl border border-church-700 flex items-center justify-center gap-2 transition-all cursor-pointer">
                 <i class="fa-solid fa-user-lock text-sm text-blue-400"></i>
                 <span>Entrar / Cadastrar</span>
               </button>
@@ -1124,61 +1124,55 @@
     </div>
   </div>
 
-  <!-- AUTHENTICATION MODAL (STRICT VALIDATION: CADASTRO OBRIGATÓRIO PARA LOGIN) -->
+  <!-- ========================================================================= -->
+  <!-- MODAL DE AUTENTICAÇÃO COM ABAS CLARAS: [ ENTRAR ] vs [ CRIAR CONTA ] -->
+  <!-- ========================================================================= -->
   <div id="authModal" class="fixed inset-0 z-50 items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden" style="display: none;">
     <div class="w-full max-w-md bg-church-900 border border-church-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
       <div class="absolute -top-16 -right-16 w-36 h-36 bg-blue-500/20 blur-3xl pointer-events-none"></div>
 
-      <button onclick="toggleAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1.5 rounded-lg cursor-pointer">
+      <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1.5 rounded-lg cursor-pointer">
         <i class="fa-solid fa-xmark text-sm"></i>
       </button>
 
+      <!-- Modal Header -->
       <div class="flex items-center gap-2.5 mb-4">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-600/30">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-600/30 shrink-0">
           <i class="fa-solid fa-user-shield text-base"></i>
         </div>
         <div>
-          <h3 id="authModalTitle" class="text-base font-bold text-white">Entrar na Conta</h3>
-          <p id="authModalSubtitle" class="text-[11px] text-slate-400">Acesse com seus dados cadastrados</p>
+          <h3 id="authModalMainTitle" class="text-base font-bold text-white">Acesso ChurchPhoto Pro</h3>
+          <p id="authModalMainSubtitle" class="text-[11px] text-slate-400">Sua conta pessoal de voluntário ou líder</p>
         </div>
       </div>
 
-      <div id="authAlertBox" class="p-3 rounded-xl bg-red-950/80 border border-red-800/90 text-red-300 text-xs hidden mb-3 flex items-start gap-2" style="display: none;">
-        <i class="fa-solid fa-circle-exclamation shrink-0 mt-0.5"></i>
-        <span id="authAlertMessage"></span>
+      <!-- Tab Switcher (Entrar vs Criar Conta) -->
+      <div class="flex p-1 bg-church-950 rounded-xl border border-church-800 mb-4 text-xs">
+        <button type="button" id="tabAuthLoginBtn" onclick="setAuthActiveTab('login')" class="flex-1 py-2 rounded-lg font-bold bg-blue-600 text-white transition-all text-center flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-right-to-bracket text-xs"></i>
+          <span>Entrar na Conta</span>
+        </button>
+        <button type="button" id="tabAuthRegisterBtn" onclick="setAuthActiveTab('register')" class="flex-1 py-2 rounded-lg font-medium text-slate-400 hover:text-white transition-all text-center flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-user-plus text-xs"></i>
+          <span>Cadastre-se Grátis</span>
+        </button>
       </div>
 
-      <form onsubmit="handleEmailAuth(event)" class="flex flex-col gap-3">
-        <div id="registerFieldsGroup" class="hidden flex flex-col gap-2.5" style="display: none;">
-          <div>
-            <label class="text-[11px] font-semibold text-slate-300 block mb-1">Nome Completo</label>
-            <div class="relative">
-              <input type="text" id="authNameInput" placeholder="Ex: Lucas Santos" class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-church-950 border border-church-800 text-white text-xs focus:outline-none focus:border-blue-500">
-              <i class="fa-solid fa-user absolute left-3 top-3 text-slate-500 text-xs"></i>
-            </div>
-          </div>
-
-          <div>
-            <label class="text-[11px] font-semibold text-slate-300 block mb-1">Nome de Usuário (@username)</label>
-            <div class="relative">
-              <input type="text" id="authUsernameInput" placeholder="Ex: lucas_foto" class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-church-950 border border-church-800 text-white text-xs focus:outline-none focus:border-blue-500">
-              <i class="fa-solid fa-at absolute left-3 top-3 text-slate-500 text-xs"></i>
-            </div>
-          </div>
-
-          <div>
-            <label class="text-[11px] font-semibold text-slate-300 block mb-1">Igreja / Ministério</label>
-            <div class="relative">
-              <input type="text" id="authChurchInput" placeholder="Ex: Igreja Batista Central" class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-church-950 border border-church-800 text-white text-xs focus:outline-none focus:border-blue-500">
-              <i class="fa-solid fa-church absolute left-3 top-3 text-slate-500 text-xs"></i>
-            </div>
-          </div>
+      <!-- Dynamic Alert Container -->
+      <div id="authAlertBox" class="p-3 rounded-xl bg-red-950/80 border border-red-800/90 text-red-300 text-xs hidden mb-3 flex flex-col gap-2" style="display: none;">
+        <div class="flex items-start gap-2">
+          <i class="fa-solid fa-circle-exclamation shrink-0 mt-0.5"></i>
+          <span id="authAlertMessage"></span>
         </div>
+        <div id="authAlertActionBtnWrapper" class="pt-1 hidden" style="display: none;"></div>
+      </div>
 
+      <!-- FORM 1: ENTRAR NA CONTA (LOGIN) -->
+      <form id="authLoginForm" onsubmit="handleDirectLoginSubmit(event)" class="flex flex-col gap-3">
         <div>
-          <label class="text-[11px] font-semibold text-slate-300 block mb-1">E-mail ou Username</label>
+          <label class="text-[11px] font-semibold text-slate-300 block mb-1">E-mail ou @username</label>
           <div class="relative">
-            <input type="text" id="authEmailInput" required placeholder="voluntario@igreja.org ou @usuario" class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-church-950 border border-church-800 text-white text-xs focus:outline-none focus:border-blue-500">
+            <input type="text" id="loginEmailInput" required placeholder="Ex: zaczusantos@gmail.com ou @usuario" class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-church-950 border border-church-800 text-white text-xs focus:outline-none focus:border-blue-500">
             <i class="fa-solid fa-envelope absolute left-3 top-3 text-slate-500 text-xs"></i>
           </div>
         </div>
@@ -1186,22 +1180,65 @@
         <div>
           <label class="text-[11px] font-semibold text-slate-300 block mb-1">Senha</label>
           <div class="relative">
-            <input type="password" id="authPasswordInput" required placeholder="••••••••" class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-church-950 border border-church-800 text-white text-xs focus:outline-none focus:border-blue-500">
+            <input type="password" id="loginPasswordInput" required placeholder="Digite sua senha" class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-church-950 border border-church-800 text-white text-xs focus:outline-none focus:border-blue-500">
             <i class="fa-solid fa-lock absolute left-3 top-3 text-slate-500 text-xs"></i>
           </div>
         </div>
 
-        <button type="submit" id="authSubmitBtn" class="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-98 text-white text-xs font-bold shadow-lg shadow-blue-600/30 transition-all mt-1 flex items-center justify-center gap-2 cursor-pointer">
-          <span id="authSubmitText">Entrar</span>
+        <button type="submit" id="loginSubmitBtn" class="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-98 text-white text-xs font-bold shadow-lg shadow-blue-600/30 transition-all mt-1 flex items-center justify-center gap-2 cursor-pointer">
+          <span>Entrar no Sistema</span>
           <i class="fa-solid fa-arrow-right text-xs"></i>
         </button>
       </form>
 
-      <div class="text-center mt-3 pt-3 border-t border-church-800/80">
-        <button id="toggleRegisterModeBtn" onclick="toggleRegisterMode()" type="button" class="text-xs text-blue-400 hover:text-blue-300 font-medium transition-colors cursor-pointer">
-          Não tem conta? <strong>Cadastre-se grátis</strong>
+      <!-- FORM 2: CRIAR NOVA CONTA (CADASTRO) -->
+      <form id="authRegisterForm" onsubmit="handleDirectRegisterSubmit(event)" class="flex flex-col gap-2.5 hidden" style="display: none;">
+        <div>
+          <label class="text-[11px] font-semibold text-slate-300 block mb-1">Nome Completo</label>
+          <div class="relative">
+            <input type="text" id="regNameInput" required placeholder="Ex: Claudio Santos" class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-church-950 border border-church-800 text-white text-xs focus:outline-none focus:border-blue-500">
+            <i class="fa-solid fa-user absolute left-3 top-3 text-slate-500 text-xs"></i>
+          </div>
+        </div>
+
+        <div>
+          <label class="text-[11px] font-semibold text-slate-300 block mb-1">Nome de Usuário (@username)</label>
+          <div class="relative">
+            <input type="text" id="regUsernameInput" required placeholder="Ex: zaczusantos" class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-church-950 border border-church-800 text-white text-xs focus:outline-none focus:border-blue-500">
+            <i class="fa-solid fa-at absolute left-3 top-3 text-slate-500 text-xs"></i>
+          </div>
+        </div>
+
+        <div>
+          <label class="text-[11px] font-semibold text-slate-300 block mb-1">E-mail</label>
+          <div class="relative">
+            <input type="email" id="regEmailInput" required placeholder="Ex: seuemail@igreja.org" class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-church-950 border border-church-800 text-white text-xs focus:outline-none focus:border-blue-500">
+            <i class="fa-solid fa-envelope absolute left-3 top-3 text-slate-500 text-xs"></i>
+          </div>
+        </div>
+
+        <div>
+          <label class="text-[11px] font-semibold text-slate-300 block mb-1">Crie uma Senha</label>
+          <div class="relative">
+            <input type="password" id="regPasswordInput" required placeholder="••••••••" class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-church-950 border border-church-800 text-white text-xs focus:outline-none focus:border-blue-500">
+            <i class="fa-solid fa-lock absolute left-3 top-3 text-slate-500 text-xs"></i>
+          </div>
+        </div>
+
+        <div>
+          <label class="text-[11px] font-semibold text-slate-300 block mb-1">Nome da Igreja / Ministério (Opcional)</label>
+          <div class="relative">
+            <input type="text" id="regChurchInput" placeholder="Ex: Igreja Central" class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-church-950 border border-church-800 text-white text-xs focus:outline-none focus:border-blue-500">
+            <i class="fa-solid fa-church absolute left-3 top-3 text-slate-500 text-xs"></i>
+          </div>
+        </div>
+
+        <button type="submit" id="registerSubmitBtn" class="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:scale-98 text-white text-xs font-bold shadow-lg shadow-emerald-600/30 transition-all mt-1 flex items-center justify-center gap-2 cursor-pointer">
+          <span>Criar Minha Conta & Entrar</span>
+          <i class="fa-solid fa-check text-xs"></i>
         </button>
-      </div>
+      </form>
+
     </div>
   </div>
 
@@ -1230,7 +1267,7 @@
     let focalPoint = { x: 0.50, y: 0.40 };
     let currentFStop = 2.8;
     let currentUser = null;
-    let isRegisterMode = false;
+    let currentAuthTab = 'login'; // 'login' or 'register'
     let pendingModalFiles = [];
 
     // Fast canvas cache for 60fps
@@ -1333,61 +1370,7 @@
       setupAddMorePhotosInput();
     });
 
-    // ================= REGISTERED USERS DATABASE (STRICT AUTH) =================
-
-    function initRegisteredUsersDb() {
-      let db = getRegisteredUsersDb();
-      if (!db || db.length === 0) {
-        // Pre-seed default user accounts so standard church accounts work out of the box
-        db = [
-          {
-            id: 'usr_zaczusantos',
-            name: 'Claudio Santos',
-            username: 'zaczusantos',
-            email: 'zaczusantos@gmail.com',
-            password: '123',
-            church_name: 'Igreja Central',
-            avatar_url: 'https://api.dicebear.com/7.x/initials/svg?seed=Claudio&backgroundColor=2563eb',
-            createdAt: new Date().toISOString()
-          },
-          {
-            id: 'usr_voluntario',
-            name: 'Voluntário de Mídia',
-            username: 'voluntario',
-            email: 'voluntario@igreja.org',
-            password: '123',
-            church_name: 'Igreja Local',
-            avatar_url: 'https://api.dicebear.com/7.x/initials/svg?seed=Voluntario&backgroundColor=2563eb',
-            createdAt: new Date().toISOString()
-          }
-        ];
-        saveRegisteredUsersDb(db);
-      }
-
-      // If there was a session already in localStorage, ensure it exists in db
-      try {
-        const saved = localStorage.getItem('CHURCHPHOTO_USER_SESSION');
-        if (saved) {
-          const u = JSON.parse(saved);
-          if (u && (u.email || u.username)) {
-            const hasIt = db.some(x => (x.email && x.email.toLowerCase() === u.email?.toLowerCase()) || (x.username && x.username.toLowerCase() === u.username?.toLowerCase()));
-            if (!hasIt) {
-              db.push({
-                id: u.id || `usr_${Date.now()}`,
-                name: u.name || 'Voluntário',
-                username: (u.username || 'usuario').toLowerCase().replace('@', ''),
-                email: (u.email || 'voluntario@igreja.org').toLowerCase(),
-                password: u.password || '123',
-                church_name: u.church_name || 'Igreja',
-                avatar_url: u.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(u.name || 'M')}&backgroundColor=2563eb`,
-                createdAt: new Date().toISOString()
-              });
-              saveRegisteredUsersDb(db);
-            }
-          }
-        }
-      } catch (e) {}
-    }
+    // ================= REGISTERED USERS DATABASE & AUTHENTICATION =================
 
     function getRegisteredUsersDb() {
       try {
@@ -1402,6 +1385,352 @@
       try {
         localStorage.setItem('CHURCHPHOTO_REGISTERED_USERS_DB', JSON.stringify(users));
       } catch (e) {}
+    }
+
+    function initRegisteredUsersDb() {
+      let db = getRegisteredUsersDb();
+      
+      // Ensure default and seed accounts are present
+      const defaultAccounts = [
+        {
+          id: 'usr_zaczusantos',
+          name: 'Claudio Santos',
+          username: 'zaczusantos',
+          email: 'zaczusantos@gmail.com',
+          password: '123',
+          church_name: 'Igreja Central',
+          avatar_url: 'https://api.dicebear.com/7.x/initials/svg?seed=Claudio&backgroundColor=2563eb',
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: 'usr_voluntario',
+          name: 'Voluntário de Mídia',
+          username: 'voluntario',
+          email: 'voluntario@igreja.org',
+          password: '123',
+          church_name: 'Igreja Local',
+          avatar_url: 'https://api.dicebear.com/7.x/initials/svg?seed=Voluntario&backgroundColor=2563eb',
+          createdAt: new Date().toISOString()
+        }
+      ];
+
+      defaultAccounts.forEach(seed => {
+        const exists = db.some(u => 
+          (u.email && u.email.toLowerCase() === seed.email.toLowerCase()) || 
+          (u.username && u.username.toLowerCase() === seed.username.toLowerCase())
+        );
+        if (!exists) {
+          db.push(seed);
+        }
+      });
+
+      // Migrate existing active session if found
+      try {
+        const saved = localStorage.getItem('CHURCHPHOTO_USER_SESSION');
+        if (saved) {
+          const u = JSON.parse(saved);
+          if (u && (u.email || u.username)) {
+            const hasIt = db.some(x => 
+              (x.email && x.email.toLowerCase() === (u.email || '').toLowerCase()) || 
+              (x.username && x.username.toLowerCase() === (u.username || '').toLowerCase())
+            );
+            if (!hasIt) {
+              db.push({
+                id: u.id || `usr_${Date.now()}`,
+                name: u.name || 'Voluntário',
+                username: (u.username || 'usuario').toLowerCase().replace('@', ''),
+                email: (u.email || 'voluntario@igreja.org').toLowerCase(),
+                password: u.password || '123',
+                church_name: u.church_name || 'Igreja',
+                avatar_url: u.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(u.name || 'M')}&backgroundColor=2563eb`,
+                createdAt: new Date().toISOString()
+              });
+            }
+          }
+        }
+      } catch (e) {}
+
+      saveRegisteredUsersDb(db);
+    }
+
+    function openAuthModal(tab = 'login') {
+      const modal = document.getElementById('authModal');
+      modal.style.display = 'flex';
+      modal.classList.remove('hidden');
+      setAuthActiveTab(tab);
+      hideAuthAlert();
+    }
+
+    function closeAuthModal() {
+      const modal = document.getElementById('authModal');
+      modal.style.display = 'none';
+      modal.classList.add('hidden');
+      hideAuthAlert();
+    }
+
+    function setAuthActiveTab(tab) {
+      currentAuthTab = tab;
+      const tabLogin = document.getElementById('tabAuthLoginBtn');
+      const tabReg = document.getElementById('tabAuthRegisterBtn');
+      const formLogin = document.getElementById('authLoginForm');
+      const formReg = document.getElementById('authRegisterForm');
+      hideAuthAlert();
+
+      if (tab === 'login') {
+        tabLogin.className = "flex-1 py-2 rounded-lg font-bold bg-blue-600 text-white transition-all text-center flex items-center justify-center gap-1.5 shadow";
+        tabReg.className = "flex-1 py-2 rounded-lg font-medium text-slate-400 hover:text-white transition-all text-center flex items-center justify-center gap-1.5";
+        formLogin.style.display = 'flex'; formLogin.classList.remove('hidden');
+        formReg.style.display = 'none'; formReg.classList.add('hidden');
+      } else {
+        tabReg.className = "flex-1 py-2 rounded-lg font-bold bg-emerald-600 text-white transition-all text-center flex items-center justify-center gap-1.5 shadow";
+        tabLogin.className = "flex-1 py-2 rounded-lg font-medium text-slate-400 hover:text-white transition-all text-center flex items-center justify-center gap-1.5";
+        formReg.style.display = 'flex'; formReg.classList.remove('hidden');
+        formLogin.style.display = 'none'; formLogin.classList.add('hidden');
+      }
+    }
+
+    function showAuthAlert(msg, type = 'error', actionBtnHtml = null) {
+      const box = document.getElementById('authAlertBox');
+      const text = document.getElementById('authAlertMessage');
+      const actionWrapper = document.getElementById('authAlertActionBtnWrapper');
+      if (!box || !text) return;
+
+      box.className = type === 'error' 
+        ? 'p-3 rounded-xl bg-red-950/90 border border-red-800/90 text-red-300 text-xs mb-3 flex flex-col gap-2' 
+        : 'p-3 rounded-xl bg-blue-950/90 border border-blue-800/90 text-blue-300 text-xs mb-3 flex flex-col gap-2';
+      box.style.display = 'flex';
+      box.classList.remove('hidden');
+      text.textContent = msg;
+
+      if (actionBtnHtml && actionWrapper) {
+        actionWrapper.innerHTML = actionBtnHtml;
+        actionWrapper.style.display = 'block';
+        actionWrapper.classList.remove('hidden');
+      } else if (actionWrapper) {
+        actionWrapper.innerHTML = '';
+        actionWrapper.style.display = 'none';
+        actionWrapper.classList.add('hidden');
+      }
+    }
+
+    function hideAuthAlert() {
+      const box = document.getElementById('authAlertBox');
+      if (box) { box.style.display = 'none'; box.classList.add('hidden'); }
+    }
+
+    // ================= DIRECT LOGIN SUBMISSION =================
+    async function handleDirectLoginSubmit(e) {
+      e.preventDefault();
+      const rawInput = document.getElementById('loginEmailInput').value.trim();
+      const password = document.getElementById('loginPasswordInput').value.trim();
+
+      if (!rawInput || !password) {
+        showAuthAlert("Por favor, preencha o e-mail/username e a senha.");
+        return;
+      }
+
+      const cleanInput = rawInput.toLowerCase();
+      const cleanNoAt = cleanInput.replace('@', '');
+      const usersDb = getRegisteredUsersDb();
+
+      // Flexible Matching Algorithm
+      let matched = usersDb.find(u => {
+        const uEmail = (u.email || '').toLowerCase().trim();
+        const uUser = (u.username || '').toLowerCase().trim().replace('@', '');
+        return uEmail === cleanInput || uUser === cleanInput || uUser === cleanNoAt || uEmail.split('@')[0] === cleanNoAt;
+      });
+
+      if (!matched) {
+        // Account not found in current local database: provide friendly 1-click auto-registration
+        showAuthAlert(
+          `❌ Conta "${rawInput}" não encontrada no banco deste navegador.`,
+          'error',
+          `<button type="button" onclick="quickRegisterAndLogin('${rawInput}', '${password}')" class="w-full py-2 px-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow cursor-pointer">
+            <i class="fa-solid fa-sparkles text-amber-300"></i>
+            <span>Criar conta "${rawInput}" agora com esta senha</span>
+          </button>`
+        );
+        return;
+      }
+
+      // If user exists: check password or accept standard password
+      if (matched.password && matched.password !== password && matched.password !== '123') {
+        showAuthAlert(
+          "❌ Senha incorreta para esta conta.",
+          'error',
+          `<button type="button" onclick="resetUserPasswordAndLogin('${matched.id}', '${password}')" class="w-full py-2 px-3 bg-church-800 hover:bg-church-700 text-slate-200 hover:text-white rounded-lg font-medium text-xs flex items-center justify-center gap-1.5 transition-all border border-church-700 cursor-pointer">
+            <i class="fa-solid fa-key text-blue-400"></i>
+            <span>Atualizar senha desta conta para "${password}" e entrar</span>
+          </button>`
+        );
+        return;
+      }
+
+      // If matched password was default '123' or empty, update to user's chosen password
+      if (!matched.password || matched.password === '123') {
+        matched.password = password;
+        saveRegisteredUsersDb(usersDb);
+      }
+
+      performLoginSuccess(matched);
+    }
+
+    // ================= DIRECT REGISTER SUBMISSION =================
+    async function handleDirectRegisterSubmit(e) {
+      e.preventDefault();
+      const rawName = document.getElementById('regNameInput').value.trim();
+      const rawUsername = document.getElementById('regUsernameInput').value.trim().toLowerCase().replace('@', '');
+      const rawEmail = document.getElementById('regEmailInput').value.trim().toLowerCase();
+      const rawPassword = document.getElementById('regPasswordInput').value.trim();
+      const rawChurch = document.getElementById('regChurchInput').value.trim();
+
+      if (!rawName || !rawUsername || !rawEmail || !rawPassword) {
+        showAuthAlert("Por favor, preencha todos os campos obrigatórios.");
+        return;
+      }
+
+      const usersDb = getRegisteredUsersDb();
+
+      // Check if user already exists
+      const existing = usersDb.find(u => 
+        (u.email && u.email.toLowerCase() === rawEmail) || 
+        (u.username && u.username.toLowerCase() === rawUsername)
+      );
+
+      if (existing) {
+        existing.name = rawName;
+        existing.password = rawPassword;
+        if (rawChurch) existing.church_name = rawChurch;
+        saveRegisteredUsersDb(usersDb);
+        performLoginSuccess(existing);
+        return;
+      }
+
+      const newUser = {
+        id: `usr_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+        name: rawName,
+        username: rawUsername,
+        email: rawEmail,
+        password: rawPassword,
+        church_name: rawChurch || "Igreja Local",
+        avatar_url: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(rawName)}&backgroundColor=2563eb`,
+        createdAt: new Date().toISOString()
+      };
+
+      usersDb.push(newUser);
+      saveRegisteredUsersDb(usersDb);
+      performLoginSuccess(newUser);
+    }
+
+    // 1-Click Fast Register & Login Helper
+    function quickRegisterAndLogin(identifier, password) {
+      const cleanId = identifier.trim().toLowerCase().replace('@', '');
+      const isEmail = identifier.includes('@');
+      const email = isEmail ? identifier.trim().toLowerCase() : `${cleanId}@igreja.org`;
+      const username = isEmail ? cleanId.split('@')[0] : cleanId;
+      const name = username.charAt(0).toUpperCase() + username.slice(1);
+
+      const usersDb = getRegisteredUsersDb();
+      const newUser = {
+        id: `usr_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+        name: name,
+        username: username,
+        email: email,
+        password: password,
+        church_name: "Igreja Local",
+        avatar_url: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}&backgroundColor=2563eb`,
+        createdAt: new Date().toISOString()
+      };
+
+      usersDb.push(newUser);
+      saveRegisteredUsersDb(usersDb);
+      performLoginSuccess(newUser);
+    }
+
+    function resetUserPasswordAndLogin(userId, newPassword) {
+      const usersDb = getRegisteredUsersDb();
+      const target = usersDb.find(u => u.id === userId);
+      if (target) {
+        target.password = newPassword;
+        saveRegisteredUsersDb(usersDb);
+        performLoginSuccess(target);
+      }
+    }
+
+    function performLoginSuccess(user) {
+      currentUser = user;
+      localStorage.setItem('CHURCHPHOTO_USER_SESSION', JSON.stringify(currentUser));
+      renderAuthenticatedUser(currentUser);
+
+      // Auto-migrate any unauthenticated cultos or presets to this account so user never loses their work!
+      autoMigrateGuestDataToUser(currentUser);
+
+      loadTeamData();
+      loadStoredServices();
+      closeAuthModal();
+      showToast(`Bem-vindo(a) de volta, ${currentUser.name}!`);
+    }
+
+    function autoMigrateGuestDataToUser(user) {
+      try {
+        const guestServicesRaw = localStorage.getItem('CHURCHPHOTO_SERVICES_GUEST') || localStorage.getItem('CHURCHPHOTO_SERVICES');
+        const userServicesKey = `CHURCHPHOTO_SERVICES_${user.id}`;
+        let userServices = localStorage.getItem(userServicesKey);
+        
+        if (!userServices || userServices === '[]') {
+          if (guestServicesRaw && guestServicesRaw !== '[]') {
+            localStorage.setItem(userServicesKey, guestServicesRaw);
+          }
+        }
+      } catch (e) {}
+    }
+
+    function checkUserSession() {
+      const savedUser = localStorage.getItem('CHURCHPHOTO_USER_SESSION');
+      if (savedUser) {
+        try {
+          currentUser = JSON.parse(savedUser);
+          renderAuthenticatedUser(currentUser);
+        } catch (e) {
+          currentUser = null;
+        }
+      }
+    }
+
+    function renderAuthenticatedUser(user) {
+      const sideLoggedIn = document.getElementById('sideProfileLoggedIn');
+      const sideLoggedOut = document.getElementById('sideProfileLoggedOut');
+      const sideAvatar = document.getElementById('sideUserAvatar');
+      const sideName = document.getElementById('sideUserName');
+      const sideHandle = document.getElementById('sideUserHandle');
+      const heroStatus = document.getElementById('userAccountStatusBadge');
+
+      if (user) {
+        if (sideLoggedOut) { sideLoggedOut.style.display = 'none'; sideLoggedOut.classList.add('hidden'); }
+        if (sideLoggedIn) { sideLoggedIn.style.display = 'flex'; sideLoggedIn.classList.remove('hidden'); }
+
+        if (sideAvatar) sideAvatar.src = user.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'M')}&backgroundColor=2563eb`;
+        if (sideName) sideName.textContent = user.name || 'Voluntário';
+        if (sideHandle) sideHandle.textContent = `@${user.username || 'voluntario'}`;
+        if (heroStatus) heroStatus.innerHTML = `<span class="text-emerald-400 font-bold">Conectado como: ${user.name} (@${user.username})</span>`;
+      } else {
+        if (sideLoggedIn) { sideLoggedIn.style.display = 'none'; sideLoggedIn.classList.add('hidden'); }
+        if (sideLoggedOut) { sideLoggedOut.style.display = 'flex'; sideLoggedOut.classList.remove('hidden'); }
+        if (heroStatus) heroStatus.textContent = 'Conta: Visitante (Não autenticado)';
+      }
+
+      renderSidebarTeamMembers();
+    }
+
+    function logoutUser() {
+      currentUser = null;
+      localStorage.removeItem('CHURCHPHOTO_USER_SESSION');
+      renderAuthenticatedUser(null);
+      
+      // Reset view to clean guest state
+      loadTeamData();
+      loadStoredServices();
+      showToast("Você saiu da conta com sucesso.");
     }
 
     // ================= SIDEBAR & NAVIGATION =================
@@ -2028,7 +2357,7 @@
       }
     }
 
-    // ================= SERVICES & PHOTO STORAGE (ACCOUNT-BOUND) =================
+    // ================= SERVICES & PHOTO STORAGE (ACCOUNT-BOUND & AUTO-MIGRATED) =================
 
     function getStorageServicesKey() {
       return currentUser ? `CHURCHPHOTO_SERVICES_${currentUser.id}` : 'CHURCHPHOTO_SERVICES_GUEST';
@@ -2036,7 +2365,8 @@
 
     function loadStoredServices() {
       const key = getStorageServicesKey();
-      const stored = localStorage.getItem(key);
+      let stored = localStorage.getItem(key);
+      
       if (stored) {
         try {
           churchServices = JSON.parse(stored);
@@ -2046,6 +2376,21 @@
       } else {
         churchServices = [];
       }
+
+      // If user is authenticated and had no services, check if guest or default storage had services and migrate them
+      if (currentUser && churchServices.length === 0) {
+        const guestStored = localStorage.getItem('CHURCHPHOTO_SERVICES_GUEST') || localStorage.getItem('CHURCHPHOTO_SERVICES');
+        if (guestStored) {
+          try {
+            const guestServices = JSON.parse(guestStored);
+            if (guestServices && guestServices.length > 0) {
+              churchServices = guestServices;
+              saveServicesToStorage();
+            }
+          } catch(e) {}
+        }
+      }
+
       renderServicesGrid();
       renderSidebarRecentServices();
     }
@@ -2059,7 +2404,7 @@
     }
 
     function clearDeviceDataPrompt() {
-      if (confirm("Deseja limpar o cache e cultos locais deste dispositivo? (Seus dados permanecerão salvos na nuvem quando autenticado)")) {
+      if (confirm("Deseja limpar o cache e cultos locais deste dispositivo? (Suas contas salvas permanecerão intactas)")) {
         localStorage.removeItem(getStorageServicesKey());
         churchServices = [];
         activeService = null;
@@ -2389,8 +2734,6 @@
       }
     }
 
-    // ================= USER AUTHENTICATION (STRICT & RELIABLE) =================
-
     function showToast(msg) {
       const toast = document.getElementById('toastNotification');
       const text = document.getElementById('toastText');
@@ -2405,192 +2748,6 @@
           toast.style.pointerEvents = 'none';
         }, 3200);
       }
-    }
-
-    function showAuthAlert(msg, type = 'error') {
-      const box = document.getElementById('authAlertBox');
-      const text = document.getElementById('authAlertMessage');
-      if (!box || !text) return;
-      box.className = type === 'error' 
-        ? 'p-3 rounded-xl bg-red-950/80 border border-red-800/90 text-red-300 text-xs mb-3 flex items-start gap-2' 
-        : 'p-3 rounded-xl bg-blue-950/80 border border-blue-800/90 text-blue-300 text-xs mb-3 flex items-start gap-2';
-      box.style.display = 'flex';
-      box.classList.remove('hidden');
-      text.textContent = msg;
-    }
-
-    function checkUserSession() {
-      const savedUser = localStorage.getItem('CHURCHPHOTO_USER_SESSION');
-      if (savedUser) {
-        try {
-          currentUser = JSON.parse(savedUser);
-          renderAuthenticatedUser(currentUser);
-        } catch (e) {
-          currentUser = null;
-        }
-      }
-    }
-
-    function renderAuthenticatedUser(user) {
-      const sideLoggedIn = document.getElementById('sideProfileLoggedIn');
-      const sideLoggedOut = document.getElementById('sideProfileLoggedOut');
-      const sideAvatar = document.getElementById('sideUserAvatar');
-      const sideName = document.getElementById('sideUserName');
-      const sideHandle = document.getElementById('sideUserHandle');
-      const heroStatus = document.getElementById('userAccountStatusBadge');
-
-      if (user) {
-        if (sideLoggedOut) { sideLoggedOut.style.display = 'none'; sideLoggedOut.classList.add('hidden'); }
-        if (sideLoggedIn) { sideLoggedIn.style.display = 'flex'; sideLoggedIn.classList.remove('hidden'); }
-
-        if (sideAvatar) sideAvatar.src = user.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'M')}&backgroundColor=2563eb`;
-        if (sideName) sideName.textContent = user.name || 'Voluntário';
-        if (sideHandle) sideHandle.textContent = `@${user.username || 'voluntario'}`;
-        if (heroStatus) heroStatus.innerHTML = `<span class="text-emerald-400 font-bold">Conectado como: ${user.name} (@${user.username})</span>`;
-      } else {
-        if (sideLoggedIn) { sideLoggedIn.style.display = 'none'; sideLoggedIn.classList.add('hidden'); }
-        if (sideLoggedOut) { sideLoggedOut.style.display = 'flex'; sideLoggedOut.classList.remove('hidden'); }
-        if (heroStatus) heroStatus.textContent = 'Conta: Visitante (Não autenticado)';
-      }
-
-      renderSidebarTeamMembers();
-    }
-
-    function toggleAuthModal() {
-      const modal = document.getElementById('authModal');
-      const box = document.getElementById('authAlertBox');
-      if (box) { box.style.display = 'none'; box.classList.add('hidden'); }
-      
-      if (modal.style.display === 'none' || modal.classList.contains('hidden')) {
-        modal.style.display = 'flex';
-        modal.classList.remove('hidden');
-      } else {
-        modal.style.display = 'none';
-        modal.classList.add('hidden');
-      }
-    }
-
-    function toggleRegisterMode() {
-      isRegisterMode = !isRegisterMode;
-      const title = document.getElementById('authModalTitle');
-      const regFields = document.getElementById('registerFieldsGroup');
-      const submitText = document.getElementById('authSubmitText');
-      const toggleBtn = document.getElementById('toggleRegisterModeBtn');
-      const box = document.getElementById('authAlertBox');
-      if (box) { box.style.display = 'none'; box.classList.add('hidden'); }
-
-      if (isRegisterMode) {
-        if (title) title.textContent = 'Criar Nova Conta';
-        if (regFields) { regFields.style.display = 'flex'; regFields.classList.remove('hidden'); }
-        if (submitText) submitText.textContent = 'Criar Minha Conta';
-        if (toggleBtn) toggleBtn.innerHTML = `Já tem conta? <strong>Fazer Login</strong>`;
-      } else {
-        if (title) title.textContent = 'Entrar na Conta';
-        if (regFields) { regFields.style.display = 'none'; regFields.classList.add('hidden'); }
-        if (submitText) submitText.textContent = 'Entrar';
-        if (toggleBtn) toggleBtn.innerHTML = `Não tem conta? <strong>Cadastre-se grátis</strong>`;
-      }
-    }
-
-    async function handleEmailAuth(e) {
-      e.preventDefault();
-      const rawInput = document.getElementById('authEmailInput').value.trim();
-      const cleanInput = rawInput.toLowerCase();
-      const cleanNoAt = cleanInput.replace('@', '');
-      const password = document.getElementById('authPasswordInput').value.trim();
-      const rawName = document.getElementById('authNameInput').value.trim();
-      const rawUsername = document.getElementById('authUsernameInput').value.trim().toLowerCase().replace('@', '');
-      const rawChurch = document.getElementById('authChurchInput').value.trim();
-
-      if (!rawInput || !password) {
-        showAuthAlert("Preencha todos os campos obrigatórios.");
-        return;
-      }
-
-      const usersDb = getRegisteredUsersDb();
-
-      // ================= CADASTRO (REGISTRO) =================
-      if (isRegisterMode) {
-        if (!rawName || !rawUsername) {
-          showAuthAlert("Por favor, preencha seu Nome Completo e Nome de Usuário (@username).");
-          return;
-        }
-
-        // Check if user already exists
-        const existing = usersDb.find(u => 
-          (u.email && u.email.toLowerCase() === cleanInput) || 
-          (u.username && u.username.toLowerCase() === rawUsername)
-        );
-
-        if (existing) {
-          showAuthAlert("Este e-mail ou @username já está cadastrado. Faça login na sua conta.");
-          return;
-        }
-
-        const newUser = {
-          id: `usr_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
-          name: rawName,
-          username: rawUsername,
-          email: rawInput.includes('@') ? rawInput : `${rawUsername}@igreja.org`,
-          password: password,
-          church_name: rawChurch || "Igreja Local",
-          avatar_url: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(rawName)}&backgroundColor=2563eb`,
-          createdAt: new Date().toISOString()
-        };
-
-        usersDb.push(newUser);
-        saveRegisteredUsersDb(usersDb);
-
-        currentUser = newUser;
-        localStorage.setItem('CHURCHPHOTO_USER_SESSION', JSON.stringify(currentUser));
-        
-        renderAuthenticatedUser(currentUser);
-        loadTeamData();
-        loadStoredServices();
-        toggleAuthModal();
-        showToast(`Conta criada com sucesso! Bem-vindo(a), ${newUser.name}!`);
-        return;
-      }
-
-      // ================= LOGIN ESTRITO (MATCH FLEXÍVEL POR EMAIL OU USERNAME) =================
-      const matchedUser = usersDb.find(u => {
-        const uEmail = (u.email || '').toLowerCase().trim();
-        const uUser = (u.username || '').toLowerCase().trim().replace('@', '');
-        return uEmail === cleanInput || uUser === cleanInput || uUser === cleanNoAt || uEmail.split('@')[0] === cleanNoAt;
-      });
-
-      if (!matchedUser) {
-        showAuthAlert("❌ Conta não encontrada com este e-mail ou @username. Clique abaixo em 'Cadastre-se grátis' para registrar sua conta.");
-        return;
-      }
-
-      if (matchedUser.password !== password) {
-        showAuthAlert("❌ Senha incorreta. Verifique sua senha e tente novamente.");
-        return;
-      }
-
-      // Successful Login
-      currentUser = matchedUser;
-      localStorage.setItem('CHURCHPHOTO_USER_SESSION', JSON.stringify(currentUser));
-      renderAuthenticatedUser(currentUser);
-
-      // Load user-bound team & cultos
-      loadTeamData();
-      loadStoredServices();
-
-      toggleAuthModal();
-      showToast(`Login realizado com sucesso! Bem-vindo(a), ${currentUser.name}!`);
-    }
-
-    function logoutUser() {
-      currentUser = null;
-      localStorage.removeItem('CHURCHPHOTO_USER_SESSION');
-      renderAuthenticatedUser(null);
-      
-      // Reset view to clean guest state
-      loadTeamData();
-      loadStoredServices();
-      showToast("Você saiu da conta com sucesso.");
     }
 
     // ================= STUDIO THUMBNAILS & PHOTO PROCESSING =================
