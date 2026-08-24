@@ -153,6 +153,44 @@ class DatabaseService:
         return f"{h_b64}.{p_b64}.{_b64url_encode(sig)}"
 
     def verify_jwt_token(self, token: str) -> Optional[Dict[str, Any]]:
+        # 1. Try verifying with Auth0 RS256 JWKS
+        try:
+            import jwt
+            import requests
+
+            auth0_domain = "dev-veq7kptegw2rh1ue.us.auth0.com"
+            api_audience = "https://dev-veq7kptegw2rh1ue.us.auth0.com/api/v2/"
+            
+            jwks_url = f"https://{auth0_domain}/.well-known/jwks.json"
+            jwks = requests.get(jwks_url, timeout=3).json()
+            unverified_header = jwt.get_unverified_header(token)
+
+            if unverified_header.get("alg") == "RS256":
+                rsa_key = {}
+                for key in jwks.get("keys", []):
+                    if key.get("kid") == unverified_header.get("kid"):
+                        rsa_key = {
+                            "kty": key["kty"],
+                            "kid": key["kid"],
+                            "use": key.get("use"),
+                            "n": key["n"],
+                            "e": key["e"]
+                        }
+                        break
+
+                if rsa_key:
+                    payload = jwt.decode(
+                        token,
+                        key=jwt.algorithms.RSAAlgorithm.from_jwk(rsa_key),
+                        algorithms=["RS256"],
+                        audience=api_audience,
+                        issuer=f"https://{auth0_domain}/"
+                    )
+                    return payload
+        except Exception:
+            pass
+
+        # 2. Fallback to local HMAC token verification
         try:
             parts = token.split(".")
             if len(parts) != 3:

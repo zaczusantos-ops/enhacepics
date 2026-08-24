@@ -44,6 +44,9 @@
   
   <!-- JSZip CDN for Batch ZIP Export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+  <!-- Auth0 Single Page App SDK -->
+  <script src="https://cdn.auth0.com/js/auth0-spa-js/2.1/auth0-spa-js.production.js"></script>
   
   <style>
     * { -webkit-tap-highlight-color: transparent; }
@@ -1142,8 +1145,23 @@
         </div>
         <div>
           <h3 id="authModalMainTitle" class="text-base font-bold text-white">Acesso ChurchPhoto Pro</h3>
-          <p id="authModalMainSubtitle" class="text-[11px] text-slate-400">Sua conta pessoal de voluntário ou líder</p>
+          <p id="authModalMainSubtitle" class="text-[11px] text-slate-400">Autenticação oficial via Auth0 ou acesso direto</p>
         </div>
+      </div>
+
+      <!-- Auth0 Universal Login Primary Action Button -->
+      <div class="mb-4">
+        <button type="button" onclick="loginWithAuth0()" class="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:via-indigo-500 hover:to-purple-500 active:scale-98 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2.5 shadow-xl shadow-blue-600/30 transition-all cursor-pointer">
+          <i class="fa-solid fa-shield-halved text-amber-300 text-sm"></i>
+          <span>Entrar / Cadastrar com Auth0</span>
+          <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-blue-200"></i>
+        </button>
+      </div>
+
+      <div class="relative flex py-1 items-center mb-4">
+        <div class="flex-grow border-t border-church-800"></div>
+        <span class="flex-shrink mx-3 text-[10px] text-slate-400 uppercase font-mono tracking-wider">ou login direto local</span>
+        <div class="flex-grow border-t border-church-800"></div>
       </div>
 
       <!-- Tab Switcher (Entrar vs Criar Conta) -->
@@ -1359,16 +1377,112 @@
       }
     ];
 
-    window.addEventListener('DOMContentLoaded', () => {
+    let auth0Client = null;
+
+    const AUTH0_CONFIG = {
+      domain: "dev-veq7kptegw2rh1ue.us.auth0.com",
+      clientId: "876qQUv4r4Vgn8MhKfr9IcdikMs1ygFF",
+      authorizationParams: {
+        redirect_uri: window.location.origin + window.location.pathname,
+        audience: "https://dev-veq7kptegw2rh1ue.us.auth0.com/api/v2/"
+      }
+    };
+
+    window.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('newServiceDate').valueAsDate = new Date();
 
       initRegisteredUsersDb();
-      checkUserSession();
-      loadTeamData();
-      loadStoredServices();
+      await initAuth0();
       setupSliderEvents();
       setupAddMorePhotosInput();
     });
+
+    // ================= AUTH0 INITIALIZATION & HANDLERS =================
+
+    async function initAuth0() {
+      try {
+        if (typeof auth0 !== 'undefined' && auth0.createAuth0Client) {
+          auth0Client = await auth0.createAuth0Client(AUTH0_CONFIG);
+
+          // Handle redirect callback from Auth0 Universal Login
+          const query = window.location.search;
+          if (query.includes("code=") && query.includes("state=")) {
+            await auth0Client.handleRedirectCallback();
+            window.history.replaceState({}, document.title, window.location.pathname);
+          }
+
+          const isAuth = await auth0Client.isAuthenticated();
+          if (isAuth) {
+            const auth0User = await auth0Client.getUser();
+            let token = null;
+            try {
+              token = await auth0Client.getTokenSilently();
+            } catch(te) {}
+
+            const uName = auth0User.name || auth0User.nickname || "Voluntário";
+            const uUsername = (auth0User.nickname || (auth0User.email ? auth0User.email.split('@')[0] : 'voluntario')).toLowerCase();
+
+            currentUser = {
+              id: auth0User.sub,
+              name: uName,
+              username: uUsername,
+              email: auth0User.email || `${uUsername}@igreja.org`,
+              avatar_url: auth0User.picture || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(uName)}&backgroundColor=2563eb`,
+              token: token,
+              isAuth0: true
+            };
+
+            localStorage.setItem('CHURCHPHOTO_USER_SESSION', JSON.stringify(currentUser));
+            autoMigrateGuestDataToUser(currentUser);
+            renderAuthenticatedUser(currentUser);
+            loadTeamData();
+            loadStoredServices();
+            showToast(`Conectado com sucesso via Auth0! Bem-vindo(a), ${currentUser.name}!`);
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn("Auth0 Init Notification:", err);
+      }
+
+      // Check offline / local session fallback
+      checkUserSession();
+      loadTeamData();
+      loadStoredServices();
+    }
+
+    async function loginWithAuth0() {
+      try {
+        if (!auth0Client && typeof auth0 !== 'undefined') {
+          auth0Client = await auth0.createAuth0Client(AUTH0_CONFIG);
+        }
+        if (auth0Client) {
+          await auth0Client.loginWithRedirect();
+        } else {
+          showAuthAlert("SDK do Auth0 carregando... Tente novamente em 2 segundos.");
+        }
+      } catch(e) {
+        console.error("Auth0 Login Error:", e);
+        showAuthAlert("Erro ao iniciar Auth0: " + e.message);
+      }
+    }
+
+    async function signupWithAuth0() {
+      try {
+        if (!auth0Client && typeof auth0 !== 'undefined') {
+          auth0Client = await auth0.createAuth0Client(AUTH0_CONFIG);
+        }
+        if (auth0Client) {
+          await auth0Client.loginWithRedirect({
+            authorizationParams: {
+              screen_hint: 'signup'
+            }
+          });
+        }
+      } catch(e) {
+        console.error("Auth0 Signup Error:", e);
+      }
+    }
 
     // ================= REGISTERED USERS DATABASE & AUTHENTICATION =================
 
@@ -1676,7 +1790,8 @@
       renderSidebarTeamMembers();
     }
 
-    function logoutUser() {
+    async function logoutUser() {
+      const wasAuth0 = currentUser && currentUser.isAuth0;
       currentUser = null;
       localStorage.removeItem('CHURCHPHOTO_USER_SESSION');
       renderAuthenticatedUser(null);
@@ -1685,6 +1800,19 @@
       loadTeamData();
       loadStoredServices();
       showToast("Você saiu da conta com sucesso.");
+
+      if (wasAuth0 && auth0Client) {
+        try {
+          const isAuth = await auth0Client.isAuthenticated();
+          if (isAuth) {
+            await auth0Client.logout({
+              logoutParams: {
+                returnTo: window.location.origin + window.location.pathname
+              }
+            });
+          }
+        } catch(e) {}
+      }
     }
 
     // ================= SIDEBAR & NAVIGATION =================
