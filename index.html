@@ -45,8 +45,8 @@
   <!-- JSZip CDN for Batch ZIP Export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
-  <!-- Auth0 Single Page App SDK -->
-  <script src="https://cdn.auth0.com/js/auth0-spa-js/2.1/auth0-spa-js.production.js"></script>
+  <!-- Supabase JS Client SDK v2 -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
   <style>
     * { -webkit-tap-highlight-color: transparent; }
@@ -225,9 +225,9 @@
 
       <!-- When Unauthenticated: ALWAYS Visible Big Login Button -->
       <div id="sideProfileLoggedOut" class="flex items-center justify-between w-full">
-        <button onclick="loginWithAuth0()" class="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-95 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg shadow-blue-600/30">
-          <i class="fa-solid fa-shield-halved text-xs shrink-0 text-amber-300"></i>
-          <span class="sidebar-text">Entrar com Auth0</span>
+        <button onclick="openSupabaseAuthModal()" class="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:scale-95 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg shadow-emerald-600/30">
+          <i class="fa-solid fa-cloud text-xs shrink-0 text-amber-300"></i>
+          <span class="sidebar-text">Entrar / Criar Conta</span>
         </button>
       </div>
 
@@ -292,26 +292,26 @@
         
         <!-- Hero Banner -->
         <div class="rounded-2xl sm:rounded-3xl bg-gradient-to-b from-church-900 to-church-950 border border-church-800 p-5 sm:p-6 shadow-2xl relative overflow-hidden">
-          <div class="absolute -top-20 right-0 w-64 h-32 bg-blue-500/10 blur-3xl pointer-events-none"></div>
+          <div class="absolute -top-20 right-0 w-64 h-32 bg-emerald-500/10 blur-3xl pointer-events-none"></div>
 
           <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
-              <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-950/70 border border-blue-800/60 text-blue-300 text-[10px] sm:text-xs font-semibold mb-2">
-                <i class="fa-solid fa-shield-halved text-amber-400"></i>
+              <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-950/70 border border-emerald-800/60 text-emerald-300 text-[10px] sm:text-xs font-semibold mb-2">
+                <i class="fa-solid fa-cloud text-emerald-400"></i>
                 <span id="userAccountStatusBadge">Conta: Visitante (Não autenticado)</span>
               </div>
               <h2 class="text-xl sm:text-2xl font-bold text-white leading-tight">
                 Curadoria com IA, Equipes & Edição DSLR
               </h2>
               <p class="text-xs text-slate-400 mt-1 max-w-lg">
-                Conecte-se com sua conta Auth0 para manter todos os cultos e fotos salvos com persistência real.
+                Conecte-se com sua conta Supabase para sincronizar seus cultos, fotos e presets na nuvem.
               </p>
             </div>
 
             <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-              <button id="mainHeroAuthBtn" onclick="loginWithAuth0()" class="w-full sm:w-auto px-5 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-95 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-blue-600/25 flex items-center justify-center gap-2 transition-all cursor-pointer">
-                <i class="fa-solid fa-shield-halved text-sm text-amber-300"></i>
-                <span>Entrar com Auth0</span>
+              <button id="mainHeroAuthBtn" onclick="openSupabaseAuthModal()" class="w-full sm:w-auto px-5 py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:scale-95 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2 transition-all cursor-pointer">
+                <i class="fa-solid fa-cloud text-sm text-amber-300"></i>
+                <span>Entrar / Criar Conta</span>
               </button>
 
               <button onclick="openCreateServiceModal()" class="w-full sm:w-auto px-6 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-95 text-white font-bold text-xs sm:text-sm rounded-xl shadow-xl shadow-blue-600/30 flex items-center justify-center gap-2.5 transition-all cursor-pointer shrink-0">
@@ -1125,6 +1125,136 @@
         </button>
       </form>
     </div>
+  <!-- ========================================================================= -->
+  <!-- MODAL: SUPABASE AUTHENTICATION (LOGIN & REGISTRO) -->
+  <!-- ========================================================================= -->
+  <div id="supabaseAuthModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 hidden" style="display: none;">
+    <div class="relative w-full max-w-md bg-church-900 border border-church-800 rounded-3xl p-6 sm:p-7 shadow-2xl overflow-hidden animate-fadeIn">
+      
+      <!-- Top Glow Background -->
+      <div class="absolute -top-24 -right-24 w-48 h-48 bg-emerald-500/15 blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-24 -left-24 w-48 h-48 bg-blue-500/15 blur-3xl pointer-events-none"></div>
+
+      <!-- Close Button -->
+      <button onclick="closeSupabaseAuthModal()" class="absolute top-4 right-4 p-2 rounded-xl text-slate-400 hover:text-white hover:bg-church-800 transition-colors cursor-pointer">
+        <i class="fa-solid fa-xmark text-sm"></i>
+      </button>
+
+      <!-- Modal Header -->
+      <div class="flex items-center gap-3 mb-5">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-600 flex items-center justify-center text-white shadow-lg shadow-emerald-600/30 shrink-0">
+          <i class="fa-solid fa-cloud text-lg"></i>
+        </div>
+        <div>
+          <h3 class="text-base sm:text-lg font-bold text-white tracking-tight">Acessar ChurchPhoto Pro</h3>
+          <p class="text-[11px] text-slate-400">Autenticação & Banco em Nuvem (Supabase)</p>
+        </div>
+      </div>
+
+      <!-- Tab Switcher -->
+      <div class="grid grid-cols-2 p-1 rounded-xl bg-church-950 border border-church-800 mb-5 text-xs font-semibold">
+        <button id="authTabLoginBtn" onclick="switchSupabaseAuthTab('login')" class="py-2 rounded-lg bg-emerald-600 text-white font-bold transition-all">
+          <i class="fa-solid fa-right-to-bracket mr-1.5"></i> Entrar
+        </button>
+        <button id="authTabRegisterBtn" onclick="switchSupabaseAuthTab('register')" class="py-2 rounded-lg text-slate-400 hover:text-white transition-all">
+          <i class="fa-solid fa-user-plus mr-1.5"></i> Criar Conta
+        </button>
+      </div>
+
+      <!-- Feedback Alert Box -->
+      <div id="supabaseAuthAlert" class="p-3 rounded-xl bg-red-950/70 border border-red-800/80 text-red-300 text-xs font-medium mb-4 hidden" style="display: none;">
+        <span id="supabaseAuthAlertText"></span>
+      </div>
+
+      <!-- FORM 1: LOGIN -->
+      <form id="formSupabaseLogin" onsubmit="handleSupabaseLoginSubmit(event)" class="space-y-3.5">
+        <div>
+          <label class="text-xs font-semibold text-slate-300 block mb-1">E-mail</label>
+          <div class="relative">
+            <i class="fa-solid fa-envelope absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+            <input type="email" id="supabaseLoginEmail" required placeholder="seu.email@igreja.org" class="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-church-950 border border-church-750 text-white placeholder-slate-600 text-xs focus:outline-none focus:border-emerald-500 transition-colors">
+          </div>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="text-xs font-semibold text-slate-300">Senha</label>
+            <button type="button" onclick="handleSupabaseForgotPassword()" class="text-[10px] text-emerald-400 hover:underline cursor-pointer">
+              Esqueci a senha
+            </button>
+          </div>
+          <div class="relative">
+            <i class="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+            <input type="password" id="supabaseLoginPassword" required placeholder="••••••••" class="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-church-950 border border-church-750 text-white placeholder-slate-600 text-xs focus:outline-none focus:border-emerald-500 transition-colors">
+          </div>
+        </div>
+
+        <button type="submit" id="supabaseLoginSubmitBtn" class="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:scale-98 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer">
+          <i class="fa-solid fa-arrow-right-to-bracket"></i>
+          <span>Entrar no Sistema</span>
+        </button>
+      </form>
+
+      <!-- FORM 2: REGISTER -->
+      <form id="formSupabaseRegister" onsubmit="handleSupabaseRegisterSubmit(event)" class="space-y-3 hidden" style="display: none;">
+        <div>
+          <label class="text-xs font-semibold text-slate-300 block mb-1">Nome Completo</label>
+          <div class="relative">
+            <i class="fa-solid fa-user absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+            <input type="text" id="supabaseRegisterName" required placeholder="Seu Nome ou Apelido" class="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-church-950 border border-church-750 text-white placeholder-slate-600 text-xs focus:outline-none focus:border-emerald-500 transition-colors">
+          </div>
+        </div>
+
+        <div>
+          <label class="text-xs font-semibold text-slate-300 block mb-1">E-mail</label>
+          <div class="relative">
+            <i class="fa-solid fa-envelope absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+            <input type="email" id="supabaseRegisterEmail" required placeholder="seu.email@igreja.org" class="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-church-950 border border-church-750 text-white placeholder-slate-600 text-xs focus:outline-none focus:border-emerald-500 transition-colors">
+          </div>
+        </div>
+
+        <div>
+          <label class="text-xs font-semibold text-slate-300 block mb-1">Senha (Mínimo 6 caracteres)</label>
+          <div class="relative">
+            <i class="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+            <input type="password" id="supabaseRegisterPassword" required minlength="6" placeholder="••••••••" class="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-church-950 border border-church-750 text-white placeholder-slate-600 text-xs focus:outline-none focus:border-emerald-500 transition-colors">
+          </div>
+        </div>
+
+        <div>
+          <label class="text-xs font-semibold text-slate-300 block mb-1">Nome da Igreja / Ministério</label>
+          <div class="relative">
+            <i class="fa-solid fa-church absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+            <input type="text" id="supabaseRegisterChurch" placeholder="Ex: Comunidade da Graça" class="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-church-950 border border-church-750 text-white placeholder-slate-600 text-xs focus:outline-none focus:border-emerald-500 transition-colors">
+          </div>
+        </div>
+
+        <button type="submit" id="supabaseRegisterSubmitBtn" class="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:scale-98 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer mt-1">
+          <i class="fa-solid fa-user-check"></i>
+          <span>Criar Minha Conta Grátis</span>
+        </button>
+      </form>
+
+      <!-- Divider -->
+      <div class="relative my-4">
+        <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-church-800"></div></div>
+        <div class="relative flex justify-center text-[10px] uppercase font-bold tracking-wider text-slate-500">
+          <span class="bg-church-900 px-3">Ou continue com</span>
+        </div>
+      </div>
+
+      <!-- Google OAuth Button -->
+      <button type="button" onclick="handleSupabaseGoogleLogin()" class="w-full py-2.5 px-3 rounded-xl bg-church-950 hover:bg-church-850 border border-church-800 text-white text-xs font-semibold flex items-center justify-center gap-2.5 transition-all cursor-pointer">
+        <svg class="w-4 h-4" viewBox="0 0 24 24">
+          <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.4 1 3.5 3.6 1.6 7.4l3.7 2.9C6.2 7.4 8.9 5 12 5z"/>
+          <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.7-.2-2.3H12v4.6h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.9z"/>
+          <path fill="#FBBC05" d="M5.3 14.7c-.2-.7-.4-1.4-.4-2.2s.2-1.5.4-2.2L1.6 7.4C.6 9.4 0 11.6 0 14s.6 4.6 1.6 6.6l3.7-2.9c-.4-.9-.6-1.9-.6-3z"/>
+          <path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.8-2.4-6.7-5.3L1.6 15.9C3.5 19.7 7.4 23 12 23z"/>
+        </svg>
+        <span>Google</span>
+      </button>
+
+    </div>
   </div>
 
 
@@ -1246,119 +1376,281 @@
       }
     ];
 
-    let auth0Client = null;
+    // ================= SUPABASE CLIENT & AUTHENTICATION =================
+    const SUPABASE_URL = "https://eioigfblgpufwkrlalxz.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_xMmLbWg_1NDfYPaQjvCFLA_o6lcAXw0";
+    let supabaseClient = null;
 
-    const AUTH0_CONFIG = {
-      domain: "dev-veq7kptegw2rh1ue.us.auth0.com",
-      clientId: "876qQUv4r4Vgn8MhKfr9IcdikMs1ygFF",
-      authorizationParams: {
-        redirect_uri: window.location.origin + window.location.pathname,
-        audience: "https://dev-veq7kptegw2rh1ue.us.auth0.com/api/v2/"
+    try {
+      if (typeof supabase !== 'undefined' && supabase.createClient) {
+        supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       }
-    };
+    } catch(e) {
+      console.warn("Supabase SDK init exception:", e);
+    }
 
     window.addEventListener('DOMContentLoaded', async () => {
       const dateInp = document.getElementById('newServiceDate');
       if (dateInp) dateInp.valueAsDate = new Date();
 
-      await initAuth0();
+      await initSupabaseAuth();
       setupSliderEvents();
       setupAddMorePhotosInput();
     });
 
-    // ================= AUTH0 INITIALIZATION & HANDLERS =================
-
-    async function initAuth0() {
+    async function initSupabaseAuth() {
       try {
-        if (typeof auth0 !== 'undefined' && auth0.createAuth0Client) {
-          auth0Client = await auth0.createAuth0Client(AUTH0_CONFIG);
+        if (!supabaseClient && typeof supabase !== 'undefined' && supabase.createClient) {
+          supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        }
 
-          // Handle redirect callback from Auth0 Universal Login
-          const query = window.location.search;
-          if (query.includes("code=") && query.includes("state=")) {
-            await auth0Client.handleRedirectCallback();
-            window.history.replaceState({}, document.title, window.location.pathname);
+        if (supabaseClient) {
+          // Check current active session from Supabase
+          const { data: { session } } = await supabaseClient.auth.getSession();
+          if (session && session.user) {
+            handleSupabaseUserSession(session.user);
+          } else {
+            checkUserSession(); // fallback to local cache if offline
           }
 
-          const isAuth = await auth0Client.isAuthenticated();
-          if (isAuth) {
-            const auth0User = await auth0Client.getUser();
-            let token = null;
-            try {
-              token = await auth0Client.getTokenSilently();
-            } catch(te) {}
-
-            const uName = auth0User.name || auth0User.nickname || "Voluntário";
-            const uUsername = (auth0User.nickname || (auth0User.email ? auth0User.email.split('@')[0] : 'voluntario')).toLowerCase();
-
-            currentUser = {
-              id: auth0User.sub,
-              name: uName,
-              username: uUsername,
-              email: auth0User.email || `${uUsername}@igreja.org`,
-              avatar_url: auth0User.picture || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(uName)}&backgroundColor=2563eb`,
-              token: token,
-              isAuth0: true
-            };
-
-            localStorage.setItem('CHURCHPHOTO_USER_SESSION', JSON.stringify(currentUser));
-            renderAuthenticatedUser(currentUser);
-            loadTeamData();
-            await loadStoredServices();
-            showToast(`Conectado via Auth0! Bem-vindo(a), ${currentUser.name}!`);
-            return;
-          }
+          // Realtime Auth State Change Listener (persist automatically)
+          supabaseClient.auth.onAuthStateChange(async (event, session) => {
+            if (session && session.user) {
+              handleSupabaseUserSession(session.user);
+              if (event === 'SIGNED_IN') {
+                showToast(`Bem-vindo(a), ${currentUser.name}!`);
+              }
+            } else if (event === 'SIGNED_OUT') {
+              currentUser = null;
+              localStorage.removeItem('CHURCHPHOTO_USER_SESSION');
+              renderAuthenticatedUser(null);
+              loadTeamData();
+              await loadStoredServices();
+            }
+          });
+        } else {
+          checkUserSession();
         }
       } catch (err) {
-        console.warn("Auth0 Init Notification:", err);
+        console.warn("Supabase Auth Init Error:", err);
+        checkUserSession();
       }
 
-      // Check offline / local session fallback
-      checkUserSession();
       loadTeamData();
       await loadStoredServices();
     }
 
-    async function loginWithAuth0() {
-      try {
-        if (!auth0Client && typeof auth0 !== 'undefined') {
-          auth0Client = await auth0.createAuth0Client(AUTH0_CONFIG);
-        }
-        if (auth0Client) {
-          await auth0Client.loginWithRedirect();
-        } else {
-          showToast("Carregando Auth0... Por favor, aguarde.");
-          setTimeout(async () => {
-            if (typeof auth0 !== 'undefined') {
-              auth0Client = await auth0.createAuth0Client(AUTH0_CONFIG);
-              await auth0Client.loginWithRedirect();
-            } else {
-              showToast("Erro ao conectar com Auth0. Verifique sua internet.");
-            }
-          }, 800);
-        }
-      } catch(e) {
-        console.error("Auth0 Login Error:", e);
-        showToast("Erro ao iniciar Auth0: " + e.message);
+    function handleSupabaseUserSession(user) {
+      const metadata = user.user_metadata || {};
+      const uName = metadata.full_name || metadata.name || (user.email ? user.email.split('@')[0] : "Voluntário");
+      const uUsername = (metadata.username || (user.email ? user.email.split('@')[0] : 'voluntario')).toLowerCase().replace(/\s+/g, '');
+      const churchName = metadata.church_name || 'Igreja';
+
+      currentUser = {
+        id: user.id,
+        name: uName,
+        username: uUsername,
+        email: user.email,
+        church_name: churchName,
+        avatar_url: metadata.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(uName)}&backgroundColor=059669`,
+        isSupabase: true
+      };
+
+      localStorage.setItem('CHURCHPHOTO_USER_SESSION', JSON.stringify(currentUser));
+      renderAuthenticatedUser(currentUser);
+    }
+
+    function openSupabaseAuthModal() {
+      const modal = document.getElementById('supabaseAuthModal');
+      hideSupabaseAuthAlert();
+      switchSupabaseAuthTab('login');
+      modal.style.display = 'flex';
+      modal.classList.remove('hidden');
+    }
+
+    function closeSupabaseAuthModal() {
+      const modal = document.getElementById('supabaseAuthModal');
+      modal.style.display = 'none';
+      modal.classList.add('hidden');
+    }
+
+    function switchSupabaseAuthTab(tab) {
+      currentAuthTab = tab;
+      const loginBtn = document.getElementById('authTabLoginBtn');
+      const regBtn = document.getElementById('authTabRegisterBtn');
+      const formLogin = document.getElementById('formSupabaseLogin');
+      const formReg = document.getElementById('formSupabaseRegister');
+      hideSupabaseAuthAlert();
+
+      if (tab === 'login') {
+        loginBtn.className = "py-2 rounded-lg bg-emerald-600 text-white font-bold transition-all cursor-pointer";
+        regBtn.className = "py-2 rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer";
+        formLogin.style.display = 'block'; formLogin.classList.remove('hidden');
+        formReg.style.display = 'none'; formReg.classList.add('hidden');
+      } else {
+        regBtn.className = "py-2 rounded-lg bg-emerald-600 text-white font-bold transition-all cursor-pointer";
+        loginBtn.className = "py-2 rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer";
+        formReg.style.display = 'block'; formReg.classList.remove('hidden');
+        formLogin.style.display = 'none'; formLogin.classList.add('hidden');
       }
     }
 
-    async function signupWithAuth0() {
-      try {
-        if (!auth0Client && typeof auth0 !== 'undefined') {
-          auth0Client = await auth0.createAuth0Client(AUTH0_CONFIG);
-        }
-        if (auth0Client) {
-          await auth0Client.loginWithRedirect({
-            authorizationParams: {
-              screen_hint: 'signup'
-            }
-          });
-        }
-      } catch(e) {
-        console.error("Auth0 Signup Error:", e);
-        showToast("Erro ao abrir cadastro: " + e.message);
+    function showSupabaseAuthAlert(msg) {
+      const alertBox = document.getElementById('supabaseAuthAlert');
+      const text = document.getElementById('supabaseAuthAlertText');
+      text.textContent = msg;
+      alertBox.style.display = 'block';
+      alertBox.classList.remove('hidden');
+    }
+
+    function hideSupabaseAuthAlert() {
+      const alertBox = document.getElementById('supabaseAuthAlert');
+      alertBox.style.display = 'none';
+      alertBox.classList.add('hidden');
+    }
+
+    async function handleSupabaseLoginSubmit(e) {
+      e.preventDefault();
+      const email = document.getElementById('supabaseLoginEmail').value.trim();
+      const password = document.getElementById('supabaseLoginPassword').value;
+      const submitBtn = document.getElementById('supabaseLoginSubmitBtn');
+
+      if (!email || !password) return;
+      if (!supabaseClient) {
+        showSupabaseAuthAlert("Erro ao inicializar Supabase. Verifique sua conexão.");
+        return;
       }
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Entrando...</span>`;
+
+      try {
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
+          email: email,
+          password: password
+        });
+
+        if (error) {
+          showSupabaseAuthAlert("Erro ao entrar: " + (error.message === 'Invalid login credentials' ? 'E-mail ou senha incorretos.' : error.message));
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = `<i class="fa-solid fa-arrow-right-to-bracket"></i> <span>Entrar no Sistema</span>`;
+          return;
+        }
+
+        closeSupabaseAuthModal();
+        loadTeamData();
+        await loadStoredServices();
+        showToast("Conectado com sucesso via Supabase!");
+      } catch(err) {
+        showSupabaseAuthAlert("Erro de conexão: " + err.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `<i class="fa-solid fa-arrow-right-to-bracket"></i> <span>Entrar no Sistema</span>`;
+      }
+    }
+
+    async function handleSupabaseRegisterSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('supabaseRegisterName').value.trim();
+      const email = document.getElementById('supabaseRegisterEmail').value.trim();
+      const password = document.getElementById('supabaseRegisterPassword').value;
+      const church = document.getElementById('supabaseRegisterChurch').value.trim();
+      const submitBtn = document.getElementById('supabaseRegisterSubmitBtn');
+
+      if (!name || !email || !password) return;
+      if (!supabaseClient) {
+        showSupabaseAuthAlert("Erro ao inicializar Supabase. Verifique sua conexão.");
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Criando Conta...</span>`;
+
+      try {
+        const { data, error } = await supabaseClient.auth.signUp({
+          email: email,
+          password: password,
+          options: {
+            data: {
+              full_name: name,
+              church_name: church || 'Igreja'
+            }
+          }
+        });
+
+        if (error) {
+          showSupabaseAuthAlert("Erro no cadastro: " + error.message);
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = `<i class="fa-solid fa-user-check"></i> <span>Criar Minha Conta Grátis</span>`;
+          return;
+        }
+
+        closeSupabaseAuthModal();
+        if (data.session) {
+          showToast(`Conta criada com sucesso! Bem-vindo(a), ${name}!`);
+        } else {
+          showToast("Conta criada! Se a confirmação de e-mail estiver ativa no Supabase, verifique sua caixa de entrada.");
+        }
+        loadTeamData();
+        await loadStoredServices();
+      } catch(err) {
+        showSupabaseAuthAlert("Erro de conexão: " + err.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `<i class="fa-solid fa-user-check"></i> <span>Criar Minha Conta Grátis</span>`;
+      }
+    }
+
+    async function handleSupabaseGoogleLogin() {
+      if (!supabaseClient) {
+        showToast("Supabase não disponível no momento.");
+        return;
+      }
+      try {
+        const { error } = await supabaseClient.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: window.location.origin + window.location.pathname
+          }
+        });
+        if (error) showSupabaseAuthAlert("Erro Google OAuth: " + error.message);
+      } catch(e) {
+        showSupabaseAuthAlert("Erro ao iniciar Google Login: " + e.message);
+      }
+    }
+
+    async function handleSupabaseForgotPassword() {
+      const email = prompt("Digite seu e-mail cadastrado para receber o link de redefinição de senha:");
+      if (!email || !email.trim()) return;
+
+      if (!supabaseClient) {
+        showToast("Supabase não disponível.");
+        return;
+      }
+
+      const { error } = await supabaseClient.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: window.location.origin + window.location.pathname
+      });
+
+      if (error) {
+        showToast("Erro ao enviar e-mail: " + error.message);
+      } else {
+        showToast("Link de redefinição enviado para " + email + "!");
+      }
+    }
+
+    async function logoutUser() {
+      try {
+        if (supabaseClient) {
+          await supabaseClient.auth.signOut();
+        }
+      } catch(e) {}
+      currentUser = null;
+      localStorage.removeItem('CHURCHPHOTO_USER_SESSION');
+      renderAuthenticatedUser(null);
+      loadTeamData();
+      await loadStoredServices();
+      showToast("Você saiu da sua conta.");
     }
 
     // ================= ENTERPRISE INDEXEDDB PERSISTENT STORAGE =================
@@ -1382,6 +1674,16 @@
       });
     }
 
+    function fileToDataUrl(file) {
+      return new Promise((resolve) => {
+        if (!file) { resolve(''); return; }
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.onerror = () => resolve('');
+        reader.readAsDataURL(file);
+      });
+    }
+
     async function dbSaveService(service) {
       try {
         const db = await openIndexedDB();
@@ -1389,7 +1691,7 @@
         const sStore = tx.objectStore('services');
         const pStore = tx.objectStore('photos');
 
-        // Save service header
+        // Clean JSON-serializable service header
         const srvMeta = {
           id: service.id,
           userId: currentUser ? currentUser.id : (service.userId || 'guest'),
@@ -1402,15 +1704,15 @@
         };
         sStore.put(srvMeta);
 
-        // Save photos with their Blobs and Base64 data safely in IndexedDB
+        // Save each photo with its permanent data URL / Base64 cleanly
         for (const item of (service.items || [])) {
           const photoRecord = {
             id: item.id,
             serviceId: service.id,
-            fileName: item.fileName || (item.file ? item.file.name : 'foto.jpg'),
-            fileBlob: item.file || null,
-            previewBase64: item.processedBase64 || item.originalBase64 || null,
+            fileName: item.fileName || 'foto.jpg',
+            previewUrl: item.previewUrl || item.processedBase64 || item.originalBase64 || '',
             processedBase64: item.processedBase64 || null,
+            originalBase64: item.originalBase64 || item.previewUrl || '',
             status: item.status || 'idle',
             metadata: item.metadata || null,
             analysis: item.analysis || null,
@@ -1422,7 +1724,10 @@
 
         return new Promise((resolve) => {
           tx.oncomplete = () => resolve(true);
-          tx.onerror = () => resolve(false);
+          tx.onerror = (e) => {
+            console.error("IndexedDB tx error:", e);
+            resolve(false);
+          };
         });
       } catch (e) {
         console.error("IndexedDB Save Error:", e);
@@ -1451,19 +1756,12 @@
         const photosMap = {};
         rawPhotos.forEach(p => {
           if (!photosMap[p.serviceId]) photosMap[p.serviceId] = [];
-          
-          let previewUrl = p.previewBase64 || p.processedBase64 || '';
-          if (p.fileBlob instanceof Blob) {
-            try { previewUrl = URL.createObjectURL(p.fileBlob); } catch(e) {}
-          }
-
           photosMap[p.serviceId].push({
             id: p.id,
             fileName: p.fileName,
-            file: p.fileBlob,
-            previewUrl: previewUrl,
+            previewUrl: p.previewUrl || p.processedBase64 || p.originalBase64 || '',
             processedBase64: p.processedBase64,
-            originalBase64: p.previewBase64,
+            originalBase64: p.originalBase64 || p.previewUrl,
             cachedImg: null,
             metadata: p.metadata,
             analysis: p.analysis,
@@ -1682,20 +1980,49 @@
     }
 
     function loadTeamData() {
+      // Gather all potential sources of custom presets
+      let userPresets = [];
+      try {
+        const globalRaw = localStorage.getItem('CHURCHPHOTO_SAVED_PRESETS_MASTER');
+        if (globalRaw) userPresets = JSON.parse(globalRaw);
+      } catch(e) {}
+
       const key = getStorageTeamKey();
-      const stored = localStorage.getItem(key);
-      if (stored) {
+      let storedTeam = null;
+      try {
+        const raw = localStorage.getItem(key);
+        if (raw) storedTeam = JSON.parse(raw);
+      } catch(e) {}
+
+      if (!storedTeam) {
         try {
-          activeTeam = JSON.parse(stored);
-          if (!activeTeam.presets || activeTeam.presets.length === 0) {
-            activeTeam.presets = [...DEFAULT_TEAM_PRESETS];
-          }
-        } catch(e) {
-          activeTeam = { id: 'team_default', name: currentUser ? `Mídia ${currentUser.church_name || 'Igreja'}` : 'Mídia Principal', members: [], presets: [...DEFAULT_TEAM_PRESETS] };
-        }
-      } else {
-        activeTeam = { id: 'team_default', name: currentUser ? `Mídia ${currentUser.church_name || 'Igreja'}` : 'Mídia Principal', members: [], presets: [...DEFAULT_TEAM_PRESETS] };
+          const guestRaw = localStorage.getItem('CHURCHPHOTO_TEAM_GUEST');
+          if (guestRaw) storedTeam = JSON.parse(guestRaw);
+        } catch(e) {}
       }
+
+      const teamName = currentUser ? `Mídia ${currentUser.church_name || 'Sede'}` : 'Mídia Principal';
+      const members = (storedTeam && storedTeam.members) ? storedTeam.members : [];
+
+      // Combine DEFAULT presets with all stored custom presets
+      const allPresetsMap = new Map();
+      DEFAULT_TEAM_PRESETS.forEach(p => allPresetsMap.set(p.id, { ...p }));
+
+      if (storedTeam && storedTeam.presets && Array.isArray(storedTeam.presets)) {
+        storedTeam.presets.forEach(p => allPresetsMap.set(p.id, p));
+      }
+
+      if (Array.isArray(userPresets)) {
+        userPresets.forEach(p => allPresetsMap.set(p.id, p));
+      }
+
+      activeTeam = {
+        id: (storedTeam && storedTeam.id) ? storedTeam.id : 'team_default',
+        name: (storedTeam && storedTeam.name) ? storedTeam.name : teamName,
+        members: members,
+        presets: Array.from(allPresetsMap.values())
+      };
+
       saveTeamData();
     }
 
@@ -1703,6 +2030,9 @@
       try {
         const key = getStorageTeamKey();
         localStorage.setItem(key, JSON.stringify(activeTeam));
+        if (activeTeam && activeTeam.presets) {
+          localStorage.setItem('CHURCHPHOTO_SAVED_PRESETS_MASTER', JSON.stringify(activeTeam.presets));
+        }
       } catch(e) {}
       renderSidebarTeamMembers();
       renderStudioPresetsStrip();
@@ -2434,26 +2764,27 @@
       };
 
       if (pendingModalFiles.length > 0) {
-        pendingModalFiles.forEach(file => {
+        for (const file of pendingModalFiles) {
+          const dataUrl = await fileToDataUrl(file);
           newService.items.push({
             id: Date.now() + '_' + Math.random().toString(36).substr(2, 6),
-            file: file,
             fileName: file.name,
-            previewUrl: URL.createObjectURL(file),
+            previewUrl: dataUrl,
             status: 'idle',
             processedBase64: null,
-            originalBase64: null,
+            originalBase64: dataUrl,
             cachedImg: null,
             metadata: null,
             analysis: null,
             isTop20: true,
             currentParams: null
           });
-        });
+        }
       }
 
       churchServices.unshift(newService);
       await dbSaveService(newService);
+      await saveServicesToStorage();
       renderServicesGrid();
       renderSidebarRecentServices();
       closeCreateServiceModal();
@@ -2500,6 +2831,7 @@
       if (confirm("Tem certeza que deseja excluir este culto e suas fotos?")) {
         await dbDeleteService(serviceId);
         churchServices = churchServices.filter(s => s.id !== serviceId);
+        await saveServicesToStorage();
         renderServicesGrid();
         renderSidebarRecentServices();
         showToast("Culto excluído com sucesso.");
@@ -2511,15 +2843,15 @@
       if (input) {
         input.addEventListener('change', async (e) => {
           if (e.target.files && e.target.files.length > 0 && activeService) {
-            Array.from(e.target.files).forEach(file => {
+            for (const file of Array.from(e.target.files)) {
+              const dataUrl = await fileToDataUrl(file);
               const item = {
                 id: Date.now() + '_' + Math.random().toString(36).substr(2, 6),
-                file: file,
                 fileName: file.name,
-                previewUrl: URL.createObjectURL(file),
+                previewUrl: dataUrl,
                 status: 'idle',
                 processedBase64: null,
-                originalBase64: null,
+                originalBase64: dataUrl,
                 cachedImg: null,
                 metadata: null,
                 analysis: null,
@@ -2528,9 +2860,10 @@
               };
               queue.push(item);
               activeService.items.push(item);
-            });
+            }
 
             await dbSaveService(activeService);
+            await saveServicesToStorage();
             renderThumbnails();
             renderSidebarRecentServices();
             showToast(`${e.target.files.length} foto(s) adicionada(s)!`);
