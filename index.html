@@ -1422,6 +1422,9 @@
               if (event === 'SIGNED_IN') {
                 closeSupabaseAuthModal();
                 showToast(`Bem-vindo(a), ${currentUser ? currentUser.name : 'usuário'}!`);
+                loadTeamData();
+                await loadStoredServices();
+                switchMainView('services');
               }
             } else if (event === 'SIGNED_OUT') {
               currentUser = null;
@@ -1548,6 +1551,7 @@
         closeSupabaseAuthModal();
         loadTeamData();
         await loadStoredServices();
+        switchMainView('services');
         showToast(`Bem-vindo(a) de volta, ${currentUser ? currentUser.name : ''}!`);
 
       } catch(err) {
@@ -1663,6 +1667,7 @@
     }
 
     // ================= ENTERPRISE INDEXEDDB PERSISTENT STORAGE =================
+    // ================= ENTERPRISE INDEXEDDB & HYBRID SUPABASE CLOUD SYNC =================
     const DB_NAME = 'ChurchPhotoPro_DB';
     const DB_VERSION = 1;
 
@@ -1740,6 +1745,7 @@
         });
       } catch (e) {
         console.error("IndexedDB Save Error:", e);
+        return false;
       }
     }
 
@@ -1750,20 +1756,44 @@
         const sStore = tx.objectStore('services');
         const pStore = tx.objectStore('photos');
 
-        const rawServices = await new Promise((resolve) => {
-          const req = sStore.getAll();
-          req.onsuccess = () => resolve(req.result || []);
-          req.onerror = () => resolve([]);
-        });
+        // Execute both requests in parallel in the same tick so transaction doesn't auto-commit
+        const sReq = sStore.getAll();
+        const pReq = pStore.getAll();
 
-        const rawPhotos = await new Promise((resolve) => {
-          const req = pStore.getAll();
-          req.onsuccess = () => resolve(req.result || []);
-          req.onerror = () => resolve([]);
+        const [rawServices, rawPhotos] = await new Promise((resolve) => {
+          let sRes = null, pRes = null;
+          let sDone = false, pDone = false;
+
+          sReq.onsuccess = () => {
+            sRes = sReq.result || [];
+            sDone = true;
+            if (pDone) resolve([sRes, pRes]);
+          };
+          sReq.onerror = () => {
+            sRes = [];
+            sDone = true;
+            if (pDone) resolve([sRes, pRes]);
+          };
+
+          pReq.onsuccess = () => {
+            pRes = pReq.result || [];
+            pDone = true;
+            if (sDone) resolve([sRes, pRes]);
+          };
+          pReq.onerror = () => {
+            pRes = [];
+            pDone = true;
+            if (sDone) resolve([sRes, pRes]);
+          };
+
+          tx.onerror = (e) => {
+            console.error("IndexedDB tx load error:", e);
+            resolve([[], []]);
+          };
         });
 
         const photosMap = {};
-        rawPhotos.forEach(p => {
+        (rawPhotos || []).forEach(p => {
           if (!photosMap[p.serviceId]) photosMap[p.serviceId] = [];
           photosMap[p.serviceId].push({
             id: p.id,
@@ -1781,7 +1811,7 @@
         });
 
         const loaded = [];
-        for (const s of rawServices) {
+        for (const s of (rawServices || [])) {
           s.items = photosMap[s.id] || [];
           loaded.push(s);
         }
@@ -1798,25 +1828,31 @@
     async function dbDeleteService(serviceId) {
       try {
         const db = await openIndexedDB();
-        const tx = db.transaction(['services', 'photos'], 'readwrite');
-        tx.objectStore('services').delete(serviceId);
-
-        const pStore = tx.objectStore('photos');
+        // 1. Read photo IDs first
+        const txRead = db.transaction(['photos'], 'readonly');
+        const pStoreRead = txRead.objectStore('photos');
+        const pReq = pStoreRead.getAll();
         const allPhotos = await new Promise((resolve) => {
-          const req = pStore.getAll();
-          req.onsuccess = () => resolve(req.result || []);
-          req.onerror = () => resolve([]);
+          pReq.onsuccess = () => resolve(pReq.result || []);
+          pReq.onerror = () => resolve([]);
         });
 
+        // 2. Delete service and photos in a dedicated write transaction
+        const txWrite = db.transaction(['services', 'photos'], 'readwrite');
+        txWrite.objectStore('services').delete(serviceId);
+        const pStoreWrite = txWrite.objectStore('photos');
         allPhotos.filter(p => p.serviceId === serviceId).forEach(p => {
-          pStore.delete(p.id);
+          pStoreWrite.delete(p.id);
         });
 
         return new Promise(resolve => {
-          tx.oncomplete = () => resolve(true);
-          tx.onerror = () => resolve(false);
+          txWrite.oncomplete = () => resolve(true);
+          txWrite.onerror = () => resolve(false);
         });
-      } catch(e) {}
+      } catch(e) {
+        console.error("dbDeleteService error:", e);
+        return false;
+      }
     }
 
     async function dbClearAll() {
@@ -1829,7 +1865,150 @@
           tx.oncomplete = () => resolve(true);
           tx.onerror = () => resolve(false);
         });
-      } catch(e) {}
+      } catch(e) {
+        return false;
+      }
+    }
+
+    // ================= SUPABASE CLOUD DATABASE SYNC (OPTIONAL / HYBRID) =================
+
+    async function syncServicesWithSupabaseCloud() {
+      if (!supabaseClient || !currentUser || !currentUser.id) return;
+      try {
+        const { data: cloudServices, error } = await supabaseClient
+          .from('church_services')
+          .select('*')
+          .eq('user_id', currentUser.id)
+          .order('created_at', { ascending: false });
+
+        if (!error && Array.isArray(cloudServices) && cloudServices.length > 0) {
+          const localMap = new Map();
+          churchServices.forEach(s => localMap.set(s.id, s));
+
+          let hasNew = false;
+          for (const cs of cloudServices) {
+            if (!localMap.has(cs.id)) {
+              let items = [];
+              try {
+                items = typeof cs.items_json === 'string' ? JSON.parse(cs.items_json) : (cs.items_json || []);
+              } catch(e) {}
+
+              const parsed = {
+                id: cs.id,
+                userId: cs.user_id,
+                teamId: cs.team_id || 'team_default',
+                title: cs.title,
+                date: cs.date,
+                presetName: cs.preset_name || 'Luz Quente Natural',
+                createdAt: cs.created_at || new Date().toISOString(),
+                items: items
+              };
+              churchServices.push(parsed);
+              await dbSaveService(parsed);
+              hasNew = true;
+            }
+          }
+
+          if (hasNew) {
+            churchServices.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+            renderServicesGrid();
+            renderSidebarRecentServices();
+          }
+        }
+      } catch (e) {
+        // Non-blocking: Supabase tables might not be created yet in user project
+        console.log("Supabase Cloud Sync note:", e);
+      }
+    }
+
+    async function saveServiceToSupabaseCloud(service) {
+      if (!supabaseClient || !currentUser || !currentUser.id) return;
+      try {
+        const cleanItems = (service.items || []).map(i => ({
+          id: i.id,
+          fileName: i.fileName,
+          status: i.status,
+          isTop20: i.isTop20,
+          currentParams: i.currentParams,
+          metadata: i.metadata
+        }));
+
+        await supabaseClient.from('church_services').upsert({
+          id: service.id,
+          user_id: currentUser.id,
+          team_id: service.teamId || 'team_default',
+          title: service.title,
+          date: service.date,
+          preset_name: service.presetName || 'Luz Quente Natural',
+          created_at: service.createdAt || new Date().toISOString(),
+          items_json: cleanItems
+        });
+      } catch (e) {
+        // Non-blocking
+      }
+    }
+
+    async function deleteServiceFromSupabaseCloud(serviceId) {
+      if (!supabaseClient || !currentUser || !currentUser.id) return;
+      try {
+        await supabaseClient.from('church_services').delete().eq('id', serviceId).eq('user_id', currentUser.id);
+      } catch (e) {}
+    }
+
+    async function syncPresetsWithSupabaseCloud() {
+      if (!supabaseClient || !currentUser || !currentUser.id) return;
+      try {
+        const { data: cloudPresets, error } = await supabaseClient
+          .from('team_presets')
+          .select('*')
+          .eq('user_id', currentUser.id);
+
+        if (!error && Array.isArray(cloudPresets) && cloudPresets.length > 0) {
+          const allMap = new Map();
+          (activeTeam.presets || []).forEach(p => allMap.set(p.id, p));
+
+          for (const cp of cloudPresets) {
+            let params = {};
+            try {
+              params = typeof cp.params_json === 'string' ? JSON.parse(cp.params_json) : (cp.params_json || {});
+            } catch(e) {}
+
+            allMap.set(cp.id, {
+              id: cp.id,
+              name: cp.name,
+              category: cp.category || 'Geral',
+              icon: cp.icon || 'fa-sliders text-purple-400',
+              description: cp.description || '',
+              params: params
+            });
+          }
+
+          activeTeam.presets = Array.from(allMap.values());
+          saveTeamData();
+        }
+      } catch (e) {}
+    }
+
+    async function savePresetToSupabaseCloud(preset) {
+      if (!supabaseClient || !currentUser || !currentUser.id) return;
+      try {
+        await supabaseClient.from('team_presets').upsert({
+          id: preset.id,
+          user_id: currentUser.id,
+          name: preset.name,
+          category: preset.category || 'Geral',
+          description: preset.description || '',
+          icon: preset.icon || 'fa-sliders text-purple-400',
+          params_json: preset.params || {}
+        });
+      } catch (e) {}
+    }
+
+    async function deletePresetFromSupabaseCloud(presetId) {
+      if (!supabaseClient || !currentUser || !currentUser.id) return;
+      try {
+        await supabaseClient.from('team_presets').delete().eq('id', presetId).eq('user_id', currentUser.id);
+      } catch (e) {}
     }
 
     function checkUserSession() {
@@ -2287,6 +2466,7 @@
 
       if (!activeTeam.presets) activeTeam.presets = [];
 
+      let presetToSync = null;
       if (editId) {
         const target = activeTeam.presets.find(x => x.id === editId);
         if (target) {
@@ -2294,6 +2474,7 @@
           target.category = cat;
           target.description = desc;
           target.params = params;
+          presetToSync = target;
           showToast(`Preset "${name}" atualizado na equipe!`);
         }
       } else {
@@ -2306,10 +2487,14 @@
           params: params
         };
         activeTeam.presets.unshift(newPreset);
+        presetToSync = newPreset;
         showToast(`Novo preset "${name}" adicionado à equipe!`);
       }
 
       saveTeamData();
+      if (presetToSync) {
+        savePresetToSupabaseCloud(presetToSync).catch(() => {});
+      }
       closeSavePresetModal();
       renderTeamAreaView();
     }
@@ -2550,11 +2735,38 @@
       }
     }
 
-    // ================= SERVICES & PHOTO STORAGE (INDEXEDDB PERSISTENT & AUTH0 BOUND) =================
+    // ================= SERVICES & PHOTO STORAGE (INDEXEDDB + BACKUP + CLOUD SYNC) =================
 
     async function loadStoredServices() {
       try {
-        const loaded = await dbLoadAllServices();
+        let loaded = await dbLoadAllServices();
+
+        // Safety fallback: if indexedDB was empty or had errors, check local backup
+        if (!loaded || loaded.length === 0) {
+          try {
+            const rawBackup = localStorage.getItem('CHURCHPHOTO_SERVICES_BACKUP');
+            if (rawBackup) {
+              const parsed = JSON.parse(rawBackup);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                loaded = parsed;
+              }
+            }
+          } catch(e) {}
+        }
+
+        // Check legacy localStorage migration if still empty
+        if (!loaded || loaded.length === 0) {
+          const guestStored = localStorage.getItem('CHURCHPHOTO_SERVICES_GUEST') || localStorage.getItem('CHURCHPHOTO_SERVICES');
+          if (guestStored) {
+            try {
+              const legacy = JSON.parse(guestStored);
+              if (Array.isArray(legacy) && legacy.length > 0) {
+                loaded = legacy;
+              }
+            } catch(e) {}
+          }
+        }
+
         if (loaded && loaded.length > 0) {
           churchServices = loaded;
           if (currentUser) {
@@ -2565,24 +2777,17 @@
               }
             }
           }
-        } else {
-          // Check legacy localStorage migration if any
-          const guestStored = localStorage.getItem('CHURCHPHOTO_SERVICES_GUEST') || localStorage.getItem('CHURCHPHOTO_SERVICES');
-          if (guestStored) {
-            try {
-              const legacy = JSON.parse(guestStored);
-              if (Array.isArray(legacy) && legacy.length > 0) {
-                churchServices = legacy;
-                for (const s of churchServices) {
-                  if (currentUser) s.userId = currentUser.id;
-                  await dbSaveService(s);
-                }
-              }
-            } catch(e) {}
-          }
         }
       } catch (e) {
         console.error("loadStoredServices error:", e);
+      }
+
+      // Synchronize with Supabase cloud database if user is logged in
+      if (currentUser && currentUser.id && supabaseClient) {
+        try {
+          await syncServicesWithSupabaseCloud();
+          await syncPresetsWithSupabaseCloud();
+        } catch(e) {}
       }
 
       renderServicesGrid();
@@ -2591,9 +2796,40 @@
 
     async function saveServicesToStorage() {
       if (churchServices && churchServices.length > 0) {
+        // 1. Save full data to IndexedDB
         for (const s of churchServices) {
           if (currentUser) s.userId = currentUser.id;
           await dbSaveService(s);
+        }
+
+        // 2. Save lightweight metadata backup to localStorage (safety net)
+        try {
+          const lightweightServices = churchServices.map(s => ({
+            id: s.id,
+            userId: s.userId,
+            teamId: s.teamId,
+            title: s.title,
+            date: s.date,
+            presetName: s.presetName,
+            createdAt: s.createdAt,
+            items: (s.items || []).map(i => ({
+              id: i.id,
+              fileName: i.fileName,
+              status: i.status,
+              isTop20: i.isTop20,
+              currentParams: i.currentParams,
+              metadata: i.metadata,
+              previewUrl: (i.previewUrl && i.previewUrl.length < 50000) ? i.previewUrl : ''
+            }))
+          }));
+          localStorage.setItem('CHURCHPHOTO_SERVICES_BACKUP', JSON.stringify(lightweightServices));
+        } catch(e) {}
+
+        // 3. Save to Supabase Cloud if online and logged in
+        if (currentUser && currentUser.id && supabaseClient) {
+          for (const s of churchServices) {
+            saveServiceToSupabaseCloud(s).catch(() => {});
+          }
         }
       }
       renderSidebarRecentServices();
@@ -2839,6 +3075,7 @@
       if (event) event.stopPropagation();
       if (confirm("Tem certeza que deseja excluir este culto e suas fotos?")) {
         await dbDeleteService(serviceId);
+        deleteServiceFromSupabaseCloud(serviceId).catch(() => {});
         churchServices = churchServices.filter(s => s.id !== serviceId);
         await saveServicesToStorage();
         renderServicesGrid();
