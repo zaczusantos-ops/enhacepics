@@ -1420,7 +1420,8 @@
             if (session && session.user) {
               handleSupabaseUserSession(session.user);
               if (event === 'SIGNED_IN') {
-                showToast(`Bem-vindo(a), ${currentUser.name}!`);
+                closeSupabaseAuthModal();
+                showToast(`Bem-vindo(a), ${currentUser ? currentUser.name : 'usuário'}!`);
               }
             } else if (event === 'SIGNED_OUT') {
               currentUser = null;
@@ -1460,6 +1461,8 @@
 
       localStorage.setItem('CHURCHPHOTO_USER_SESSION', JSON.stringify(currentUser));
       renderAuthenticatedUser(currentUser);
+      loadTeamData();
+      loadStoredServices();
     }
 
     function openSupabaseAuthModal() {
@@ -1539,10 +1542,14 @@
           return;
         }
 
+        if (data && data.user) {
+          handleSupabaseUserSession(data.user);
+        }
         closeSupabaseAuthModal();
         loadTeamData();
         await loadStoredServices();
-        showToast("Conectado com sucesso via Supabase!");
+        showToast(`Bem-vindo(a) de volta, ${currentUser ? currentUser.name : ''}!`);
+
       } catch(err) {
         showSupabaseAuthAlert("Erro de conexão: " + err.message);
       } finally {
