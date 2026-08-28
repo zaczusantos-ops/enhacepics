@@ -1,4 +1,5 @@
 
+
     // Global Application State
     let churchServices = [];
     let activeService = null;
@@ -478,10 +479,28 @@
     function fileToDataUrl(file) {
       return new Promise((resolve) => {
         if (!file) { resolve(''); return; }
-        const reader = new FileReader();
-        reader.onload = (e) => resolve(e.target.result);
-        reader.onerror = () => resolve('');
-        reader.readAsDataURL(file);
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => {
+          const maxDim = 1200;
+          let w = img.width, h = img.height;
+          if (w > maxDim || h > maxDim) {
+            const ratio = maxDim / Math.max(w, h);
+            w = Math.round(w * ratio);
+            h = Math.round(h * ratio);
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          URL.revokeObjectURL(url);
+          resolve(canvas.toDataURL('image/jpeg', 0.85));
+        };
+        img.onerror = () => {
+          URL.revokeObjectURL(url);
+          resolve('');
+        };
+        img.src = url;
       });
     }
 
@@ -1623,16 +1642,6 @@ create table team_presets (
         showToast("Foto campeã da sequência atualizada!");
         renderDeduplicationGroups();
       }
-    }        </div>
-            ` : ''}
-          </div>
-        `;
-      }).join('');
-    }
-
-    function setChampionPhoto(groupId, photoId) {
-      showToast("Foto campeã da sequência atualizada!");
-      renderDeduplicationGroups();
     }
 
     function renderTop20Grid() {

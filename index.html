@@ -11,7 +11,7 @@
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-window.onerror = function(msg, url, lineNo, columnNo, error) { alert('Erro JS: ' + msg + ' na linha ' + lineNo); }; window.addEventListener('unhandledrejection', function(event) { alert('Erro Async: ' + event.reason); });
+
     tailwind.config = {
       darkMode: 'class',
       theme: {
@@ -1179,7 +1179,7 @@ window.onerror = function(msg, url, lineNo, columnNo, error) { alert('Erro JS: '
 
   <!-- ================= JAVASCRIPT CORE LOGIC ================= -->
   <script>
-window.onerror = function(msg, url, lineNo, columnNo, error) { alert('Erro JS: ' + msg + ' na linha ' + lineNo); }; window.addEventListener('unhandledrejection', function(event) { alert('Erro Async: ' + event.reason); });
+
     // Global Application State
     let churchServices = [];
     let activeService = null;
@@ -2822,16 +2822,6 @@ create table team_presets (
         showToast("Foto campeã da sequência atualizada!");
         renderDeduplicationGroups();
       }
-    }        </div>
-            ` : ''}
-          </div>
-        `;
-      }).join('');
-    }
-
-    function setChampionPhoto(groupId, photoId) {
-      showToast("Foto campeã da sequência atualizada!");
-      renderDeduplicationGroups();
     }
 
     function renderTop20Grid() {
