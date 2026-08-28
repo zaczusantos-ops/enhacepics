@@ -3671,67 +3671,97 @@ create table team_presets (
       }
 
       // --- 2. PER-PIXEL PROCESSING (Colors, Dehaze, Vignette) ---
-      const centerX = targetW / 2;
-      const centerY = targetH / 2;
-      const maxDist = Math.sqrt(centerX * centerX + centerY * centerY);
-
-      for (let y = 0; y < targetH; y++) {
-        for (let x = 0; x < targetW; x++) {
-          let i = (y * targetW + x) * 4;
-          
+      const doDehaze = dehaze !== 0;
+      const dehazeFactor = dehaze * 0.15;
+      const doSatVib = Math.abs(sat - 1.0) > 0.01 || Math.abs(vib - 1.0) > 0.01;
+      const doVig = vignette !== 0;
+      
+      const len = data.length;
+      
+      if (!doDehaze && !doSatVib && !doVig) {
+        // FASTEST PATH: Only LUT (Exposure, Contrast, WB, Tone Curve, Clarity)
+        for (let i = 0; i < len; i += 4) {
+          data[i] = lutR[data[i]];
+          data[i + 1] = lutG[data[i + 1]];
+          data[i + 2] = lutB[data[i + 2]];
+        }
+      } else if (!doVig) {
+        // FAST 1D PATH: Color grading but no spatial vignette
+        for (let i = 0; i < len; i += 4) {
           let r = lutR[data[i]];
           let g = lutG[data[i + 1]];
           let b = lutB[data[i + 2]];
 
-          // Dehaze (Subtracts atmospheric light, stretches contrast)
-          if (dehaze !== 0) {
+          if (doDehaze) {
             let darkChannel = Math.min(r, Math.min(g, b)) / 255.0;
-            let dehazeFactor = dehaze * 0.15;
             r = Math.max(0, r - dehazeFactor * 255 * (1.0 - darkChannel));
             g = Math.max(0, g - dehazeFactor * 255 * (1.0 - darkChannel));
             b = Math.max(0, b - dehazeFactor * 255 * (1.0 - darkChannel));
-            // Slight contrast stretch to compensate
             r = Math.min(255, r * (1.0 + dehazeFactor));
             g = Math.min(255, g * (1.0 + dehazeFactor));
             b = Math.min(255, b * (1.0 + dehazeFactor));
           }
 
-          // Saturation and Vibrance
-          if (Math.abs(sat - 1.0) > 0.01 || Math.abs(vib - 1.0) > 0.01) {
+          if (doSatVib) {
             let maxC = Math.max(r, Math.max(g, b));
             let minC = Math.min(r, Math.min(g, b));
             let saturationCurrent = maxC === 0 ? 0 : (maxC - minC) / maxC;
-            
-            // Vibrance protects already saturated pixels and skin tones
             let vibFactor = vib > 1.0 ? vib * (1.0 - saturationCurrent) : vib; 
-            
             let mean = (r + g + b) / 3.0;
             let finalFactor = sat * vibFactor;
-            
             r = mean + (r - mean) * finalFactor;
             g = mean + (g - mean) * finalFactor;
             b = mean + (b - mean) * finalFactor;
           }
 
-          // Vignette
-          if (vignette !== 0) {
+          data[i] = r; data[i + 1] = g; data[i + 2] = b;
+        }
+      } else {
+        // FULL 2D PATH: Vignette requires X/Y coordinates
+        const centerX = targetW / 2;
+        const centerY = targetH / 2;
+        const maxDist = Math.sqrt(centerX * centerX + centerY * centerY);
+
+        for (let y = 0; y < targetH; y++) {
+          for (let x = 0; x < targetW; x++) {
+            let i = (y * targetW + x) * 4;
+            
+            let r = lutR[data[i]];
+            let g = lutG[data[i + 1]];
+            let b = lutB[data[i + 2]];
+
+            if (doDehaze) {
+              let darkChannel = Math.min(r, Math.min(g, b)) / 255.0;
+              r = Math.max(0, r - dehazeFactor * 255 * (1.0 - darkChannel));
+              g = Math.max(0, g - dehazeFactor * 255 * (1.0 - darkChannel));
+              b = Math.max(0, b - dehazeFactor * 255 * (1.0 - darkChannel));
+              r = Math.min(255, r * (1.0 + dehazeFactor));
+              g = Math.min(255, g * (1.0 + dehazeFactor));
+              b = Math.min(255, b * (1.0 + dehazeFactor));
+            }
+
+            if (doSatVib) {
+              let maxC = Math.max(r, Math.max(g, b));
+              let minC = Math.min(r, Math.min(g, b));
+              let saturationCurrent = maxC === 0 ? 0 : (maxC - minC) / maxC;
+              let vibFactor = vib > 1.0 ? vib * (1.0 - saturationCurrent) : vib; 
+              let mean = (r + g + b) / 3.0;
+              let finalFactor = sat * vibFactor;
+              r = mean + (r - mean) * finalFactor;
+              g = mean + (g - mean) * finalFactor;
+              b = mean + (b - mean) * finalFactor;
+            }
+
             let dx = x - centerX;
             let dy = y - centerY;
             let dist = Math.sqrt(dx*dx + dy*dy) / maxDist;
-            let vigMult = 1.0;
-            if (vignette < 0) { // Darken edges
-              vigMult = 1.0 + (vignette * Math.pow(dist, 2.0));
-            } else { // Lighten edges (White vignette)
-              vigMult = 1.0 + (vignette * Math.pow(dist, 2.0)); 
-              // To lighten, we need to add to pixels, not multiply if we want white.
-              // We'll stick to a simple multiplier for ease (it burns edges).
-            }
+            let vigMult = 1.0 + (vignette * Math.pow(dist, 2.0));
             r = Math.min(255, r * vigMult);
             g = Math.min(255, g * vigMult);
             b = Math.min(255, b * vigMult);
-          }
 
-          data[i] = r; data[i + 1] = g; data[i + 2] = b;
+            data[i] = r; data[i + 1] = g; data[i + 2] = b;
+          }
         }
       }
 
