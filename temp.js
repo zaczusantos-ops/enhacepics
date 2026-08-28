@@ -32,139 +32,227 @@
     let animFrameRequested = false;
 
     const DEFAULT_TEAM_PRESETS = [
-      {
-        id: "luz_quente_natural",
-        name: "Luz Quente Natural",
-        category: "Louvor",
-        icon: "fa-sun text-amber-400",
-        description: "Tons de pele acolhedores e calor orgânico para louvor e palavra.",
-        params: {
-          exposure_compensation: 0.20,
-          temperature_kelvin: 5700,
-          tint: -2.0,
-          contrast: 1.06,
-          highlights: -0.45,
-          shadows: 0.40,
-          whites: 0.10,
-          blacks: 0.05,
-          saturation: 1.04,
-          vibrance: 1.08,
-          clarity: 0.15,
-          dehaze: 0.0,
-          vignette: -0.15
-        }
-      },
-      {
-        id: "clean_moderno_neutro",
-        name: "Clean / Moderno Neutro",
-        category: "Pregação",
-        icon: "fa-wand-magic text-blue-400",
-        description: "Balanço de estúdio limpo com clareza nos médios e correção de reflexos.",
-        params: {
-          exposure_compensation: 0.10,
-          temperature_kelvin: 5400,
-          tint: 0.0,
-          contrast: 1.10,
-          highlights: -0.55,
-          shadows: 0.35,
-          whites: -0.05,
-          blacks: 0.10,
-          saturation: 0.98,
-          vibrance: 1.02,
-          clarity: 0.25,
-          dehaze: 0.05,
-          vignette: -0.20
-        }
-      },
-      {
-        id: "moody_contraste_cenico",
-        name: "Moody / Contraste Cênico",
-        category: "Jovens",
-        icon: "fa-film text-purple-400",
-        description: "Visual cinematográfico com sombras profundas e isolamento cênico.",
-        params: {
-          exposure_compensation: -0.05,
-          temperature_kelvin: 5100,
-          tint: 4.0,
-          contrast: 1.22,
-          highlights: -0.65,
-          shadows: 0.15,
-          whites: -0.10,
-          blacks: -0.20,
-          saturation: 1.06,
-          vibrance: 1.12,
-          clarity: 0.45,
-          dehaze: 0.15,
-          vignette: -0.40
-        }
-      },
-      {
-        id: "vintage_analogico",
-        name: "Vintage Analógico",
-        category: "Estilo",
-        icon: "fa-camera-retro text-amber-500",
-        description: "Pretos esmaecidos (fade), sombras quentes e contraste orgânico.",
-        params: {
-          exposure_compensation: 0.0,
-          temperature_kelvin: 5900,
-          tint: 3.0,
-          contrast: 0.95,
-          highlights: -0.20,
-          shadows: 0.50,
-          whites: -0.25,
-          blacks: 0.60,
-          saturation: 0.85,
-          vibrance: 0.90,
-          clarity: -0.10,
-          dehaze: -0.05,
-          vignette: -0.25
-        }
-      },
-      {
-        id: "pb_dramatico",
-        name: "P&B Dramático",
-        category: "Fine Art",
-        icon: "fa-circle-half-stroke text-slate-300",
-        description: "Sem saturação. Alto contraste, pretos profundos e brancos definidos.",
-        params: {
-          exposure_compensation: 0.10,
-          temperature_kelvin: 5500,
-          tint: 0.0,
-          contrast: 1.35,
-          highlights: -0.30,
-          shadows: -0.25,
-          whites: 0.35,
-          blacks: -0.40,
-          saturation: 0.0,
-          vibrance: 0.0,
-          clarity: 0.60,
-          dehaze: 0.30,
-          vignette: -0.50
-        }
-      },
-      {
-        id: "culto_celebracao",
-        name: "Culto de Celebração",
-        category: "Eventos",
-        icon: "fa-fire text-red-500",
-        description: "Cores vivas, alta clareza e recuperação potente de telões em fotos abertas.",
-        params: {
-          exposure_compensation: 0.25,
-          temperature_kelvin: 5600,
-          tint: 1.0,
-          contrast: 1.15,
-          highlights: -0.85,
-          shadows: 0.55,
-          whites: -0.15,
-          blacks: 0.0,
-          saturation: 1.10,
-          vibrance: 1.25,
-          clarity: 0.50,
-          dehaze: 0.20,
-          vignette: -0.15
-        }
-      }
-    ];
+  {
+    id: "warm_worship",
+    name: "Warm Worship (Adoração Acolhedora)",
+    category: "Louvor",
+    icon: "fa-sun text-amber-400",
+    description: "Ideal para momentos de louvor com iluminação quente de palco.",
+    params: {
+      exposure_compensation: 0.0,
+      temperature_kelvin: 6100, 
+      tint: 0.0,
+      contrast: 1.0,
+      highlights: -0.40,
+      shadows: 0.30,
+      whites: 0.0,
+      blacks: 0.0,
+      saturation: 1.0,
+      vibrance: 1.0,
+      clarity: 0.0,
+      dehaze: 0.0,
+      vignette: 0.0
+    }
+  },
+  {
+    id: "clean_bright",
+    name: "Clean & Bright (Culto Matutino)",
+    category: "Matutino",
+    icon: "fa-sun text-blue-400",
+    description: "Perfeito para cultos durante o dia, batismos e reuniões com bastante luz natural.",
+    params: {
+      exposure_compensation: 0.40,
+      temperature_kelvin: 5500,
+      tint: 0.0,
+      contrast: 1.10,
+      highlights: 0.0,
+      shadows: 0.0,
+      whites: 0.0,
+      blacks: 0.15,
+      saturation: 0.95,
+      vibrance: 1.0,
+      clarity: 0.0,
+      dehaze: 0.0,
+      vignette: 0.0
+    }
+  },
+  {
+    id: "moody_stage",
+    name: "Moody Stage (Palco Dramático)",
+    category: "Jovens",
+    icon: "fa-film text-purple-400",
+    description: "Destaque para feixes de luz, fumaça de palco e momentos intensos.",
+    params: {
+      exposure_compensation: 0.0,
+      temperature_kelvin: 5500,
+      tint: 0.0,
+      contrast: 1.25,
+      highlights: -0.60,
+      shadows: -0.15,
+      whites: 0.0,
+      blacks: -0.10,
+      saturation: 1.0,
+      vibrance: 1.0,
+      clarity: 0.0,
+      dehaze: -0.15,
+      vignette: 0.0
+    }
+  },
+  {
+    id: "natural_skin_tone",
+    name: "Natural Skin Tone (Retratos)",
+    category: "Retratos",
+    icon: "fa-user text-emerald-400",
+    description: "Foco na fidelidade das cores para fotos de pregadores.",
+    params: {
+      exposure_compensation: 0.10, 
+      temperature_kelvin: 5500,
+      tint: 0.0,
+      contrast: 1.0,
+      highlights: 0.0,
+      shadows: 0.0,
+      whites: 0.0,
+      blacks: 0.0,
+      saturation: 0.95,
+      vibrance: 1.0,
+      clarity: 0.15, 
+      dehaze: 0.0,
+      vignette: 0.0
+    }
+  },
+  {
+    id: "deep_matte",
+    name: "Deep Matte (Editorial)",
+    category: "Redes Sociais",
+    icon: "fa-image text-slate-400",
+    description: "Visual moderno para posts do Instagram e materiais de divulgação.",
+    params: {
+      exposure_compensation: 0.0,
+      temperature_kelvin: 5500,
+      tint: 0.0,
+      contrast: 0.90,
+      highlights: 0.0,
+      shadows: 0.0,
+      whites: 0.0,
+      blacks: 0.20,
+      saturation: 0.85,
+      vibrance: 1.0,
+      clarity: 0.10,
+      dehaze: 0.0,
+      vignette: 0.0
+    }
+  },
+  {
+    id: "golden_hour_glow",
+    name: "Golden Hour Glow (Externas)",
+    category: "Externas",
+    icon: "fa-sun text-orange-400",
+    description: "Para batismos em rios, retiros e piqueniques de jovens ao entardecer.",
+    params: {
+      exposure_compensation: 0.0,
+      temperature_kelvin: 6500,
+      tint: 0.0,
+      contrast: 1.0,
+      highlights: -0.30,
+      shadows: 0.0,
+      whites: 0.0,
+      blacks: 0.0,
+      saturation: 1.0,
+      vibrance: 1.0,
+      clarity: 0.0,
+      dehaze: 0.0,
+      vignette: 0.0
+    }
+  },
+  {
+    id: "stage_light_fix",
+    name: "Stage Light Fix (Correção)",
+    category: "Correção",
+    icon: "fa-wrench text-red-400",
+    description: "Corrige rostos estourados por LEDs fortes.",
+    params: {
+      exposure_compensation: 0.15,
+      temperature_kelvin: 5500,
+      tint: 0.0,
+      contrast: 1.0,
+      highlights: -0.50,
+      shadows: 0.0,
+      whites: 0.0,
+      blacks: 0.0,
+      saturation: 0.75,
+      vibrance: 1.0,
+      clarity: 0.0,
+      dehaze: 0.0,
+      vignette: 0.0
+    }
+  },
+  {
+    id: "monochrome_worship",
+    name: "Monochrome Worship (P&B)",
+    category: "Fine Art",
+    icon: "fa-circle-half-stroke text-slate-300",
+    description: "Transmite solenidade, emoção e foco nas expressões.",
+    params: {
+      exposure_compensation: 0.10,
+      temperature_kelvin: 5500,
+      tint: 0.0,
+      contrast: 1.35,
+      highlights: 0.0,
+      shadows: 0.0,
+      whites: 0.0,
+      blacks: 0.0,
+      saturation: 0.0,
+      vibrance: 1.0,
+      clarity: 0.15,
+      dehaze: 0.0,
+      vignette: 0.0
+    }
+  },
+  {
+    id: "vintage_film",
+    name: "Vintage Film (Comunhão)",
+    category: "Estilo",
+    icon: "fa-camera-retro text-amber-600",
+    description: "Curva em S suave com pretos lavados, para memórias e comunhão.",
+    params: {
+      exposure_compensation: 0.0,
+      temperature_kelvin: 5800,
+      tint: 0.0,
+      contrast: 1.15,
+      highlights: 0.0,
+      shadows: 0.0,
+      whites: 0.0,
+      blacks: 0.20,
+      saturation: 0.90,
+      vibrance: 1.0,
+      clarity: 0.0,
+      dehaze: 0.0,
+      vignette: 0.0
+    }
+  },
+  {
+    id: "low_light_noise_control",
+    name: "Low-Light Noise Control",
+    category: "Noturno",
+    icon: "fa-moon text-indigo-400",
+    description: "Para fotos tiradas com ISO elevado em momentos mais escuros do culto.",
+    params: {
+      exposure_compensation: 0.0,
+      temperature_kelvin: 5500,
+      tint: 0.0,
+      contrast: 1.0,
+      highlights: 0.0,
+      shadows: 0.40,
+      whites: 0.0,
+      blacks: -0.10,
+      saturation: 1.0,
+      vibrance: 1.0,
+      clarity: -0.20,
+      dehaze: 0.0,
+      vignette: 0.0
+    }
+  }
+];
 
     // ================= SUPABASE CLIENT & AUTHENTICATION =================
     const SUPABASE_URL = "https://eioigfblgpufwkrlalxz.supabase.co";
@@ -1029,13 +1117,9 @@ create table team_presets (
     }
 
     function loadTeamData() {
-      // Gather all potential sources of custom presets
-      let userPresets = [];
-      try {
-        const globalRaw = localStorage.getItem('CHURCHPHOTO_SAVED_PRESETS_MASTER');
-        if (globalRaw) userPresets = JSON.parse(globalRaw);
-      } catch(e) {}
-
+      // CLEAR CACHE TO FORCE NEW PRESETS
+      localStorage.removeItem('CHURCHPHOTO_SAVED_PRESETS_MASTER');
+      
       const key = getStorageTeamKey();
       let storedTeam = null;
       try {
@@ -1057,12 +1141,10 @@ create table team_presets (
       const allPresetsMap = new Map();
       DEFAULT_TEAM_PRESETS.forEach(p => allPresetsMap.set(p.id, { ...p }));
 
-      if (storedTeam && storedTeam.presets && Array.isArray(storedTeam.presets)) {
-        storedTeam.presets.forEach(p => allPresetsMap.set(p.id, p));
+//       // if (storedTeam && storedTeam.presets && Array.isArray(storedTeam.presets)) {
       }
 
-      if (Array.isArray(userPresets)) {
-        userPresets.forEach(p => allPresetsMap.set(p.id, p));
+//       // if (Array.isArray(userPresets)) {
       }
 
       activeTeam = {
@@ -1515,13 +1597,32 @@ create table team_presets (
         b1.className = "px-3 py-1.5 rounded-lg bg-amber-600 text-white font-bold flex items-center gap-1.5 transition-all";
         renderDeduplicationGroups();
       } else if (step === 2) {
+        // Descartar fotos duplicadas (não campeãs) da Fase 1
+        if (activeService && activeService.dedupGroups) {
+          const discardedIds = new Set();
+          activeService.dedupGroups.forEach(g => {
+            g.allPhotos.forEach(p => {
+              if (p.id !== g.championId) discardedIds.add(p.id);
+            });
+          });
+          activeService.items = activeService.items.filter(i => !discardedIds.has(i.id));
+          dbSaveService(activeService);
+        }
+
         s1.style.display = 'none'; s1.classList.add('hidden');
         s2.style.display = 'flex'; s2.classList.remove('hidden');
         s3.style.display = 'none'; s3.classList.add('hidden');
         b2.className = "px-3 py-1.5 rounded-lg bg-blue-600 text-white font-bold flex items-center gap-1.5 transition-all";
         renderTop20Grid();
       } else {
-        switchMainView('studio');
+        // Enviar para Fase 3 (Studio) apenas as selecionadas na Fase 2
+        if (activeService && activeService.items) {
+          activeService.items = activeService.items.filter(i => i.isTop20 !== false);
+          dbSaveService(activeService);
+          openServiceInStudio(activeService.id);
+        } else {
+          switchMainView('studio');
+        }
       }
     }
 
@@ -2299,8 +2400,6 @@ create table team_presets (
         document.getElementById('val_blacks').textContent = `${Math.round((p.blacks || 0.0)*100)}%`;
         document.getElementById('param_saturation').value = p.saturation !== undefined ? p.saturation : 1.0;
         document.getElementById('val_saturation').textContent = `${Math.round((p.saturation !== undefined ? p.saturation : 1.0)*100)}%`;
-        document.getElementById('param_vibrance').value = p.vibrance !== undefined ? p.vibrance : 1.0;
-        document.getElementById('val_vibrance').textContent = `${Math.round((p.vibrance !== undefined ? p.vibrance : 1.0)*100)}%`;
         document.getElementById('param_clarity').value = p.clarity || 0.0;
         document.getElementById('val_clarity').textContent = `${Math.round((p.clarity || 0.0)*100)}%`;
         document.getElementById('param_dehaze').value = p.dehaze || 0.0;
@@ -2491,67 +2590,97 @@ create table team_presets (
       }
 
       // --- 2. PER-PIXEL PROCESSING (Colors, Dehaze, Vignette) ---
-      const centerX = targetW / 2;
-      const centerY = targetH / 2;
-      const maxDist = Math.sqrt(centerX * centerX + centerY * centerY);
-
-      for (let y = 0; y < targetH; y++) {
-        for (let x = 0; x < targetW; x++) {
-          let i = (y * targetW + x) * 4;
-          
+      const doDehaze = dehaze !== 0;
+      const dehazeFactor = dehaze * 0.15;
+      const doSatVib = Math.abs(sat - 1.0) > 0.01 || Math.abs(vib - 1.0) > 0.01;
+      const doVig = vignette !== 0;
+      
+      const len = data.length;
+      
+      if (!doDehaze && !doSatVib && !doVig) {
+        // FASTEST PATH: Only LUT (Exposure, Contrast, WB, Tone Curve, Clarity)
+        for (let i = 0; i < len; i += 4) {
+          data[i] = lutR[data[i]];
+          data[i + 1] = lutG[data[i + 1]];
+          data[i + 2] = lutB[data[i + 2]];
+        }
+      } else if (!doVig) {
+        // FAST 1D PATH: Color grading but no spatial vignette
+        for (let i = 0; i < len; i += 4) {
           let r = lutR[data[i]];
           let g = lutG[data[i + 1]];
           let b = lutB[data[i + 2]];
 
-          // Dehaze (Subtracts atmospheric light, stretches contrast)
-          if (dehaze !== 0) {
+          if (doDehaze) {
             let darkChannel = Math.min(r, Math.min(g, b)) / 255.0;
-            let dehazeFactor = dehaze * 0.15;
             r = Math.max(0, r - dehazeFactor * 255 * (1.0 - darkChannel));
             g = Math.max(0, g - dehazeFactor * 255 * (1.0 - darkChannel));
             b = Math.max(0, b - dehazeFactor * 255 * (1.0 - darkChannel));
-            // Slight contrast stretch to compensate
             r = Math.min(255, r * (1.0 + dehazeFactor));
             g = Math.min(255, g * (1.0 + dehazeFactor));
             b = Math.min(255, b * (1.0 + dehazeFactor));
           }
 
-          // Saturation and Vibrance
-          if (Math.abs(sat - 1.0) > 0.01 || Math.abs(vib - 1.0) > 0.01) {
+          if (doSatVib) {
             let maxC = Math.max(r, Math.max(g, b));
             let minC = Math.min(r, Math.min(g, b));
             let saturationCurrent = maxC === 0 ? 0 : (maxC - minC) / maxC;
-            
-            // Vibrance protects already saturated pixels and skin tones
             let vibFactor = vib > 1.0 ? vib * (1.0 - saturationCurrent) : vib; 
-            
             let mean = (r + g + b) / 3.0;
             let finalFactor = sat * vibFactor;
-            
             r = mean + (r - mean) * finalFactor;
             g = mean + (g - mean) * finalFactor;
             b = mean + (b - mean) * finalFactor;
           }
 
-          // Vignette
-          if (vignette !== 0) {
+          data[i] = r; data[i + 1] = g; data[i + 2] = b;
+        }
+      } else {
+        // FULL 2D PATH: Vignette requires X/Y coordinates
+        const centerX = targetW / 2;
+        const centerY = targetH / 2;
+        const maxDist = Math.sqrt(centerX * centerX + centerY * centerY);
+
+        for (let y = 0; y < targetH; y++) {
+          for (let x = 0; x < targetW; x++) {
+            let i = (y * targetW + x) * 4;
+            
+            let r = lutR[data[i]];
+            let g = lutG[data[i + 1]];
+            let b = lutB[data[i + 2]];
+
+            if (doDehaze) {
+              let darkChannel = Math.min(r, Math.min(g, b)) / 255.0;
+              r = Math.max(0, r - dehazeFactor * 255 * (1.0 - darkChannel));
+              g = Math.max(0, g - dehazeFactor * 255 * (1.0 - darkChannel));
+              b = Math.max(0, b - dehazeFactor * 255 * (1.0 - darkChannel));
+              r = Math.min(255, r * (1.0 + dehazeFactor));
+              g = Math.min(255, g * (1.0 + dehazeFactor));
+              b = Math.min(255, b * (1.0 + dehazeFactor));
+            }
+
+            if (doSatVib) {
+              let maxC = Math.max(r, Math.max(g, b));
+              let minC = Math.min(r, Math.min(g, b));
+              let saturationCurrent = maxC === 0 ? 0 : (maxC - minC) / maxC;
+              let vibFactor = vib > 1.0 ? vib * (1.0 - saturationCurrent) : vib; 
+              let mean = (r + g + b) / 3.0;
+              let finalFactor = sat * vibFactor;
+              r = mean + (r - mean) * finalFactor;
+              g = mean + (g - mean) * finalFactor;
+              b = mean + (b - mean) * finalFactor;
+            }
+
             let dx = x - centerX;
             let dy = y - centerY;
             let dist = Math.sqrt(dx*dx + dy*dy) / maxDist;
-            let vigMult = 1.0;
-            if (vignette < 0) { // Darken edges
-              vigMult = 1.0 + (vignette * Math.pow(dist, 2.0));
-            } else { // Lighten edges (White vignette)
-              vigMult = 1.0 + (vignette * Math.pow(dist, 2.0)); 
-              // To lighten, we need to add to pixels, not multiply if we want white.
-              // We'll stick to a simple multiplier for ease (it burns edges).
-            }
+            let vigMult = 1.0 + (vignette * Math.pow(dist, 2.0));
             r = Math.min(255, r * vigMult);
             g = Math.min(255, g * vigMult);
             b = Math.min(255, b * vigMult);
-          }
 
-          data[i] = r; data[i + 1] = g; data[i + 2] = b;
+            data[i] = r; data[i + 1] = g; data[i + 2] = b;
+          }
         }
       }
 
@@ -2566,29 +2695,49 @@ create table team_presets (
     }
 
     function analyzeImageHeuristic(imgElement) {
-      return {
-        exposure_compensation: 0.15,
-        temperature_kelvin: 5600,
-        tint: 0.0,
-        contrast: 1.10,
-        highlights: -0.45,
-        shadows: 0.35,
-        whites: 0.0,
-        blacks: 0.0,
-        saturation: 1.03,
-        vibrance: 1.07,
-        clarity: 0.20,
-        dehaze: 0.10,
-        vignette: -0.15,
-        focal_point_x: 0.50,
-        focal_point_y: 0.40,
-        f_stop_simulation: 2.8,
-        bokeh_smoothness: 0.75,
-        subject_microcontrast: 0.75,
-        scene_moment: "Louvor / Palco",
-        detected_lighting_condition: "Iluminação cênica de culto",
-        analysis_summary: "Diagnóstico DSLR: Calibração de cor, atenuação de LEDs e profundidade f/2.8."
-      };
+      if (!imgElement || !imgElement.width) return activeTeam.presets[0].params;
+
+      const cvs = document.createElement('canvas');
+      cvs.width = 16;
+      cvs.height = 16;
+      const ctx = cvs.getContext('2d');
+      ctx.drawImage(imgElement, 0, 0, 16, 16);
+      const data = ctx.getImageData(0, 0, 16, 16).data;
+
+      let totalBrightness = 0;
+      let totalR = 0, totalG = 0, totalB = 0;
+
+      for(let i = 0; i < data.length; i += 4) {
+        let r = data[i], g = data[i+1], b = data[i+2];
+        totalR += r; totalG += g; totalB += b;
+        totalBrightness += (r * 0.299 + g * 0.587 + b * 0.114);
+      }
+
+      const pixelCount = 256;
+      const avgBrightness = totalBrightness / pixelCount;
+      const avgR = totalR / pixelCount;
+      const avgB = totalB / pixelCount;
+
+      let chosenId = 'natural_skin_tone';
+
+      if (avgR > avgB + 80 || avgB > avgR + 80) {
+        chosenId = 'stage_light_fix';
+      } else if (avgBrightness < 60) {
+        chosenId = 'low_light_noise_control';
+      } else if (avgBrightness > 160) {
+        chosenId = 'clean_bright';
+      } else if (avgR > avgB + 40 && avgBrightness > 100) {
+        chosenId = 'golden_hour_glow';
+      } else if (avgBrightness < 100 && avgR > avgB + 20) {
+        chosenId = 'warm_worship';
+      } else if (avgBrightness < 90) {
+        chosenId = 'moody_stage';
+      }
+
+      const p = (activeTeam.presets || []).find(x => x.id === chosenId);
+      
+      const suggestedParams = p ? { ...p.params } : (activeTeam.presets[0] ? activeTeam.presets[0].params : {});
+      return { ...suggestedParams, _ai_suggested_id: chosenId };
     }
 
     // ================= INTERACTION CONTROLS =================
@@ -2665,7 +2814,7 @@ create table team_presets (
         whites: parseFloat(document.getElementById('param_whites').value),
         blacks: parseFloat(document.getElementById('param_blacks').value),
         saturation: parseFloat(document.getElementById('param_saturation').value),
-        vibrance: parseFloat(document.getElementById('param_vibrance').value),
+        vibrance: 1.0,
         clarity: parseFloat(document.getElementById('param_clarity').value),
         dehaze: parseFloat(document.getElementById('param_dehaze').value),
         vignette: parseFloat(document.getElementById('param_vignette').value)
