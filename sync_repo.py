@@ -36,7 +36,7 @@ def main():
     try:
         commit_sha = porcelain.commit(
             str(REPO_PATH),
-            message=b"feat: Sistema completo de pos-processamento fotografico para cultos (ChurchPhoto Pro)",
+            message=b"feat: Big Update - Remocao Equipes, IA Rigorosa e Presets Lightroom",
             author=b"ChurchPhoto Pro Bot <bot@churchphoto.pro>",
             committer=b"ChurchPhoto Pro Bot <bot@churchphoto.pro>"
         )

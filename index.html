@@ -153,42 +153,14 @@
           <span id="sidePhotosCountBadge" class="sidebar-badge px-1.5 py-0.2 rounded-full bg-church-950 text-slate-400 text-[10px] font-mono">0 fotos</span>
         </button>
 
-        <!-- Área da Equipe & Presets Integrados -->
+        <!-- Meus Presets Integrados -->
         <button onclick="switchMainView('team_area')" id="sideNavTeamArea" class="sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-church-800/70 transition-all cursor-pointer">
           <div class="flex items-center gap-2.5">
-            <i class="fa-solid fa-users-gear text-sm w-4 text-center text-purple-400"></i>
-            <span class="sidebar-text">Equipe & Presets</span>
+            <i class="fa-solid fa-sliders text-sm w-4 text-center text-purple-400"></i>
+            <span class="sidebar-text">Meus Presets</span>
           </div>
-          <span id="sideTeamPresetsCountBadge" class="sidebar-badge px-1.5 py-0.2 rounded-full bg-purple-950 text-purple-300 text-[10px] font-mono font-bold">3 presets</span>
+          <span id="sideTeamPresetsCountBadge" class="sidebar-badge px-1.5 py-0.2 rounded-full bg-purple-950 text-purple-300 text-[10px] font-mono font-bold">6 presets</span>
         </button>
-      </div>
-
-      <!-- DEDICATED REAL TEAM SECTION IN SIDEBAR (NO PHANTOMS) -->
-      <div class="sidebar-team-section pt-2 border-t border-church-800/70 space-y-2">
-        <div class="flex items-center justify-between px-2.5">
-          <span class="text-[10px] font-bold tracking-wider uppercase text-slate-400 flex items-center gap-1.5">
-            <i class="fa-solid fa-users text-blue-400"></i> Equipe Ativa
-          </span>
-          <button onclick="switchMainView('team_area')" class="text-[10px] text-purple-400 hover:underline font-semibold cursor-pointer">
-            Gerenciar
-          </button>
-        </div>
-
-        <div class="p-2.5 rounded-xl bg-church-950/80 border border-church-800/80 text-xs">
-          <div class="flex items-center justify-between mb-2">
-            <span id="sidebarTeamTitle" class="font-bold text-white truncate max-w-[130px]">Mídia Principal</span>
-            <span id="sidebarTeamCountBadge" class="text-[9px] px-1.5 py-0.2 rounded bg-church-900 text-blue-300 border border-blue-900/50 font-mono">1 membro</span>
-          </div>
-          
-          <!-- Real Members List Container -->
-          <div id="sidebarRealMembersList" class="space-y-1">
-            <!-- Rendered purely based on authenticated user and user-added members -->
-          </div>
-
-          <button onclick="openInviteMemberModal()" class="w-full mt-2 py-1.5 px-2 rounded-lg bg-church-900 hover:bg-church-850 border border-church-800 text-[10px] text-blue-400 font-semibold flex items-center justify-center gap-1 cursor-pointer">
-            <i class="fa-solid fa-user-plus text-[9px]"></i> + Convidar Voluntário
-          </button>
-        </div>
       </div>
 
       <!-- Recent Cultos List -->
@@ -458,7 +430,7 @@
                 <i class="fa-solid fa-crop-simple"></i> Fase 3: Smart Crop 4:5 Vertical & Calibração DSLR
               </div>
               <p class="text-xs text-slate-300">
-                Ajuste o recorte inteligente sugerido pelo Gemini para o feed do Instagram e aplique presets da equipe.
+                Ajuste o recorte inteligente sugerido pelo Gemini para o feed do Instagram e aplique Meus Presets.
               </p>
             </div>
             <button onclick="downloadActiveServiceZip()" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-emerald-600/30 cursor-pointer">
@@ -517,7 +489,7 @@
         <div class="flex flex-col gap-2">
           <div class="flex items-center justify-between px-1">
             <span class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-              <i class="fa-solid fa-sliders text-purple-400"></i> Presets da Equipe: <span id="studioTeamNameLabel" class="text-blue-400 font-bold">Mídia Principal</span>
+              <i class="fa-solid fa-sliders text-purple-400"></i> Meus Presets: <span id="studioTeamNameLabel" class="text-blue-400 font-bold">Mídia Principal</span>
             </span>
             <div class="flex items-center gap-3">
               <button onclick="openSavePresetModal()" class="text-[11px] text-blue-400 hover:underline font-semibold flex items-center gap-1 cursor-pointer">
@@ -698,170 +670,117 @@
             </button>
           </div>
 
-          <!-- TAB 1: COR & LUZ -->
-          <div id="tabContent1" class="flex flex-col gap-3.5">
+          <!-- TAB 1: LUZ & COR -->
+          <div id="tabContent1" class="flex flex-col gap-3.5 block" style="display: block;">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
               <div>
                 <div class="flex justify-between text-slate-300 mb-1">
-                  <span>Compensação de Exposição</span>
-                  <span id="val_exposure" class="font-mono text-blue-400 font-bold">0.0 EV</span>
+                  <span>Exposição (EV)</span>
+                  <span id="val_exposure" class="font-mono text-blue-400 font-bold">0.00</span>
                 </div>
-                <input type="range" id="param_exposure" min="-2.0" max="2.0" step="0.05" oninput="updateSliderAndReprocess('exposure', this.value, ' EV')" class="w-full accent-blue-500 h-2 bg-church-950 rounded-lg">
+                <input type="range" id="param_exposure" min="-3.0" max="3.0" step="0.05" value="0" oninput="updateSliderAndReprocess('exposure', this.value, '')" class="w-full accent-blue-500 h-2 bg-church-950 rounded-lg">
               </div>
 
               <div>
                 <div class="flex justify-between text-slate-300 mb-1">
-                  <span>Temperatura de Cor (Kelvin)</span>
+                  <span>Contraste</span>
+                  <span id="val_contrast" class="font-mono text-blue-400 font-bold">1.00x</span>
+                </div>
+                <input type="range" id="param_contrast" min="0.50" max="1.50" step="0.02" value="1.0" oninput="updateSliderAndReprocess('contrast', parseFloat(this.value).toFixed(2), 'x')" class="w-full accent-blue-500 h-2 bg-church-950 rounded-lg">
+              </div>
+
+              <div>
+                <div class="flex justify-between text-amber-300 font-semibold mb-1">
+                  <span>Realces (Highlights)</span>
+                  <span id="val_highlights" class="font-mono text-amber-400 font-bold">0%</span>
+                </div>
+                <input type="range" id="param_highlights" min="-1.0" max="1.0" step="0.05" value="0" oninput="updateSliderAndReprocess('highlights', Math.round(this.value*100), '%')" class="w-full accent-amber-500 h-2 bg-church-950 rounded-lg">
+              </div>
+
+              <div>
+                <div class="flex justify-between text-slate-300 mb-1">
+                  <span>Sombras (Shadows)</span>
+                  <span id="val_shadows" class="font-mono text-blue-400 font-bold">0%</span>
+                </div>
+                <input type="range" id="param_shadows" min="-1.0" max="1.0" step="0.05" value="0" oninput="updateSliderAndReprocess('shadows', Math.round(this.value*100), '%')" class="w-full accent-blue-500 h-2 bg-church-950 rounded-lg">
+              </div>
+
+              <div>
+                <div class="flex justify-between text-slate-300 mb-1">
+                  <span>Brancos (Whites)</span>
+                  <span id="val_whites" class="font-mono text-slate-100 font-bold">0%</span>
+                </div>
+                <input type="range" id="param_whites" min="-1.0" max="1.0" step="0.05" value="0" oninput="updateSliderAndReprocess('whites', Math.round(this.value*100), '%')" class="w-full accent-slate-300 h-2 bg-church-950 rounded-lg">
+              </div>
+
+              <div>
+                <div class="flex justify-between text-slate-300 mb-1">
+                  <span>Pretos (Blacks)</span>
+                  <span id="val_blacks" class="font-mono text-slate-500 font-bold">0%</span>
+                </div>
+                <input type="range" id="param_blacks" min="-1.0" max="1.0" step="0.05" value="0" oninput="updateSliderAndReprocess('blacks', Math.round(this.value*100), '%')" class="w-full accent-slate-500 h-2 bg-church-950 rounded-lg">
+              </div>
+
+              <div>
+                <div class="flex justify-between text-amber-300 font-semibold mb-1">
+                  <span>Temp (Kelvin)</span>
                   <span id="val_kelvin" class="font-mono text-amber-400 font-bold">5500K</span>
                 </div>
-                <input type="range" id="param_kelvin" min="2500" max="9000" step="50" oninput="updateSliderAndReprocess('kelvin', this.value, 'K')" class="w-full accent-amber-500 h-2 bg-church-950 rounded-lg">
+                <input type="range" id="param_kelvin" min="2500" max="9000" step="50" value="5500" oninput="updateSliderAndReprocess('kelvin', this.value, 'K')" class="w-full accent-amber-500 h-2 bg-church-950 rounded-lg">
               </div>
 
-              <div>
-                <div class="flex justify-between text-slate-300 mb-1">
-                  <span>Matiz / Tint (Verde / Magenta)</span>
-                  <span id="val_tint" class="font-mono text-pink-400 font-bold">0.0</span>
-                </div>
-                <input type="range" id="param_tint" min="-50.0" max="50.0" step="1.0" oninput="updateSliderAndReprocess('tint', this.value, '')" class="w-full accent-pink-500 h-2 bg-church-950 rounded-lg">
-              </div>
-
-              <div>
-                <div class="flex justify-between text-slate-300 mb-1">
-                  <span>Curva Tonal / Contraste</span>
-                  <span id="val_contrast" class="font-mono text-blue-400 font-bold">1.10x</span>
-                </div>
-                <input type="range" id="param_contrast" min="0.80" max="1.50" step="0.02" oninput="updateSliderAndReprocess('contrast', this.value, 'x')" class="w-full accent-blue-500 h-2 bg-church-950 rounded-lg">
-              </div>
-
-              <div>
-                <div class="flex justify-between text-slate-300 mb-1">
-                  <span>Recuperação de Altas Luzes (Telões)</span>
-                  <span id="val_highlights" class="font-mono text-blue-400 font-bold">40%</span>
-                </div>
-                <input type="range" id="param_highlights" min="0.0" max="1.0" step="0.05" oninput="updateSliderAndReprocess('highlights', Math.round(this.value*100), '%')" class="w-full accent-blue-500 h-2 bg-church-950 rounded-lg">
-              </div>
-
-              <div>
-                <div class="flex justify-between text-slate-300 mb-1">
-                  <span>Abertura de Sombras (Público)</span>
-                  <span id="val_shadows" class="font-mono text-blue-400 font-bold">35%</span>
-                </div>
-                <input type="range" id="param_shadows" min="0.0" max="1.0" step="0.05" oninput="updateSliderAndReprocess('shadows', Math.round(this.value*100), '%')" class="w-full accent-blue-500 h-2 bg-church-950 rounded-lg">
-              </div>
-
-              <div>
-                <div class="flex justify-between text-slate-300 mb-1">
-                  <span>Saturação de Cor</span>
-                  <span id="val_saturation" class="font-mono text-emerald-400 font-bold">100%</span>
-                </div>
-                <input type="range" id="param_saturation" min="0.5" max="1.5" step="0.02" oninput="updateSliderAndReprocess('saturation', Math.round(this.value*100), '%')" class="w-full accent-emerald-500 h-2 bg-church-950 rounded-lg">
-              </div>
-
-              <div>
-                <div class="flex justify-between text-slate-300 mb-1">
-                  <span>Vibração Tonal (Médios-Tons)</span>
-                  <span id="val_vibrance" class="font-mono text-emerald-400 font-bold">105%</span>
-                </div>
-                <input type="range" id="param_vibrance" min="0.5" max="1.5" step="0.02" oninput="updateSliderAndReprocess('vibrance', Math.round(this.value*100), '%')" class="w-full accent-emerald-500 h-2 bg-church-950 rounded-lg">
-              </div>
-            </div>
-          </div>
-
-          <!-- TAB 2: CORREÇÃO ÓPTICA & LEDS -->
-          <div id="tabContent2" class="flex flex-col gap-3.5 hidden" style="display: none;">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
               <div>
                 <div class="flex justify-between text-purple-300 font-semibold mb-1">
-                  <span>Correção de Franjas Cromáticas (Roxo/Verde)</span>
-                  <span id="val_chromatic" class="font-mono text-purple-400 font-bold">50%</span>
+                  <span>Coloração (Tint)</span>
+                  <span id="val_tint" class="font-mono text-purple-400 font-bold">0</span>
                 </div>
-                <input type="range" id="param_chromatic" min="0.0" max="1.0" step="0.05" oninput="updateSliderAndReprocess('chromatic', Math.round(this.value*100), '%')" class="w-full accent-purple-500 h-2 bg-church-950 rounded-lg">
-              </div>
-
-              <div>
-                <div class="flex justify-between text-amber-300 font-semibold mb-1">
-                  <span>Restauração de LEDs Estourados (Clipping)</span>
-                  <span id="val_led_clip" class="font-mono text-amber-400 font-bold">60%</span>
-                </div>
-                <input type="range" id="param_led_clip" min="0.0" max="1.0" step="0.05" oninput="updateSliderAndReprocess('led_clip', Math.round(this.value*100), '%')" class="w-full accent-amber-500 h-2 bg-church-950 rounded-lg">
-              </div>
-
-              <div>
-                <div class="flex justify-between text-slate-300 mb-1">
-                  <span>Atenuação de Vazamento de LED em Pele</span>
-                  <span id="val_led" class="font-mono text-purple-400 font-bold">45%</span>
-                </div>
-                <input type="range" id="param_led" min="0.0" max="1.0" step="0.05" oninput="updateSliderAndReprocess('led', Math.round(this.value*100), '%')" class="w-full accent-purple-500 h-2 bg-church-950 rounded-lg">
-              </div>
-
-              <div>
-                <div class="flex justify-between text-slate-300 mb-1">
-                  <span>Correção de Vinhetagem de Celular</span>
-                  <span id="val_vignette" class="font-mono text-blue-400 font-bold">35%</span>
-                </div>
-                <input type="range" id="param_vignette" min="0.0" max="1.0" step="0.05" oninput="updateSliderAndReprocess('vignette', Math.round(this.value*100), '%')" class="w-full accent-blue-500 h-2 bg-church-950 rounded-lg">
-              </div>
-
-              <div>
-                <div class="flex justify-between text-slate-300 mb-1">
-                  <span>Redução de Ruído Térmico / Alto ISO</span>
-                  <span id="val_denoise" class="font-mono text-blue-400 font-bold">30%</span>
-                </div>
-                <input type="range" id="param_denoise" min="0.0" max="1.0" step="0.05" oninput="updateSliderAndReprocess('denoise', Math.round(this.value*100), '%')" class="w-full accent-blue-500 h-2 bg-church-950 rounded-lg">
-              </div>
-
-              <div>
-                <div class="flex justify-between text-amber-300 font-semibold mb-1">
-                  <span>Proteção de Melanina / Tom de Pele</span>
-                  <span id="val_skin" class="font-mono text-amber-400 font-bold">88%</span>
-                </div>
-                <input type="range" id="param_skin" min="0.0" max="1.0" step="0.05" oninput="updateSliderAndReprocess('skin', Math.round(this.value*100), '%')" class="w-full accent-amber-500 h-2 bg-church-950 rounded-lg">
+                <input type="range" id="param_tint" min="-50.0" max="50.0" step="1.0" value="0" oninput="updateSliderAndReprocess('tint', this.value, '')" class="w-full accent-purple-500 h-2 bg-church-950 rounded-lg">
               </div>
             </div>
           </div>
 
-          <!-- TAB 3: FOCO ÓPTICO & BOKEH DSLR -->
-          <div id="tabContent3" class="flex flex-col gap-3.5 hidden" style="display: none;">
-            <div class="p-3 rounded-xl bg-blue-950/40 border border-blue-800/40 flex items-center justify-between text-xs">
-              <div class="flex items-center gap-2">
-                <i class="fa-solid fa-bullseye text-amber-400 text-sm"></i>
-                <div>
-                  <span class="font-bold text-white">Clique ou toque na foto</span>
-                  <p class="text-[11px] text-slate-400">Reposiciona o ponto focal e a profundidade de campo imediatamente.</p>
-                </div>
-              </div>
-              <button onclick="resetFocalCenter()" class="px-2.5 py-1 rounded-lg bg-church-800 border border-church-700 text-slate-300 hover:text-white text-[11px]">
-                Centralizar
-              </button>
-            </div>
-
-            <div>
-              <span class="text-xs text-slate-300 font-semibold mb-1.5 block">Simulação de Abertura f/Stop (Lente DSLR):</span>
-              <div class="grid grid-cols-6 gap-1.5 text-xs font-mono">
-                <button onclick="setFStop(1.4)" class="fstop-btn py-1.5 rounded-lg bg-church-950 border border-church-800 text-slate-300 hover:text-white font-bold" data-fstop="1.4">f/1.4</button>
-                <button onclick="setFStop(1.8)" class="fstop-btn py-1.5 rounded-lg bg-church-950 border border-church-800 text-slate-300 hover:text-white font-bold" data-fstop="1.8">f/1.8</button>
-                <button onclick="setFStop(2.8)" class="fstop-btn py-1.5 rounded-lg bg-blue-600 border border-blue-500 text-white font-bold" data-fstop="2.8">f/2.8</button>
-                <button onclick="setFStop(4.0)" class="fstop-btn py-1.5 rounded-lg bg-church-950 border border-church-800 text-slate-300 hover:text-white font-bold" data-fstop="4.0">f/4.0</button>
-                <button onclick="setFStop(5.6)" class="fstop-btn py-1.5 rounded-lg bg-church-950 border border-church-800 text-slate-300 hover:text-white font-bold" data-fstop="5.6">f/5.6</button>
-                <button onclick="setFStop(8.0)" class="fstop-btn py-1.5 rounded-lg bg-church-950 border border-church-800 text-slate-300 hover:text-white font-bold" data-fstop="8.0">f/8.0</button>
-              </div>
-            </div>
-
+          <!-- TAB 2: EFEITOS & DETALHES -->
+          <div id="tabContent2" class="flex flex-col gap-3.5 hidden" style="display: none;">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
+              
               <div>
                 <div class="flex justify-between text-slate-300 mb-1">
-                  <span>Suavidade do Desfoque (Bokeh)</span>
-                  <span id="val_bokeh" class="font-mono text-emerald-400 font-bold">75%</span>
+                  <span>Vibração (Vibrance)</span>
+                  <span id="val_vibrance" class="font-mono text-emerald-400 font-bold">100%</span>
                 </div>
-                <input type="range" id="param_bokeh" min="0.0" max="1.0" step="0.05" oninput="updateSliderAndReprocess('bokeh', Math.round(this.value*100), '%')" class="w-full accent-emerald-500 h-2 bg-church-950 rounded-lg">
+                <input type="range" id="param_vibrance" min="0.0" max="2.0" step="0.02" value="1.0" oninput="updateSliderAndReprocess('vibrance', Math.round(this.value*100), '%')" class="w-full accent-emerald-500 h-2 bg-church-950 rounded-lg">
+              </div>
+
+              <div>
+                <div class="flex justify-between text-slate-300 mb-1">
+                  <span>Saturação</span>
+                  <span id="val_saturation" class="font-mono text-emerald-400 font-bold">100%</span>
+                </div>
+                <input type="range" id="param_saturation" min="0.0" max="2.0" step="0.02" value="1.0" oninput="updateSliderAndReprocess('saturation', Math.round(this.value*100), '%')" class="w-full accent-emerald-500 h-2 bg-church-950 rounded-lg">
               </div>
 
               <div>
                 <div class="flex justify-between text-amber-300 font-semibold mb-1">
-                  <span>Microcontraste & Nitidez no Sujeito</span>
-                  <span id="val_microcontrast" class="font-mono text-amber-400 font-bold">75%</span>
+                  <span>Clareza (Clarity)</span>
+                  <span id="val_clarity" class="font-mono text-amber-400 font-bold">0%</span>
                 </div>
-                <input type="range" id="param_microcontrast" min="0.0" max="2.0" step="0.05" oninput="updateSliderAndReprocess('microcontrast', Math.round(this.value*100), '%')" class="w-full accent-amber-500 h-2 bg-church-950 rounded-lg">
+                <input type="range" id="param_clarity" min="-1.0" max="1.0" step="0.05" value="0" oninput="updateSliderAndReprocess('clarity', Math.round(this.value*100), '%')" class="w-full accent-amber-500 h-2 bg-church-950 rounded-lg">
+              </div>
+
+              <div>
+                <div class="flex justify-between text-blue-300 font-semibold mb-1">
+                  <span>Desembaçar (Dehaze)</span>
+                  <span id="val_dehaze" class="font-mono text-blue-400 font-bold">0%</span>
+                </div>
+                <input type="range" id="param_dehaze" min="-1.0" max="1.0" step="0.05" value="0" oninput="updateSliderAndReprocess('dehaze', Math.round(this.value*100), '%')" class="w-full accent-blue-500 h-2 bg-church-950 rounded-lg">
+              </div>
+
+              <div>
+                <div class="flex justify-between text-slate-300 mb-1">
+                  <span>Vinheta (Vignette)</span>
+                  <span id="val_vignette" class="font-mono text-slate-400 font-bold">0%</span>
+                </div>
+                <input type="range" id="param_vignette" min="-1.0" max="1.0" step="0.05" value="0" oninput="updateSliderAndReprocess('vignette', Math.round(this.value*100), '%')" class="w-full accent-slate-500 h-2 bg-church-950 rounded-lg">
               </div>
             </div>
           </div>
@@ -892,7 +811,7 @@
                 Mídia Principal
               </h2>
               <p class="text-xs text-slate-400 mt-1 max-w-lg">
-                Gerencie os membros da equipe e configure os <strong>Presets da Equipe</strong> compartilhados entre todos os voluntários.
+                Gerencie os membros da equipe e configure os <strong>Meus Presets</strong> compartilhados entre todos os voluntários.
               </p>
             </div>
 
@@ -913,7 +832,7 @@
         <div class="flex flex-col gap-3">
           <div class="flex items-center justify-between px-1">
             <span class="text-sm font-bold text-white flex items-center gap-2">
-              <i class="fa-solid fa-user-group text-blue-400"></i> Membros da Equipe (Sem Perfis Fantasmas)
+              <i class="fa-solid fa-user-group text-blue-400"></i> Meus Detalhes
             </span>
             <span id="teamAreaMemberCountBadge" class="text-xs text-slate-400 font-mono">1 membro ativo</span>
           </div>
@@ -928,7 +847,7 @@
           <div class="flex items-center justify-between px-1">
             <div>
               <span class="text-sm font-bold text-white flex items-center gap-2">
-                <i class="fa-solid fa-sliders text-purple-400"></i> Presets Ligados a Esta Equipe
+                <i class="fa-solid fa-sliders text-purple-400"></i> Meus Presets Salvos
               </span>
               <p class="text-xs text-slate-400 mt-0.5">Estes presets são sincronizados e aplicados por todos os voluntários deste grupo.</p>
             </div>
@@ -1306,20 +1225,15 @@
           temperature_kelvin: 5700,
           tint: -2.0,
           contrast: 1.06,
-          highlights_recovery: 0.45,
-          shadows_lift: 0.40,
+          highlights: -0.45,
+          shadows: 0.40,
+          whites: 0.10,
+          blacks: 0.05,
           saturation: 1.04,
           vibrance: 1.08,
-          chromatic_aberration_fix: 0.50,
-          vignette_correction: 0.35,
-          lens_distortion_correction: 0.20,
-          led_clipping_restoration: 0.60,
-          stage_led_tint_suppression: 0.45,
-          selective_denoise: 0.28,
-          skin_tone_protection_strength: 0.92,
-          f_stop_simulation: 2.4,
-          bokeh_smoothness: 0.75,
-          subject_microcontrast: 0.80
+          clarity: 0.15,
+          dehaze: 0.0,
+          vignette: -0.15
         }
       },
       {
@@ -1327,26 +1241,21 @@
         name: "Clean / Moderno Neutro",
         category: "Pregação",
         icon: "fa-wand-magic text-blue-400",
-        description: "Balanço de estúdio limpo com atenuação precisa de reflexos de LED.",
+        description: "Balanço de estúdio limpo com clareza nos médios e correção de reflexos.",
         params: {
           exposure_compensation: 0.10,
           temperature_kelvin: 5400,
           tint: 0.0,
           contrast: 1.10,
-          highlights_recovery: 0.55,
-          shadows_lift: 0.35,
+          highlights: -0.55,
+          shadows: 0.35,
+          whites: -0.05,
+          blacks: 0.10,
           saturation: 0.98,
           vibrance: 1.02,
-          chromatic_aberration_fix: 0.65,
-          vignette_correction: 0.40,
-          lens_distortion_correction: 0.20,
-          led_clipping_restoration: 0.70,
-          stage_led_tint_suppression: 0.55,
-          selective_denoise: 0.35,
-          skin_tone_protection_strength: 0.88,
-          f_stop_simulation: 2.8,
-          bokeh_smoothness: 0.75,
-          subject_microcontrast: 0.75
+          clarity: 0.25,
+          dehaze: 0.05,
+          vignette: -0.20
         }
       },
       {
@@ -1360,20 +1269,81 @@
           temperature_kelvin: 5100,
           tint: 4.0,
           contrast: 1.22,
-          highlights_recovery: 0.65,
-          shadows_lift: 0.25,
+          highlights: -0.65,
+          shadows: 0.15,
+          whites: -0.10,
+          blacks: -0.20,
           saturation: 1.06,
           vibrance: 1.12,
-          chromatic_aberration_fix: 0.55,
-          vignette_correction: 0.20,
-          lens_distortion_correction: 0.20,
-          led_clipping_restoration: 0.60,
-          stage_led_tint_suppression: 0.40,
-          selective_denoise: 0.25,
-          skin_tone_protection_strength: 0.85,
-          f_stop_simulation: 1.8,
-          bokeh_smoothness: 0.85,
-          subject_microcontrast: 0.90
+          clarity: 0.45,
+          dehaze: 0.15,
+          vignette: -0.40
+        }
+      },
+      {
+        id: "vintage_analogico",
+        name: "Vintage Analógico",
+        category: "Estilo",
+        icon: "fa-camera-retro text-amber-500",
+        description: "Pretos esmaecidos (fade), sombras quentes e contraste orgânico.",
+        params: {
+          exposure_compensation: 0.0,
+          temperature_kelvin: 5900,
+          tint: 3.0,
+          contrast: 0.95,
+          highlights: -0.20,
+          shadows: 0.50,
+          whites: -0.25,
+          blacks: 0.60,
+          saturation: 0.85,
+          vibrance: 0.90,
+          clarity: -0.10,
+          dehaze: -0.05,
+          vignette: -0.25
+        }
+      },
+      {
+        id: "pb_dramatico",
+        name: "P&B Dramático",
+        category: "Fine Art",
+        icon: "fa-circle-half-stroke text-slate-300",
+        description: "Sem saturação. Alto contraste, pretos profundos e brancos definidos.",
+        params: {
+          exposure_compensation: 0.10,
+          temperature_kelvin: 5500,
+          tint: 0.0,
+          contrast: 1.35,
+          highlights: -0.30,
+          shadows: -0.25,
+          whites: 0.35,
+          blacks: -0.40,
+          saturation: 0.0,
+          vibrance: 0.0,
+          clarity: 0.60,
+          dehaze: 0.30,
+          vignette: -0.50
+        }
+      },
+      {
+        id: "culto_celebracao",
+        name: "Culto de Celebração",
+        category: "Eventos",
+        icon: "fa-fire text-red-500",
+        description: "Cores vivas, alta clareza e recuperação potente de telões em fotos abertas.",
+        params: {
+          exposure_compensation: 0.25,
+          temperature_kelvin: 5600,
+          tint: 1.0,
+          contrast: 1.15,
+          highlights: -0.85,
+          shadows: 0.55,
+          whites: -0.15,
+          blacks: 0.0,
+          saturation: 1.10,
+          vibrance: 1.25,
+          clarity: 0.50,
+          dehaze: 0.20,
+          vignette: -0.15
         }
       }
     ];
@@ -1872,6 +1842,51 @@
 
     // ================= SUPABASE CLOUD DATABASE SYNC (OPTIONAL / HYBRID) =================
 
+    function showSupabaseSqlModal() {
+      if(document.getElementById('supabaseSqlModal')) return;
+      const modalHtml = `
+        <div id="supabaseSqlModal" class="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div class="bg-church-900 border border-church-800 rounded-2xl w-full max-w-lg shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="p-4 border-b border-church-800 flex justify-between items-center bg-church-950/50 rounded-t-2xl">
+              <h3 class="text-base font-bold text-white flex items-center gap-2"><i class="fa-solid fa-database text-blue-500"></i> Configure seu Banco de Dados</h3>
+              <button onclick="document.getElementById('supabaseSqlModal').remove()" class="text-slate-400 hover:text-white transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="p-5 overflow-y-auto">
+              <p class="text-sm text-slate-300 mb-4">Seu login funcionou, mas as tabelas para salvar seus cultos na nuvem não existem no seu projeto Supabase. Para habilitar a sincronização em tempo real entre seus dispositivos, execute o script SQL abaixo no <strong>SQL Editor</strong> do seu painel Supabase:</p>
+              <div class="relative bg-church-950 border border-church-800 rounded-lg p-3 group">
+                <button onclick="navigator.clipboard.writeText(document.getElementById('sqlCode').innerText); showToast('SQL copiado!');" class="absolute top-2 right-2 px-2 py-1 rounded bg-church-800 text-slate-300 text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer flex items-center gap-1"><i class="fa-regular fa-copy"></i> Copiar</button>
+                <pre id="sqlCode" class="text-[11px] text-blue-300 font-mono overflow-x-auto whitespace-pre">
+create table church_services (
+  id text primary key,
+  user_id uuid references auth.users(id),
+  team_id text,
+  title text,
+  date text,
+  preset_name text,
+  created_at text,
+  items_json jsonb
+);
+
+create table team_presets (
+  id text primary key,
+  user_id uuid references auth.users(id),
+  team_id text,
+  name text,
+  params_json jsonb,
+  created_at text
+);
+</pre>
+              </div>
+            </div>
+            <div class="p-4 border-t border-church-800 flex justify-end">
+              <button onclick="document.getElementById('supabaseSqlModal').remove()" class="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm transition-all cursor-pointer">Entendi</button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.insertAdjacentHTML('beforeend', modalHtml);
+    }
+
     async function syncServicesWithSupabaseCloud() {
       if (!supabaseClient || !currentUser || !currentUser.id) return;
       try {
@@ -1880,6 +1895,11 @@
           .select('*')
           .eq('user_id', currentUser.id)
           .order('created_at', { ascending: false });
+
+        if (error) {
+          if (error.code === '42P01') showSupabaseSqlModal();
+          throw error;
+        }
 
         if (!error && Array.isArray(cloudServices) && cloudServices.length > 0) {
           const localMap = new Map();
@@ -1916,7 +1936,7 @@
           }
         }
       } catch (e) {
-        // Non-blocking: Supabase tables might not be created yet in user project
+        // Non-blocking
         console.log("Supabase Cloud Sync note:", e);
       }
     }
@@ -1933,7 +1953,7 @@
           metadata: i.metadata
         }));
 
-        await supabaseClient.from('church_services').upsert({
+        const { error } = await supabaseClient.from('church_services').upsert({
           id: service.id,
           user_id: currentUser.id,
           team_id: service.teamId || 'team_default',
@@ -1943,6 +1963,11 @@
           created_at: service.createdAt || new Date().toISOString(),
           items_json: cleanItems
         });
+        
+        if (error) {
+          if (error.code === '42P01') showSupabaseSqlModal();
+          throw error;
+        }
       } catch (e) {
         // Non-blocking
       }
@@ -2143,7 +2168,7 @@
         renderFunnelUI();
       } else if (view === 'team_area') {
         viewTeamArea.style.display = 'flex'; viewTeamArea.classList.remove('hidden');
-        topTitle.textContent = "Equipe & Presets";
+        topTitle.textContent = "Meus Presets";
         topBadge.textContent = activeTeam.name;
         sideNavTeamArea.className = "sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold bg-purple-600 text-white transition-all cursor-pointer shadow-sm";
         renderTeamAreaView();
@@ -2531,17 +2556,88 @@
       showToast(`Preset "${p.name}" aplicado!`);
     }
 
-    // ================= DETERMINISTIC PHOTO SCORING & CULLING FUNNEL =================
+    // ================= REAL AI IMAGE ANALYSIS (LAPLACIAN & PERCEPTUAL HASH) =================
+    
+    async function analyzeImageReal(fileOrBlob) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        const url = URL.createObjectURL(fileOrBlob);
+        img.onload = () => {
+          const w = img.width;
+          const h = img.height;
+          
+          const hashCanvas = document.createElement('canvas');
+          hashCanvas.width = 9;
+          hashCanvas.height = 8;
+          const hctx = hashCanvas.getContext('2d', { willReadFrequently: true });
+          hctx.drawImage(img, 0, 0, 9, 8);
+          const hData = hctx.getImageData(0, 0, 9, 8).data;
+          
+          let hash = '';
+          for (let y = 0; y < 8; y++) {
+            for (let x = 0; x < 8; x++) {
+              const idx1 = (y * 9 + x) * 4;
+              const idx2 = (y * 9 + (x + 1)) * 4;
+              const g1 = hData[idx1] * 0.299 + hData[idx1+1] * 0.587 + hData[idx1+2] * 0.114;
+              const g2 = hData[idx2] * 0.299 + hData[idx2+1] * 0.587 + hData[idx2+2] * 0.114;
+              hash += (g1 > g2) ? '1' : '0';
+            }
+          }
 
-    function computePhotoDeterministicScore(file) {
-      let hash = 0;
-      const str = `${file.name}_${file.size}`;
-      for (let i = 0; i < str.length; i++) {
-        hash = (hash << 5) - hash + str.charCodeAt(i);
-        hash |= 0;
+          const scale = Math.min(250 / Math.max(w, h), 1);
+          const rw = Math.round(w * scale);
+          const rh = Math.round(h * scale);
+          
+          const sCanvas = document.createElement('canvas');
+          sCanvas.width = rw;
+          sCanvas.height = rh;
+          const sctx = sCanvas.getContext('2d', { willReadFrequently: true });
+          sctx.drawImage(img, 0, 0, rw, rh);
+          
+          const srcData = sctx.getImageData(0, 0, rw, rh);
+          let sum = 0, sqSum = 0, count = 0;
+          const data = srcData.data;
+          
+          for (let y = 1; y < rh - 1; y++) {
+            for (let x = 1; x < rw - 1; x++) {
+              const i = (y * rw + x) * 4;
+              const l = data[i]*0.299 + data[i+1]*0.587 + data[i+2]*0.114;
+              const top = data[i - rw * 4]*0.299 + data[i - rw * 4 + 1]*0.587 + data[i - rw * 4 + 2]*0.114;
+              const bot = data[i + rw * 4]*0.299 + data[i + rw * 4 + 1]*0.587 + data[i + rw * 4 + 2]*0.114;
+              const left = data[i - 4]*0.299 + data[i - 3]*0.587 + data[i - 2]*0.114;
+              const right = data[i + 4]*0.299 + data[i + 5]*0.587 + data[i + 6]*0.114;
+              const lap = top + bot + left + right - 4 * l;
+              sum += lap; sqSum += lap * lap; count++;
+            }
+          }
+          
+          const mean = sum / count;
+          const variance = (sqSum / count) - (mean * mean);
+          
+          let score = 5.0 + (variance / 1000) * 5;
+          if (score > 9.9) score = 9.9;
+          if (score < 1.0) score = 1.0;
+          
+          URL.revokeObjectURL(url);
+          resolve({ hash, sharpness: parseFloat(score.toFixed(1)), variance });
+        };
+        img.onerror = () => resolve({ hash: '0'.repeat(64), sharpness: 5.0, variance: 0 });
+        img.src = url;
+      });
+    }
+
+    function computePhotoScore(item) {
+      if (item && item.metadata && item.metadata.sharpness) return item.metadata.sharpness.toFixed(1);
+      return '8.5';
+    }
+
+    function calculateHammingDistance(h1, h2) {
+      if (!h1 || !h2 || h1.length !== h2.length) return 999;
+      let d = 0;
+      for (let i = 0; i < h1.length; i++) {
+        if (h1[i] !== h2[i]) d++;
       }
-      const norm = (Math.abs(hash) % 1000) / 1000.0;
-      return (8.4 + norm * 1.5).toFixed(1);
+      return d;
     }
 
     function setFunnelStep(step) {
@@ -2587,24 +2683,65 @@
       const container = document.getElementById('dedupGroupsContainer');
       if (!activeService || !activeService.items || activeService.items.length === 0) return;
 
-      const groups = [];
-      const items = activeService.items;
-      const chunkSize = 3;
+      if (!activeService.dedupGroups) {
+        const groups = [];
+        const items = activeService.items;
+        
+        const unassigned = [...items];
+        let groupCounter = 1;
+        
+        while(unassigned.length > 0) {
+          const champion = unassigned.shift();
+          const chunk = [champion];
+          
+          for (let i = unassigned.length - 1; i >= 0; i--) {
+            const candidate = unassigned[i];
+            const dist = calculateHammingDistance(
+              champion.metadata ? champion.metadata.hash : '',
+              candidate.metadata ? candidate.metadata.hash : ''
+            );
+            if (dist <= 8) {
+              chunk.push(candidate);
+              unassigned.splice(i, 1);
+            }
+          }
+          
+          chunk.sort((a, b) => parseFloat(computePhotoScore(b)) - parseFloat(computePhotoScore(a)));
+          
+          if (chunk.length > 1) {
+            groups.push({
+              groupId: `grp_${groupCounter++}`,
+              name: `Sequência ${groupCounter - 1} (${chunk.length} fotos)`,
+              championId: chunk[0].id,
+              allPhotos: chunk
+            });
+          }
+        }
+        activeService.dedupGroups = groups;
+      }
 
-      for (let i = 0; i < items.length; i += chunkSize) {
-        const chunk = items.slice(i, i + chunkSize);
-        const champion = chunk[0];
-        groups.push({
-          groupId: `grp_${i}`,
-          name: `Sequência ${Math.floor(i / chunkSize) + 1} (${chunk.length} fotos)`,
-          championId: champion.id,
-          allPhotos: chunk
-        });
+      const groups = activeService.dedupGroups;
+      
+      if (groups.length === 0) {
+         container.innerHTML = `
+           <div class="text-center py-10">
+             <i class="fa-solid fa-check-double text-4xl text-emerald-500 mb-4"></i>
+             <p class="text-sm font-bold text-white mb-2">Sua galeria está limpa!</p>
+             <p class="text-xs text-slate-400">A IA não detectou fotos repetidas ou em rajada.</p>
+             <button onclick="setFunnelStep(2)" class="mt-4 px-4 py-2 rounded-lg bg-emerald-600 text-white font-bold text-xs cursor-pointer">Ir para Seleção Top 20</button>
+           </div>`;
+         return;
       }
 
       container.innerHTML = groups.map(g => {
         const champ = g.allPhotos.find(p => p.id === g.championId) || g.allPhotos[0];
         const discarded = g.allPhotos.filter(p => p.id !== champ.id);
+
+        champ.isTop20 = true;
+        discarded.forEach(d => {
+          const globalItem = activeService.items.find(i => i.id === d.id);
+          if(globalItem) globalItem.isTop20 = false;
+        });
 
         return `
           <div class="rounded-2xl bg-church-900 border border-church-800 p-4 flex flex-col gap-3 shadow-md">
@@ -2613,23 +2750,23 @@
                 <i class="fa-solid fa-layer-group text-blue-400"></i> ${g.name}
               </span>
               <span class="px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800/60 text-[9px] font-mono font-bold">
-                🏆 Foto Campeã Eleita
+                ⭐ Foto Campeã Eleita
               </span>
             </div>
 
             <div class="relative rounded-xl overflow-hidden bg-church-950 border-2 border-amber-400/80 aspect-video flex items-center justify-center">
               <img src="${champ.processedBase64 || champ.previewUrl}" class="w-full h-full object-cover">
               <span class="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/80 text-amber-300 text-[10px] font-bold flex items-center gap-1">
-                <i class="fa-solid fa-trophy text-amber-400 text-xs"></i> Campeã (Maior Nitidez)
+                <i class="fa-solid fa-trophy text-amber-400 text-xs"></i> Campeã (Maior Nitidez: ${computePhotoScore(champ)})
               </span>
             </div>
 
             ${discarded.length > 0 ? `
               <div class="pt-2 border-t border-church-800">
                 <span class="text-[10px] text-slate-400 font-semibold block mb-1.5">Alternativas na mesma sequência (descartadas):</span>
-                <div class="flex gap-2">
+                <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
                   ${discarded.map(alt => `
-                    <div class="relative w-16 h-16 rounded-lg overflow-hidden bg-church-950 border border-church-800 group/alt">
+                    <div class="relative w-16 h-16 shrink-0 rounded-lg overflow-hidden bg-church-950 border border-church-800 group/alt">
                       <img src="${alt.processedBase64 || alt.previewUrl}" class="w-full h-full object-cover opacity-60 group-hover/alt:opacity-100 transition-opacity">
                       <button onclick="setChampionPhoto('${g.groupId}', '${alt.id}')" class="absolute inset-0 bg-black/70 opacity-0 group-hover/alt:opacity-100 flex items-center justify-center text-amber-300 text-[9px] font-bold transition-opacity cursor-pointer text-center p-1 leading-tight">
                         Tornar Campeã
@@ -2638,6 +2775,20 @@
                   `).join('')}
                 </div>
               </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function setChampionPhoto(groupId, photoId) {
+      const group = activeService.dedupGroups.find(g => g.groupId === groupId);
+      if (group) {
+        group.championId = photoId;
+        showToast("Foto campeã da sequência atualizada!");
+        renderDeduplicationGroups();
+      }
+    }        </div>
             ` : ''}
           </div>
         `;
@@ -2659,8 +2810,8 @@
       if (counter) counter.textContent = `${selectedCount} / 20 Selecionadas`;
 
       container.innerHTML = items.map((item, idx) => {
-        const isSelected = item.isTop20 !== false && idx < 20;
-        const score = computePhotoDeterministicScore(item.file || { name: item.fileName || 'f', size: 100000 });
+        const isSelected = item.isTop20 !== false;
+        const score = computePhotoScore(item);
 
         return `
           <div onclick="togglePhotoTop20Selection('${item.id}')" class="relative rounded-xl overflow-hidden bg-church-900 border-2 ${isSelected ? 'border-blue-500 shadow-lg shadow-blue-500/20' : 'border-church-800 opacity-60'} cursor-pointer transition-all flex flex-col group">
@@ -2695,9 +2846,18 @@
 
     function autoSelectTop20() {
       if (activeService && activeService.items) {
-        activeService.items.forEach((item, idx) => { item.isTop20 = idx < 20; });
+        const sorted = [...activeService.items].sort((a, b) => {
+          const scoreA = parseFloat(computePhotoScore(a));
+          const scoreB = parseFloat(computePhotoScore(b));
+          return scoreB - scoreA;
+        });
+        const top20Ids = new Set(sorted.slice(0, 20).map(i => i.id));
+        
+        activeService.items.forEach(item => { 
+          item.isTop20 = top20Ids.has(item.id); 
+        });
         renderTop20Grid();
-        showToast("Top 20 selecionadas pela IA!");
+        showToast("Top 20 selecionadas pela IA com base na nitidez!");
       }
     }
 
@@ -3009,8 +3169,11 @@
       };
 
       if (pendingModalFiles.length > 0) {
+        document.getElementById('modalFileStatusText').innerHTML = `<span class="text-amber-400 font-bold"><i class="fa-solid fa-spinner fa-spin"></i> IA analisando e classificando ${pendingModalFiles.length} foto(s)...</span>`;
         for (const file of pendingModalFiles) {
           const dataUrl = await fileToDataUrl(file);
+          const aiData = await analyzeImageReal(file);
+          
           newService.items.push({
             id: Date.now() + '_' + Math.random().toString(36).substr(2, 6),
             fileName: file.name,
@@ -3019,7 +3182,7 @@
             processedBase64: null,
             originalBase64: dataUrl,
             cachedImg: null,
-            metadata: null,
+            metadata: aiData,
             analysis: null,
             isTop20: true,
             currentParams: null
@@ -3089,8 +3252,10 @@
       if (input) {
         input.addEventListener('change', async (e) => {
           if (e.target.files && e.target.files.length > 0 && activeService) {
+            showToast("Analisando novas fotos com IA...");
             for (const file of Array.from(e.target.files)) {
               const dataUrl = await fileToDataUrl(file);
+              const aiData = await analyzeImageReal(file);
               const item = {
                 id: Date.now() + '_' + Math.random().toString(36).substr(2, 6),
                 fileName: file.name,
@@ -3099,7 +3264,7 @@
                 processedBase64: null,
                 originalBase64: dataUrl,
                 cachedImg: null,
-                metadata: null,
+                metadata: aiData,
                 analysis: null,
                 isTop20: true,
                 currentParams: null
@@ -3389,88 +3554,151 @@
       const imgData = fastCtx.getImageData(0, 0, targetW, targetH);
       const data = imgData.data;
 
+      // --- 1. LIGHTROOM MATH ALGORITHMS ---
       const expMult = Math.pow(2.0, params.exposure_compensation || 0.0);
-      const wb = kelvinToRGBMultipliers(params.temperature_kelvin || 5500);
-      const hRec = params.highlights_recovery || 0.0;
-      const sLift = params.shadows_lift || 0.0;
-      const contrast = params.contrast || 1.10;
-      const sat = params.saturation || 1.0;
-      const vib = params.vibrance || 1.05;
+      
+      // Kelvin and Tint to RGB White Balance
+      const kelvin = params.temperature_kelvin || 5500;
+      const tint = params.tint || 0.0;
+      let temp = kelvin / 100.0;
+      let rWB = temp <= 66 ? 255 : Math.max(0, Math.min(255, 329.6987 * Math.pow(temp - 60, -0.1332)));
+      let gWB = temp <= 66 ? Math.max(0, Math.min(255, 99.4708 * Math.log(temp) - 161.1195)) : Math.max(0, Math.min(255, 288.1221 * Math.pow(temp - 60, -0.0755)));
+      let bWB = temp >= 66 ? 255 : (temp <= 19 ? 0 : Math.max(0, Math.min(255, 138.5177 * Math.log(temp - 10) - 305.0448)));
+      // Apply Tint on Green Channel
+      gWB = Math.max(0, Math.min(255, gWB - tint));
+      const wb = { r: rWB/255.0, g: gWB/255.0, b: bWB/255.0 };
 
+      const contrast = params.contrast || 1.0;
+      const highlights = params.highlights || 0.0; // -1.0 to 1.0
+      const shadows = params.shadows || 0.0; // -1.0 to 1.0
+      const whites = params.whites || 0.0; // -1.0 to 1.0
+      const blacks = params.blacks || 0.0; // -1.0 to 1.0
+      
+      const sat = params.saturation || 1.0;
+      const vib = params.vibrance || 1.0;
+      const clarity = params.clarity || 0.0;
+      const dehaze = params.dehaze || 0.0;
+      const vignette = params.vignette || 0.0;
+
+      // 1D LUT for Tone Mapping (Exposure, WB, Tone Curve)
       const lutR = new Uint8ClampedArray(256);
       const lutG = new Uint8ClampedArray(256);
       const lutB = new Uint8ClampedArray(256);
 
       for (let v = 0; v < 256; v++) {
         let norm = v / 255.0;
+        
         let rVal = norm * expMult * wb.r;
         let gVal = norm * expMult * wb.g;
         let bVal = norm * expMult * wb.b;
 
-        if (hRec > 0 && norm > 0.45) {
-          let comp = hRec * 0.25 * Math.pow((norm - 0.45) / 0.55, 1.8);
-          rVal -= rVal * comp; gVal -= gVal * comp; bVal -= bVal * comp;
-        }
-        if (sLift > 0 && norm < 0.65) {
-          let boost = sLift * 0.35 * Math.pow(1.0 - (norm / 0.65), 1.5) * (1.0 - norm);
-          rVal += boost; gVal += boost; bVal += boost;
-        }
+        // Tone Curve adjustments based on luminance regions
+        const processTone = (val) => {
+          let n = val;
+          // Shadows (Bottom 40%)
+          if (shadows !== 0 && n < 0.4) {
+             let mask = Math.pow(1.0 - (n / 0.4), 1.5);
+             n = n + (shadows * 0.25 * mask);
+          }
+          // Highlights (Top 40%)
+          if (highlights !== 0 && n > 0.6) {
+             let mask = Math.pow((n - 0.6) / 0.4, 1.5);
+             n = n + (highlights * 0.25 * mask);
+          }
+          // Blacks (Bottom 15%)
+          if (blacks !== 0 && n < 0.15) {
+             let mask = Math.pow(1.0 - (n / 0.15), 2.0);
+             n = n + (blacks * 0.15 * mask);
+          }
+          // Whites (Top 15%)
+          if (whites !== 0 && n > 0.85) {
+             let mask = Math.pow((n - 0.85) / 0.15, 2.0);
+             n = n + (whites * 0.15 * mask);
+          }
+          // Contrast Pivot
+          if (Math.abs(contrast - 1.0) > 0.01) {
+             n = (n - 0.5) * contrast + 0.5;
+          }
+          // Clarity Fake (Midtone S-Curve)
+          if (clarity !== 0 && n > 0.2 && n < 0.8) {
+             let midMask = Math.sin((n - 0.2) / 0.6 * Math.PI); // peak at 0.5
+             let sCurve = (n - 0.5) * (1.0 + clarity * 0.5) + 0.5;
+             n = n * (1.0 - midMask) + sCurve * midMask;
+          }
+          return Math.max(0, Math.min(1, n));
+        };
 
-        if (Math.abs(contrast - 1.0) > 0.02) {
-          rVal = Math.pow(Math.max(0, Math.min(1, rVal)), contrast);
-          gVal = Math.pow(Math.max(0, Math.min(1, gVal)), contrast);
-          bVal = Math.pow(Math.max(0, Math.min(1, bVal)), contrast);
-        }
-
-        lutR[v] = Math.max(0, Math.min(255, Math.round(rVal * 255)));
-        lutG[v] = Math.max(0, Math.min(255, Math.round(gVal * 255)));
-        lutB[v] = Math.max(0, Math.min(255, Math.round(bVal * 255)));
+        lutR[v] = Math.max(0, Math.min(255, Math.round(processTone(rVal) * 255)));
+        lutG[v] = Math.max(0, Math.min(255, Math.round(processTone(gVal) * 255)));
+        lutB[v] = Math.max(0, Math.min(255, Math.round(processTone(bVal) * 255)));
       }
 
-      for (let i = 0; i < data.length; i += 4) {
-        let r = lutR[data[i]];
-        let g = lutG[data[i + 1]];
-        let b = lutB[data[i + 2]];
+      // --- 2. PER-PIXEL PROCESSING (Colors, Dehaze, Vignette) ---
+      const centerX = targetW / 2;
+      const centerY = targetH / 2;
+      const maxDist = Math.sqrt(centerX * centerX + centerY * centerY);
 
-        if (Math.abs(sat - 1.0) > 0.02 || Math.abs(vib - 1.0) > 0.02) {
-          let mean = (r + g + b) / 3.0;
-          let factor = sat * (vib > 1.0 ? 1.04 : 1.0);
-          r = mean + (r - mean) * factor;
-          g = mean + (g - mean) * factor;
-          b = mean + (b - mean) * factor;
+      for (let y = 0; y < targetH; y++) {
+        for (let x = 0; x < targetW; x++) {
+          let i = (y * targetW + x) * 4;
+          
+          let r = lutR[data[i]];
+          let g = lutG[data[i + 1]];
+          let b = lutB[data[i + 2]];
+
+          // Dehaze (Subtracts atmospheric light, stretches contrast)
+          if (dehaze !== 0) {
+            let darkChannel = Math.min(r, Math.min(g, b)) / 255.0;
+            let dehazeFactor = dehaze * 0.15;
+            r = Math.max(0, r - dehazeFactor * 255 * (1.0 - darkChannel));
+            g = Math.max(0, g - dehazeFactor * 255 * (1.0 - darkChannel));
+            b = Math.max(0, b - dehazeFactor * 255 * (1.0 - darkChannel));
+            // Slight contrast stretch to compensate
+            r = Math.min(255, r * (1.0 + dehazeFactor));
+            g = Math.min(255, g * (1.0 + dehazeFactor));
+            b = Math.min(255, b * (1.0 + dehazeFactor));
+          }
+
+          // Saturation and Vibrance
+          if (Math.abs(sat - 1.0) > 0.01 || Math.abs(vib - 1.0) > 0.01) {
+            let maxC = Math.max(r, Math.max(g, b));
+            let minC = Math.min(r, Math.min(g, b));
+            let saturationCurrent = maxC === 0 ? 0 : (maxC - minC) / maxC;
+            
+            // Vibrance protects already saturated pixels and skin tones
+            let vibFactor = vib > 1.0 ? vib * (1.0 - saturationCurrent) : vib; 
+            
+            let mean = (r + g + b) / 3.0;
+            let finalFactor = sat * vibFactor;
+            
+            r = mean + (r - mean) * finalFactor;
+            g = mean + (g - mean) * finalFactor;
+            b = mean + (b - mean) * finalFactor;
+          }
+
+          // Vignette
+          if (vignette !== 0) {
+            let dx = x - centerX;
+            let dy = y - centerY;
+            let dist = Math.sqrt(dx*dx + dy*dy) / maxDist;
+            let vigMult = 1.0;
+            if (vignette < 0) { // Darken edges
+              vigMult = 1.0 + (vignette * Math.pow(dist, 2.0));
+            } else { // Lighten edges (White vignette)
+              vigMult = 1.0 + (vignette * Math.pow(dist, 2.0)); 
+              // To lighten, we need to add to pixels, not multiply if we want white.
+              // We'll stick to a simple multiplier for ease (it burns edges).
+            }
+            r = Math.min(255, r * vigMult);
+            g = Math.min(255, g * vigMult);
+            b = Math.min(255, b * vigMult);
+          }
+
+          data[i] = r; data[i + 1] = g; data[i + 2] = b;
         }
-
-        data[i] = r; data[i + 1] = g; data[i + 2] = b;
       }
 
       fastCtx.putImageData(imgData, 0, 0);
-
-      const fStop = params.f_stop_simulation || 2.8;
-      if (fStop < 7.5) {
-        const centerX = targetW * (params.focal_point_x || 0.50);
-        const centerY = targetH * (params.focal_point_y || 0.40);
-        const blurRadius = Math.max(2, Math.round((7.5 / fStop) * (targetW / 350.0) * (params.bokeh_smoothness || 0.75)));
-
-        const blurCanvas = document.createElement('canvas');
-        blurCanvas.width = targetW; blurCanvas.height = targetH;
-        const blurCtx = blurCanvas.getContext('2d');
-        blurCtx.filter = `blur(${blurRadius}px)`;
-        blurCtx.drawImage(fastCanvas, 0, 0);
-
-        const maskCanvas = document.createElement('canvas');
-        maskCanvas.width = targetW; maskCanvas.height = targetH;
-        const maskCtx = maskCanvas.getContext('2d');
-        const grad = maskCtx.createRadialGradient(centerX, centerY, 0, centerX, centerY, Math.max(targetW, targetH) * 0.32);
-        grad.addColorStop(0, 'rgba(0,0,0,1)');
-        grad.addColorStop(0.55, 'rgba(0,0,0,0.6)');
-        grad.addColorStop(1, 'rgba(0,0,0,0)');
-        maskCtx.fillStyle = grad;
-        maskCtx.fillRect(0, 0, targetW, targetH);
-
-        blurCtx.globalCompositeOperation = 'destination-out';
-        blurCtx.drawImage(maskCanvas, 0, 0);
-        fastCtx.drawImage(blurCanvas, 0, 0);
-      }
 
       return {
         base64: fastCanvas.toDataURL('image/jpeg', isFullResolution ? 0.94 : 0.88),
@@ -3577,15 +3805,15 @@
         temperature_kelvin: parseInt(document.getElementById('param_kelvin').value),
         tint: parseFloat(document.getElementById('param_tint').value),
         contrast: parseFloat(document.getElementById('param_contrast').value),
-        highlights_recovery: parseFloat(document.getElementById('param_highlights').value),
-        shadows_lift: parseFloat(document.getElementById('param_shadows').value),
+        highlights: parseFloat(document.getElementById('param_highlights').value),
+        shadows: parseFloat(document.getElementById('param_shadows').value),
+        whites: parseFloat(document.getElementById('param_whites').value),
+        blacks: parseFloat(document.getElementById('param_blacks').value),
         saturation: parseFloat(document.getElementById('param_saturation').value),
         vibrance: parseFloat(document.getElementById('param_vibrance').value),
-        focal_point_x: focalPoint.x,
-        focal_point_y: focalPoint.y,
-        f_stop_simulation: currentFStop,
-        bokeh_smoothness: 0.75,
-        subject_microcontrast: 0.75
+        clarity: parseFloat(document.getElementById('param_clarity').value),
+        dehaze: parseFloat(document.getElementById('param_dehaze').value),
+        vignette: parseFloat(document.getElementById('param_vignette').value)
       };
 
       const img = activeItem.cachedImg || new Image();
