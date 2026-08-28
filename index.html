@@ -1209,139 +1209,205 @@
     let animFrameRequested = false;
 
     const DEFAULT_TEAM_PRESETS = [
-      {
-        id: "luz_quente_natural",
-        name: "Luz Quente Natural",
-        category: "Louvor",
-        icon: "fa-sun text-amber-400",
-        description: "Tons de pele acolhedores e calor orgânico para louvor e palavra.",
-        params: {
-          exposure_compensation: 0.20,
-          temperature_kelvin: 5700,
-          tint: -2.0,
-          contrast: 1.06,
-          highlights: -0.45,
-          shadows: 0.40,
-          whites: 0.10,
-          blacks: 0.05,
-          saturation: 1.04,
-          vibrance: 1.08,
-          clarity: 0.15,
-          dehaze: 0.0,
-          vignette: -0.15
-        }
-      },
-      {
-        id: "clean_moderno_neutro",
-        name: "Clean / Moderno Neutro",
-        category: "Pregação",
-        icon: "fa-wand-magic text-blue-400",
-        description: "Balanço de estúdio limpo com clareza nos médios e correção de reflexos.",
-        params: {
-          exposure_compensation: 0.10,
-          temperature_kelvin: 5400,
-          tint: 0.0,
-          contrast: 1.10,
-          highlights: -0.55,
-          shadows: 0.35,
-          whites: -0.05,
-          blacks: 0.10,
-          saturation: 0.98,
-          vibrance: 1.02,
-          clarity: 0.25,
-          dehaze: 0.05,
-          vignette: -0.20
-        }
-      },
-      {
-        id: "moody_contraste_cenico",
-        name: "Moody / Contraste Cênico",
-        category: "Jovens",
-        icon: "fa-film text-purple-400",
-        description: "Visual cinematográfico com sombras profundas e isolamento cênico.",
-        params: {
-          exposure_compensation: -0.05,
-          temperature_kelvin: 5100,
-          tint: 4.0,
-          contrast: 1.22,
-          highlights: -0.65,
-          shadows: 0.15,
-          whites: -0.10,
-          blacks: -0.20,
-          saturation: 1.06,
-          vibrance: 1.12,
-          clarity: 0.45,
-          dehaze: 0.15,
-          vignette: -0.40
-        }
-      },
-      {
-        id: "vintage_analogico",
-        name: "Vintage Analógico",
-        category: "Estilo",
-        icon: "fa-camera-retro text-amber-500",
-        description: "Pretos esmaecidos (fade), sombras quentes e contraste orgânico.",
-        params: {
-          exposure_compensation: 0.0,
-          temperature_kelvin: 5900,
-          tint: 3.0,
-          contrast: 0.95,
-          highlights: -0.20,
-          shadows: 0.50,
-          whites: -0.25,
-          blacks: 0.60,
-          saturation: 0.85,
-          vibrance: 0.90,
-          clarity: -0.10,
-          dehaze: -0.05,
-          vignette: -0.25
-        }
-      },
-      {
-        id: "pb_dramatico",
-        name: "P&B Dramático",
-        category: "Fine Art",
-        icon: "fa-circle-half-stroke text-slate-300",
-        description: "Sem saturação. Alto contraste, pretos profundos e brancos definidos.",
-        params: {
-          exposure_compensation: 0.10,
-          temperature_kelvin: 5500,
-          tint: 0.0,
-          contrast: 1.35,
-          highlights: -0.30,
-          shadows: -0.25,
-          whites: 0.35,
-          blacks: -0.40,
-          saturation: 0.0,
-          vibrance: 0.0,
-          clarity: 0.60,
-          dehaze: 0.30,
-          vignette: -0.50
-        }
-      },
-      {
-        id: "culto_celebracao",
-        name: "Culto de Celebração",
-        category: "Eventos",
-        icon: "fa-fire text-red-500",
-        description: "Cores vivas, alta clareza e recuperação potente de telões em fotos abertas.",
-        params: {
-          exposure_compensation: 0.25,
-          temperature_kelvin: 5600,
-          tint: 1.0,
-          contrast: 1.15,
-          highlights: -0.85,
-          shadows: 0.55,
-          whites: -0.15,
-          blacks: 0.0,
-          saturation: 1.10,
-          vibrance: 1.25,
-          clarity: 0.50,
-          dehaze: 0.20,
-          vignette: -0.15
-        }
-      }
-    ];
+  {
+    id: "luz_quente_natural",
+    name: "Luz Quente Natural",
+    category: "Louvor",
+    icon: "fa-sun text-amber-400",
+    description: "Tons de pele acolhedores e calor organico de forma suave.",
+    params: {
+      exposure_compensation: 0.10,
+      temperature_kelvin: 5600,
+      tint: -1.0,
+      contrast: 1.03,
+      highlights: -0.20,
+      shadows: 0.20,
+      whites: 0.05,
+      blacks: 0.0,
+      saturation: 1.02,
+      vibrance: 1.0,
+      clarity: 0.05,
+      dehaze: 0.0,
+      vignette: -0.05
+    }
+  },
+  {
+    id: "clean_moderno_neutro",
+    name: "Clean / Moderno Neutro",
+    category: "Pregacao",
+    icon: "fa-wand-magic text-blue-400",
+    description: "Balanco de estudio limpo e realista, sem exageros.",
+    params: {
+      exposure_compensation: 0.05,
+      temperature_kelvin: 5500,
+      tint: 0.0,
+      contrast: 1.05,
+      highlights: -0.30,
+      shadows: 0.15,
+      whites: -0.05,
+      blacks: 0.05,
+      saturation: 0.98,
+      vibrance: 1.0,
+      clarity: 0.10,
+      dehaze: 0.0,
+      vignette: -0.10
+    }
+  },
+  {
+    id: "moody_contraste_cenico",
+    name: "Moody / Contraste Cenico",
+    category: "Jovens",
+    icon: "fa-film text-purple-400",
+    description: "Visual cinematografico moderado com sombras mais densas.",
+    params: {
+      exposure_compensation: -0.05,
+      temperature_kelvin: 5200,
+      tint: 2.0,
+      contrast: 1.12,
+      highlights: -0.35,
+      shadows: 0.10,
+      whites: -0.10,
+      blacks: -0.10,
+      saturation: 1.02,
+      vibrance: 1.0,
+      clarity: 0.20,
+      dehaze: 0.05,
+      vignette: -0.20
+    }
+  },
+  {
+    id: "vintage_analogico",
+    name: "Vintage Analogico",
+    category: "Estilo",
+    icon: "fa-camera-retro text-amber-500",
+    description: "Pretos levemente esmaecidos e contraste organico realista.",
+    params: {
+      exposure_compensation: 0.0,
+      temperature_kelvin: 5700,
+      tint: 1.5,
+      contrast: 0.98,
+      highlights: -0.15,
+      shadows: 0.25,
+      whites: -0.10,
+      blacks: 0.20,
+      saturation: 0.90,
+      vibrance: 1.0,
+      clarity: -0.05,
+      dehaze: 0.0,
+      vignette: -0.10
+    }
+  },
+  {
+    id: "pb_dramatico",
+    name: "P&B Dramatico",
+    category: "Fine Art",
+    icon: "fa-circle-half-stroke text-slate-300",
+    description: "Preto e branco balanceado, sem perder detalhes nas sombras.",
+    params: {
+      exposure_compensation: 0.05,
+      temperature_kelvin: 5500,
+      tint: 0.0,
+      contrast: 1.15,
+      highlights: -0.20,
+      shadows: -0.10,
+      whites: 0.15,
+      blacks: -0.15,
+      saturation: 0.0,
+      vibrance: 1.0,
+      clarity: 0.25,
+      dehaze: 0.10,
+      vignette: -0.20
+    }
+  },
+  {
+    id: "culto_celebracao",
+    name: "Culto de Celebracao",
+    category: "Eventos",
+    icon: "fa-fire text-red-500",
+    description: "Cores vivas equilibradas e recuperacao natural de teloes.",
+    params: {
+      exposure_compensation: 0.10,
+      temperature_kelvin: 5600,
+      tint: 0.0,
+      contrast: 1.08,
+      highlights: -0.40,
+      shadows: 0.20,
+      whites: 0.0,
+      blacks: 0.05,
+      saturation: 1.05,
+      vibrance: 1.0,
+      clarity: 0.15,
+      dehaze: 0.05,
+      vignette: -0.10
+    }
+  },
+  {
+    id: "cores_vibrantes_kids",
+    name: "Cores Vibrantes (Kids)",
+    category: "Eventos",
+    icon: "fa-child-reaching text-pink-400",
+    description: "Alegre e claro, ideal para o ministerio infantil com cores puras.",
+    params: {
+      exposure_compensation: 0.15,
+      temperature_kelvin: 5400,
+      tint: -0.5,
+      contrast: 1.05,
+      highlights: -0.25,
+      shadows: 0.30,
+      whites: 0.10,
+      blacks: 0.0,
+      saturation: 1.15,
+      vibrance: 1.0,
+      clarity: 0.10,
+      dehaze: 0.0,
+      vignette: 0.0
+    }
+  },
+  {
+    id: "foco_no_altar",
+    name: "Foco no Altar",
+    category: "Pregacao",
+    icon: "fa-bullseye text-emerald-400",
+    description: "Suave vinheta e equilibrio focado em destacar o pregador.",
+    params: {
+      exposure_compensation: 0.05,
+      temperature_kelvin: 5500,
+      tint: 0.0,
+      contrast: 1.08,
+      highlights: -0.30,
+      shadows: 0.10,
+      whites: 0.0,
+      blacks: 0.0,
+      saturation: 1.0,
+      vibrance: 1.0,
+      clarity: 0.15,
+      dehaze: 0.0,
+      vignette: -0.35
+    }
+  },
+  {
+    id: "noturno_suave",
+    name: "Noturno Suave",
+    category: "Eventos",
+    icon: "fa-moon text-indigo-400",
+    description: "Ideal para ambientes muito escuros, sem forcar ruido.",
+    params: {
+      exposure_compensation: 0.20,
+      temperature_kelvin: 5300,
+      tint: 1.0,
+      contrast: 1.02,
+      highlights: -0.40,
+      shadows: 0.45,
+      whites: -0.10,
+      blacks: 0.15,
+      saturation: 0.95,
+      vibrance: 1.0,
+      clarity: 0.05,
+      dehaze: 0.0,
+      vignette: -0.05
+    }
+  }
+];
 
     // ================= SUPABASE CLIENT & AUTHENTICATION =================
     const SUPABASE_URL = "https://eioigfblgpufwkrlalxz.supabase.co";

@@ -1,4 +1,4 @@
-ï»¿import re
+import re
 html = open('index.html', encoding='utf-8').read()
 
 new_presets = '''const DEFAULT_TEAM_PRESETS = [
@@ -7,7 +7,7 @@ new_presets = '''const DEFAULT_TEAM_PRESETS = [
     name: "Luz Quente Natural",
     category: "Louvor",
     icon: "fa-sun text-amber-400",
-    description: "Tons de pele acolhedores e calor organico de forma suave.",
+    description: "Tons de pele acolhedores e calor orgânico de forma suave.",
     params: {
       exposure_compensation: 0.10,
       temperature_kelvin: 5600,
@@ -27,9 +27,9 @@ new_presets = '''const DEFAULT_TEAM_PRESETS = [
   {
     id: "clean_moderno_neutro",
     name: "Clean / Moderno Neutro",
-    category: "Pregacao",
+    category: "Pregação",
     icon: "fa-wand-magic text-blue-400",
-    description: "Balanco de estudio limpo e realista, sem exageros.",
+    description: "Balanço de estúdio limpo e realista, sem exageros.",
     params: {
       exposure_compensation: 0.05,
       temperature_kelvin: 5500,
@@ -48,10 +48,10 @@ new_presets = '''const DEFAULT_TEAM_PRESETS = [
   },
   {
     id: "moody_contraste_cenico",
-    name: "Moody / Contraste Cenico",
+    name: "Moody / Contraste Cênico",
     category: "Jovens",
     icon: "fa-film text-purple-400",
-    description: "Visual cinematografico moderado com sombras mais densas.",
+    description: "Visual cinematográfico moderado com sombras mais densas.",
     params: {
       exposure_compensation: -0.05,
       temperature_kelvin: 5200,
@@ -70,10 +70,10 @@ new_presets = '''const DEFAULT_TEAM_PRESETS = [
   },
   {
     id: "vintage_analogico",
-    name: "Vintage Analogico",
+    name: "Vintage Analógico",
     category: "Estilo",
     icon: "fa-camera-retro text-amber-500",
-    description: "Pretos levemente esmaecidos e contraste organico realista.",
+    description: "Pretos levemente esmaecidos e contraste orgânico realista.",
     params: {
       exposure_compensation: 0.0,
       temperature_kelvin: 5700,
@@ -92,7 +92,7 @@ new_presets = '''const DEFAULT_TEAM_PRESETS = [
   },
   {
     id: "pb_dramatico",
-    name: "P&B Dramatico",
+    name: "P&B Dramático",
     category: "Fine Art",
     icon: "fa-circle-half-stroke text-slate-300",
     description: "Preto e branco balanceado, sem perder detalhes nas sombras.",
@@ -114,10 +114,10 @@ new_presets = '''const DEFAULT_TEAM_PRESETS = [
   },
   {
     id: "culto_celebracao",
-    name: "Culto de Celebracao",
+    name: "Culto de Celebração",
     category: "Eventos",
     icon: "fa-fire text-red-500",
-    description: "Cores vivas equilibradas e recuperacao natural de teloes.",
+    description: "Cores vivas equilibradas e recuperação natural de telões.",
     params: {
       exposure_compensation: 0.10,
       temperature_kelvin: 5600,
@@ -139,7 +139,7 @@ new_presets = '''const DEFAULT_TEAM_PRESETS = [
     name: "Cores Vibrantes (Kids)",
     category: "Eventos",
     icon: "fa-child-reaching text-pink-400",
-    description: "Alegre e claro, ideal para o ministerio infantil com cores puras.",
+    description: "Alegre e claro, ideal para o ministério infantil com cores puras.",
     params: {
       exposure_compensation: 0.15,
       temperature_kelvin: 5400,
@@ -159,9 +159,9 @@ new_presets = '''const DEFAULT_TEAM_PRESETS = [
   {
     id: "foco_no_altar",
     name: "Foco no Altar",
-    category: "Pregacao",
+    category: "Pregação",
     icon: "fa-bullseye text-emerald-400",
-    description: "Suave vinheta e equilibrio focado em destacar o pregador.",
+    description: "Suave vinheta e equilíbrio focado em destacar o pregador.",
     params: {
       exposure_compensation: 0.05,
       temperature_kelvin: 5500,
@@ -183,7 +183,7 @@ new_presets = '''const DEFAULT_TEAM_PRESETS = [
     name: "Noturno Suave",
     category: "Eventos",
     icon: "fa-moon text-indigo-400",
-    description: "Ideal para ambientes muito escuros, sem forcar ruido.",
+    description: "Ideal para ambientes muito escuros, sem forçar ruído.",
     params: {
       exposure_compensation: 0.20,
       temperature_kelvin: 5300,
