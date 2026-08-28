@@ -741,13 +741,6 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
               
               <div>
-                <div class="flex justify-between text-slate-300 mb-1">
-                  <span>Vibração (Vibrance)</span>
-                  <span id="val_vibrance" class="font-mono text-emerald-400 font-bold">100%</span>
-                </div>
-                <input type="range" id="param_vibrance" min="0.0" max="2.0" step="0.02" value="1.0" oninput="updateSliderAndReprocess('vibrance', Math.round(this.value*100), '%')" class="w-full accent-emerald-500 h-2 bg-church-950 rounded-lg">
-              </div>
-
               <div>
                 <div class="flex justify-between text-slate-300 mb-1">
                   <span>Saturação</span>
@@ -2695,13 +2688,32 @@ create table team_presets (
         b1.className = "px-3 py-1.5 rounded-lg bg-amber-600 text-white font-bold flex items-center gap-1.5 transition-all";
         renderDeduplicationGroups();
       } else if (step === 2) {
+        // Descartar fotos duplicadas (não campeãs) da Fase 1
+        if (activeService && activeService.dedupGroups) {
+          const discardedIds = new Set();
+          activeService.dedupGroups.forEach(g => {
+            g.allPhotos.forEach(p => {
+              if (p.id !== g.championId) discardedIds.add(p.id);
+            });
+          });
+          activeService.items = activeService.items.filter(i => !discardedIds.has(i.id));
+          dbSaveService(activeService);
+        }
+
         s1.style.display = 'none'; s1.classList.add('hidden');
         s2.style.display = 'flex'; s2.classList.remove('hidden');
         s3.style.display = 'none'; s3.classList.add('hidden');
         b2.className = "px-3 py-1.5 rounded-lg bg-blue-600 text-white font-bold flex items-center gap-1.5 transition-all";
         renderTop20Grid();
       } else {
-        switchMainView('studio');
+        // Enviar para Fase 3 (Studio) apenas as selecionadas na Fase 2
+        if (activeService && activeService.items) {
+          activeService.items = activeService.items.filter(i => i.isTop20 !== false);
+          dbSaveService(activeService);
+          openServiceInStudio(activeService.id);
+        } else {
+          switchMainView('studio');
+        }
       }
     }
 
@@ -3479,8 +3491,6 @@ create table team_presets (
         document.getElementById('val_blacks').textContent = `${Math.round((p.blacks || 0.0)*100)}%`;
         document.getElementById('param_saturation').value = p.saturation !== undefined ? p.saturation : 1.0;
         document.getElementById('val_saturation').textContent = `${Math.round((p.saturation !== undefined ? p.saturation : 1.0)*100)}%`;
-        document.getElementById('param_vibrance').value = p.vibrance !== undefined ? p.vibrance : 1.0;
-        document.getElementById('val_vibrance').textContent = `${Math.round((p.vibrance !== undefined ? p.vibrance : 1.0)*100)}%`;
         document.getElementById('param_clarity').value = p.clarity || 0.0;
         document.getElementById('val_clarity').textContent = `${Math.round((p.clarity || 0.0)*100)}%`;
         document.getElementById('param_dehaze').value = p.dehaze || 0.0;
@@ -3875,7 +3885,7 @@ create table team_presets (
         whites: parseFloat(document.getElementById('param_whites').value),
         blacks: parseFloat(document.getElementById('param_blacks').value),
         saturation: parseFloat(document.getElementById('param_saturation').value),
-        vibrance: parseFloat(document.getElementById('param_vibrance').value),
+        vibrance: 1.0,
         clarity: parseFloat(document.getElementById('param_clarity').value),
         dehaze: parseFloat(document.getElementById('param_dehaze').value),
         vignette: parseFloat(document.getElementById('param_vignette').value)
