@@ -662,11 +662,7 @@
             </button>
             <button id="tabBtn2" onclick="switchControlTab(2)" class="px-3 sm:px-4 py-2 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-1.5 transition-all">
               <i class="fa-solid fa-bolt text-xs"></i>
-              <span>2. Óptica & LEDs</span>
-            </button>
-            <button id="tabBtn3" onclick="switchControlTab(3)" class="px-3 sm:px-4 py-2 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-1.5 transition-all">
-              <i class="fa-solid fa-bullseye text-xs"></i>
-              <span>3. Foco & Bokeh</span>
+              <span>2. Óptica & Efeitos</span>
             </button>
           </div>
 
@@ -3766,15 +3762,15 @@ create table team_presets (
 
     function switchControlTab(tabIdx) {
       currentTab = tabIdx;
-      for (let i = 1; i <= 3; i++) {
+      for (let i = 1; i <= 2; i++) {
         const btn = document.getElementById(`tabBtn${i}`);
         const content = document.getElementById(`tabContent${i}`);
         if (i === tabIdx) {
-          btn.className = 'px-3 sm:px-4 py-2 text-xs font-bold border-b-2 border-blue-500 text-blue-400 flex items-center gap-1.5 transition-all';
-          content.style.display = 'flex'; content.classList.remove('hidden');
+          if (btn) btn.className = 'px-3 sm:px-4 py-2 text-xs font-bold border-b-2 border-blue-500 text-blue-400 flex items-center gap-1.5 transition-all';
+          if (content) { content.style.display = 'flex'; content.classList.remove('hidden'); }
         } else {
-          btn.className = 'px-3 sm:px-4 py-2 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-1.5 transition-all';
-          content.style.display = 'none'; content.classList.add('hidden');
+          if (btn) btn.className = 'px-3 sm:px-4 py-2 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-1.5 transition-all';
+          if (content) { content.style.display = 'none'; content.classList.add('hidden'); }
         }
       }
     }
