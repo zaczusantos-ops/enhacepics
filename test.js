@@ -1,1188 +1,11 @@
-<!DOCTYPE html>
-<html lang="pt-BR" class="dark">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
-  <title>ChurchPhoto Pro - Curadoria com IA, Equipes & EdiÃ§Ã£o DSLR</title>
-  
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
 
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            church: {
-              950: '#07090E',
-              900: '#0E131F',
-              850: '#151C2C',
-              800: '#1D263B',
-              750: '#232E47',
-              700: '#2A3753',
-              600: '#3D4F75',
-              accent: '#3B82F6',
-              gold: '#F59E0B',
-            }
-          },
-          fontFamily: {
-            sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
-          }
-        }
-      }
-    }
-  </script>
-  <!-- Google Fonts: Inter -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <!-- FontAwesome 6 Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <!-- JSZip CDN for Batch ZIP Export -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-
-  <!-- Supabase JS Client SDK v2 -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  
-  <style>
-    * { -webkit-tap-highlight-color: transparent; }
-    body { background-color: #07090E; color: #F1F5F9; font-family: 'Inter', sans-serif; }
-    .hidden { display: none !important; }
-    [hidden] { display: none !important; }
-    ::-webkit-scrollbar { width: 4px; height: 4px; }
-    ::-webkit-scrollbar-track { background: #0E131F; }
-    ::-webkit-scrollbar-thumb { background: #2A3753; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #3B82F6; }
-    .slider-divider { touch-action: none; user-select: none; }
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    button, label, input, select { touch-action: manipulation; }
-    
-    img, canvas { transform: translateZ(0); backface-visibility: hidden; }
-
-    @keyframes focusPulse {
-      0% { transform: translate(-50%, -50%) scale(1.4); opacity: 0.9; }
-      50% { transform: translate(-50%, -50%) scale(0.95); opacity: 1; }
-      100% { transform: translate(-50%, -50%) scale(1); opacity: 0.85; }
-    }
-    .focal-ring {
-      animation: focusPulse 0.30s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-    }
-
-    /* Antigravity Sidebar Collapsible Styles */
-    .sidebar-expanded { width: 260px; }
-    .sidebar-collapsed { width: 72px; }
-    .sidebar-collapsed .sidebar-text,
-    .sidebar-collapsed .sidebar-badge,
-    .sidebar-collapsed .sidebar-section-title,
-    .sidebar-collapsed .sidebar-profile-info,
-    .sidebar-collapsed .sidebar-team-section { display: none !important; }
-    .sidebar-collapsed .sidebar-item { justify-content: center; padding-left: 0; padding-right: 0; }
-    .sidebar-collapsed .sidebar-logo-text { display: none !important; }
-  </style>
-</head>
-<body class="min-h-screen flex selection:bg-blue-600 selection:text-white bg-church-950 text-slate-100 overflow-x-hidden">
-
-  <!-- Mobile Sidebar Backdrop Overlay -->
-  <div id="mobileSidebarBackdrop" onclick="toggleSidebar()" class="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm md:hidden hidden" style="display: none;"></div>
-
-  <!-- ========================================================================= -->
-  <!-- RETRACTABLE SIDEBAR (ESTILO ANTIGRAVITY + SEÃ‡ÃƒO DE EQUIPE REAL) -->
-  <!-- ========================================================================= -->
-  <aside id="mainSidebar" class="sidebar-expanded fixed md:sticky top-0 left-0 z-50 h-screen bg-church-900/95 md:bg-church-900 border-r border-church-800/90 flex flex-col justify-between transition-all duration-300 ease-in-out shrink-0 -translate-x-full md:translate-x-0 backdrop-blur-xl">
-    
-    <!-- Top Header: Logo & Retract Button -->
-    <div class="p-3.5 border-b border-church-800/80 flex items-center justify-between gap-2">
-      <div class="flex items-center gap-2.5 min-w-0">
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-600/30 shrink-0">
-          <i class="fa-solid fa-camera-retro text-base"></i>
-        </div>
-        <div class="sidebar-logo-text min-w-0">
-          <div class="flex items-center gap-1.5">
-            <span class="text-sm font-bold tracking-tight text-white truncate">ChurchPhoto</span>
-            <span class="px-1.5 py-0.2 bg-blue-950 text-blue-400 border border-blue-800/80 text-[9px] font-mono rounded-full">Pro</span>
-          </div>
-          <span class="text-[10px] text-slate-400 block truncate">AI Culling & Team Engine</span>
-        </div>
-      </div>
-
-      <button onclick="toggleSidebarCollapse()" class="hidden md:flex p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-church-800 transition-colors cursor-pointer" title="Recolher / Expandir barra lateral">
-        <i id="collapseToggleIcon" class="fa-solid fa-chevron-left text-xs"></i>
-      </button>
-
-      <button onclick="toggleSidebar()" class="md:hidden p-1.5 rounded-lg text-slate-400 hover:text-white cursor-pointer">
-        <i class="fa-solid fa-xmark text-sm"></i>
-      </button>
-    </div>
-
-    <!-- Middle: Navigation, Team Section & Recent Services -->
-    <div class="flex-1 overflow-y-auto p-2.5 space-y-4 no-scrollbar">
-      
-      <!-- Primary Navigation -->
-      <div class="space-y-1">
-        <span class="sidebar-section-title px-2.5 text-[10px] font-bold tracking-wider uppercase text-slate-400 block">NavegaÃ§Ã£o</span>
-        
-        <!-- Meus Cultos -->
-        <button onclick="switchMainView('services')" id="sideNavServices" class="sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold bg-blue-600 text-white transition-all cursor-pointer shadow-sm">
-          <div class="flex items-center gap-2.5">
-            <i class="fa-solid fa-layer-group text-sm w-4 text-center"></i>
-            <span class="sidebar-text">Meus Cultos</span>
-          </div>
-          <span id="sideServicesCountBadge" class="sidebar-badge px-1.5 py-0.2 rounded-full bg-blue-950 text-blue-300 text-[10px] font-mono font-bold">0</span>
-        </button>
-
-        <!-- Funil de Culling (3 Fases) -->
-        <button onclick="switchMainView('funnel')" id="sideNavFunnel" class="sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-church-800/70 transition-all cursor-pointer">
-          <div class="flex items-center gap-2.5">
-            <i class="fa-solid fa-filter text-sm w-4 text-center text-amber-400"></i>
-            <span class="sidebar-text">Funil de Curadoria</span>
-          </div>
-          <span class="sidebar-badge px-1.5 py-0.2 rounded-full bg-amber-950/80 text-amber-300 text-[9px] font-mono font-bold">3 Fases</span>
-        </button>
-
-        <!-- EstÃºdio DSLR -->
-        <button onclick="switchMainView('studio')" id="sideNavStudio" class="sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-church-800/70 transition-all cursor-pointer">
-          <div class="flex items-center gap-2.5">
-            <i class="fa-solid fa-wand-magic-sparkles text-sm w-4 text-center text-blue-400"></i>
-            <span class="sidebar-text">EstÃºdio DSLR</span>
-          </div>
-          <span id="sidePhotosCountBadge" class="sidebar-badge px-1.5 py-0.2 rounded-full bg-church-950 text-slate-400 text-[10px] font-mono">0 fotos</span>
-        </button>
-
-        <!-- Meus Presets Integrados -->
-        <button onclick="switchMainView('team_area')" id="sideNavTeamArea" class="sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-church-800/70 transition-all cursor-pointer">
-          <div class="flex items-center gap-2.5">
-            <i class="fa-solid fa-sliders text-sm w-4 text-center text-purple-400"></i>
-            <span class="sidebar-text">Meus Presets</span>
-          </div>
-          <span id="sideTeamPresetsCountBadge" class="sidebar-badge px-1.5 py-0.2 rounded-full bg-purple-950 text-purple-300 text-[10px] font-mono font-bold">6 presets</span>
-        </button>
-      </div>
-
-      <!-- Recent Cultos List -->
-      <div class="space-y-1 pt-2 border-t border-church-800/70">
-        <div class="flex items-center justify-between px-2.5">
-          <span class="sidebar-section-title text-[10px] font-bold tracking-wider uppercase text-slate-400">Cultos Recentes</span>
-          <button onclick="openCreateServiceModal()" class="sidebar-badge text-[10px] text-blue-400 hover:underline cursor-pointer">+ Criar</button>
-        </div>
-        <div id="sideRecentServicesList" class="space-y-0.5">
-          <!-- Injected via JS -->
-        </div>
-      </div>
-
-    </div>
-
-    <!-- ========================================================================= -->
-    <!-- ALWAYS VISIBLE BOTTOM SIDEBAR FOOTER (LOGIN / LOGGED IN USER) -->
-    <!-- ========================================================================= -->
-    <div class="p-3 border-t border-church-800/90 bg-church-950/95">
-      
-      <!-- When Authenticated: Profile Info & Logout -->
-      <div id="sideProfileLoggedIn" class="flex items-center justify-between gap-2 hidden" style="display: none;">
-        <div class="flex items-center gap-2.5 min-w-0">
-          <img id="sideUserAvatar" src="https://api.dicebear.com/7.x/initials/svg?seed=M" class="w-8 h-8 rounded-full border border-blue-500/50 object-cover shrink-0" alt="Avatar">
-          <div class="sidebar-profile-info min-w-0">
-            <span id="sideUserName" class="text-xs font-bold text-white block truncate">VoluntÃ¡rio</span>
-            <span id="sideUserHandle" class="text-[10px] text-blue-400 font-mono block truncate">@voluntario</span>
-          </div>
-        </div>
-        <button onclick="logoutUser()" class="sidebar-badge p-2 rounded-xl text-slate-400 hover:text-red-400 hover:bg-church-800 transition-colors cursor-pointer" title="Sair da Conta">
-          <i class="fa-solid fa-arrow-right-from-bracket text-xs"></i>
-        </button>
-      </div>
-
-      <!-- When Unauthenticated: ALWAYS Visible Big Login Button -->
-      <div id="sideProfileLoggedOut" class="flex items-center justify-between w-full">
-        <button onclick="openSupabaseAuthModal()" class="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:scale-95 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg shadow-emerald-600/30">
-          <i class="fa-solid fa-cloud text-xs shrink-0 text-amber-300"></i>
-          <span class="sidebar-text">Entrar / Criar Conta</span>
-        </button>
-      </div>
-
-      <div class="mt-2.5 text-center flex justify-center opacity-70">
-        <span class="text-[9px] text-slate-500 font-mono tracking-widest uppercase border border-slate-700/50 bg-church-900/50 px-2 py-0.5 rounded-full">v2.4.4 (9f3a1b2)</span>
-      </div>
-
-    </div>
-
-  </aside>
-
-  <!-- ========================================================================= -->
-  <!-- MAIN APP WRAPPER & TOP NAV BAR -->
-  <!-- ========================================================================= -->
-  <div class="flex-1 flex flex-col min-w-0 min-h-screen">
-    
-    <!-- Top Header Bar -->
-    <header class="sticky top-0 z-30 bg-church-950/95 backdrop-blur-xl border-b border-church-800/80 px-3 sm:px-6 py-2.5 flex items-center justify-between">
-      
-      <!-- Left: Mobile Menu Toggle & Title -->
-      <div class="flex items-center gap-3">
-        <button onclick="toggleSidebar()" class="p-2 rounded-xl bg-church-900 hover:bg-church-850 border border-church-800 text-slate-300 hover:text-white transition-colors cursor-pointer">
-          <i class="fa-solid fa-bars text-sm"></i>
-        </button>
-
-        <div class="flex items-center gap-2">
-          <h2 id="topNavViewTitle" class="text-sm sm:text-base font-bold text-white tracking-tight">Meus Cultos</h2>
-          <span id="topNavViewBadge" class="hidden sm:inline-block px-2 py-0.5 rounded-md bg-church-900 border border-church-800 text-[10px] font-mono text-slate-400">
-            Painel Central
-          </span>
-        </div>
-      </div>
-
-      <!-- Right: Action Buttons -->
-      <div class="flex items-center gap-2">
-        <button onclick="clearDeviceDataPrompt()" class="px-2.5 py-1.5 rounded-xl bg-church-900 hover:bg-church-850 border border-church-800 text-[11px] font-medium text-slate-400 hover:text-red-400 transition-all flex items-center gap-1.5 shadow-sm cursor-pointer" title="Limpar dados do dispositivo">
-          <i class="fa-solid fa-trash-can text-xs"></i>
-          <span class="hidden sm:inline">Limpar Cache</span>
-        </button>
-
-        <button onclick="switchMainView('team_area')" class="px-2.5 py-1.5 rounded-xl bg-church-900 hover:bg-church-850 border border-church-800 text-[11px] font-medium text-slate-300 hover:text-white transition-all flex items-center gap-1.5 shadow-sm cursor-pointer" title="Ãrea da Equipe">
-          <i class="fa-solid fa-users text-purple-400 text-xs"></i>
-          <span class="hidden sm:inline" id="topTeamNameBadge">MÃ­dia Principal</span>
-        </button>
-
-        <button onclick="openCreateServiceModal()" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-xs font-semibold shadow-md shadow-blue-600/25 transition-all flex items-center gap-1.5 cursor-pointer">
-          <i class="fa-solid fa-plus text-xs"></i>
-          <span>Novo Culto</span>
-        </button>
-      </div>
-    </header>
-
-    <!-- Global Toast Notification Banner -->
-    <div id="toastNotification" class="fixed top-16 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-2xl bg-church-900/95 border border-emerald-500/50 text-white text-xs font-semibold shadow-2xl shadow-emerald-500/20 backdrop-blur-md flex items-center gap-2 transition-all duration-300 transform -translate-y-10 opacity-0 pointer-events-none">
-      <i class="fa-solid fa-circle-check text-emerald-400"></i>
-      <span id="toastText">OperaÃ§Ã£o realizada com sucesso!</span>
-    </div>
-
-    <!-- Main Content Area -->
-    <main class="max-w-6xl w-full mx-auto px-3 sm:px-6 py-4 sm:py-6 flex-1 flex flex-col gap-4 sm:gap-6">
-
-      <!-- ========================================================================= -->
-      <!-- VIEW 1: MEUS CULTOS (GERENCIADOR DE ÃLBUNS VINCULADO Ã€ CONTA) -->
-      <!-- ========================================================================= -->
-      <div id="viewServicesSection" class="flex flex-col gap-5 w-full">
-        
-        <!-- Hero Banner -->
-        <div class="rounded-2xl sm:rounded-3xl bg-gradient-to-b from-church-900 to-church-950 border border-church-800 p-5 sm:p-6 shadow-2xl relative overflow-hidden">
-          <div class="absolute -top-20 right-0 w-64 h-32 bg-emerald-500/10 blur-3xl pointer-events-none"></div>
-
-          <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div>
-              <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-950/70 border border-emerald-800/60 text-emerald-300 text-[10px] sm:text-xs font-semibold mb-2">
-                <i class="fa-solid fa-cloud text-emerald-400"></i>
-                <span id="userAccountStatusBadge">Conta: Visitante (NÃ£o autenticado)</span>
-              </div>
-              <h2 class="text-xl sm:text-2xl font-bold text-white leading-tight">
-                Curadoria com IA, Equipes & EdiÃ§Ã£o DSLR
-              </h2>
-              <p class="text-xs text-slate-400 mt-1 max-w-lg">
-                Conecte-se com sua conta Supabase para sincronizar seus cultos, fotos e presets na nuvem.
-              </p>
-            </div>
-
-            <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-              <button id="mainHeroAuthBtn" onclick="openSupabaseAuthModal()" class="w-full sm:w-auto px-5 py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:scale-95 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2 transition-all cursor-pointer">
-                <i class="fa-solid fa-cloud text-sm text-amber-300"></i>
-                <span>Entrar / Criar Conta</span>
-              </button>
-
-              <button onclick="openCreateServiceModal()" class="w-full sm:w-auto px-6 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-95 text-white font-bold text-xs sm:text-sm rounded-xl shadow-xl shadow-blue-600/30 flex items-center justify-center gap-2.5 transition-all cursor-pointer shrink-0">
-                <i class="fa-solid fa-plus text-sm"></i>
-                <span>Criar Novo Culto</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Church Services Grid Header -->
-        <div class="flex items-center justify-between px-1">
-          <div class="flex items-center gap-2">
-            <span class="text-sm font-bold text-white">Cultos Salvos</span>
-            <span id="servicesCountBadge" class="px-2 py-0.5 rounded-full bg-church-800 text-slate-300 text-[10px] font-mono font-semibold">
-              0 cultos
-            </span>
-          </div>
-          <span class="text-[11px] text-slate-400">Vinculados Ã  sua conta ativa</span>
-        </div>
-
-        <!-- Services Cards Grid List -->
-        <div id="servicesListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <!-- Rendered via JS -->
-        </div>
-
-        <!-- Empty State for Services -->
-        <div id="emptyServicesPrompt" class="rounded-3xl bg-church-900/60 border border-church-800/80 p-8 sm:p-12 text-center flex flex-col items-center justify-center">
-          <div class="w-16 h-16 rounded-2xl bg-church-950 border border-church-800 flex items-center justify-center text-slate-600 mb-3 shadow-inner">
-            <i class="fa-solid fa-church text-2xl text-blue-400"></i>
-          </div>
-          <h3 class="text-base font-bold text-white">Nenhum culto criado nesta conta</h3>
-          <p class="text-xs text-slate-400 mt-1 max-w-sm">
-            Crie seu primeiro culto para fazer upload das fotos da equipe de mÃ­dia e iniciar a curadoria em lote.
-          </p>
-          <button onclick="openCreateServiceModal()" class="mt-4 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs flex items-center gap-2 transition-all cursor-pointer shadow-lg shadow-blue-600/20">
-            <i class="fa-solid fa-plus"></i> Criar Primeiro Culto
-          </button>
-        </div>
-
-      </div>
-
-      <!-- ========================================================================= -->
-      <!-- VIEW 2: FUNIL DE CULLING EM 3 ETAPAS (DEDUPLICAÃ‡ÃƒO -> TOP 20 -> SMART CROP) -->
-      <!-- ========================================================================= -->
-      <div id="viewFunnelSection" class="flex flex-col gap-5 hidden" style="display: none;">
-        
-        <!-- Funnel Stepper Header -->
-        <div class="p-3.5 sm:p-4 rounded-2xl bg-church-900 border border-church-800 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div class="flex items-center gap-2">
-            <div class="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 text-sm">
-              <i class="fa-solid fa-filter"></i>
-            </div>
-            <div>
-              <h3 id="funnelActiveTitle" class="text-xs sm:text-sm font-bold text-white">Funil de Curadoria Inteligente</h3>
-              <p id="funnelActiveSubtitle" class="text-[10px] text-slate-400">Tratamento de fotos do culto em 3 fases</p>
-            </div>
-          </div>
-
-          <!-- Stepper Buttons -->
-          <div class="flex items-center gap-1.5 bg-church-950 p-1 rounded-xl border border-church-800 text-xs">
-            <button id="stepBtn1" onclick="setFunnelStep(1)" class="px-3 py-1.5 rounded-lg bg-amber-600 text-white font-bold flex items-center gap-1.5 transition-all">
-              <span class="w-4 h-4 rounded-full bg-black/30 text-[9px] flex items-center justify-center">1</span>
-              <span>DeduplicaÃ§Ã£o</span>
-            </button>
-            <button id="stepBtn2" onclick="setFunnelStep(2)" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white font-medium flex items-center gap-1.5 transition-all">
-              <span class="w-4 h-4 rounded-full bg-church-800 text-[9px] flex items-center justify-center">2</span>
-              <span>Top 20 Insta</span>
-            </button>
-            <button id="stepBtn3" onclick="setFunnelStep(3)" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white font-medium flex items-center gap-1.5 transition-all">
-              <span class="w-4 h-4 rounded-full bg-church-800 text-[9px] flex items-center justify-center">3</span>
-              <span>Crop & DSLR</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- FASE 1: DEDUPLICAÃ‡ÃƒO & FOTO CAMPEÃƒ -->
-        <div id="funnelStage1" class="flex flex-col gap-4">
-          <div class="p-4 rounded-2xl bg-church-900 border border-church-800 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <div>
-              <div class="inline-flex items-center gap-1 text-amber-400 font-bold text-xs mb-1">
-                <i class="fa-solid fa-trophy"></i> Fase 1: EleiÃ§Ã£o da Foto CampeÃ£ por SequÃªncia
-              </div>
-              <p class="text-xs text-slate-300">
-                O Gemini agrupou fotos em sequÃªncia e elegeu a foto com melhor nitidez e olhos abertos. Fotos idÃªnticas recebem rigorosamente o mesmo critÃ©rio.
-              </p>
-            </div>
-            <button onclick="setFunnelStep(2)" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-blue-600/30 shrink-0 cursor-pointer">
-              <span>AvanÃ§ar para Top 20</span>
-              <i class="fa-solid fa-arrow-right text-xs"></i>
-            </button>
-          </div>
-
-          <div id="dedupGroupsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- Injected via JS -->
-          </div>
-        </div>
-
-        <!-- FASE 2: CURADORIA TOP 20 INSTAGRAM -->
-        <div id="funnelStage2" class="flex flex-col gap-4 hidden" style="display: none;">
-          <div class="p-4 rounded-2xl bg-church-900 border border-church-800 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <div>
-              <div class="inline-flex items-center gap-1 text-blue-400 font-bold text-xs mb-1">
-                <i class="fa-solid fa-star"></i> Fase 2: Ranking & Curadoria para Carrossel
-              </div>
-              <p class="text-xs text-slate-300">
-                AvaliaÃ§Ã£o tÃ©cnica e estÃ©tica determinÃ­stica baseada na imagem real. Selecione as melhores para o carrossel do Instagram.
-              </p>
-            </div>
-
-            <div class="flex items-center gap-2 shrink-0">
-              <span id="top20LiveCounter" class="px-3 py-2 rounded-xl bg-blue-950 border border-blue-800 text-blue-300 font-mono text-xs font-bold">
-                0 / 20 Selecionadas
-              </span>
-              <button onclick="setFunnelStep(3)" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-emerald-600/30 cursor-pointer">
-                <span>Ir para EdiÃ§Ã£o & Crop</span>
-                <i class="fa-solid fa-arrow-right text-xs"></i>
-              </button>
-            </div>
-          </div>
-
-          <div class="flex items-center gap-2 px-1">
-            <button onclick="autoSelectTop20()" class="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold flex items-center gap-1.5 shadow cursor-pointer">
-              <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i> Selecionar Top 20 da IA
-            </button>
-            <button onclick="toggleSelectAllPhotos(true)" class="px-3 py-1.5 rounded-lg bg-church-800 hover:bg-church-700 text-slate-300 text-xs cursor-pointer">
-              Marcar Todas
-            </button>
-            <button onclick="toggleSelectAllPhotos(false)" class="px-3 py-1.5 rounded-lg bg-church-800 hover:bg-church-700 text-slate-300 text-xs cursor-pointer">
-              Limpar SeleÃ§Ã£o
-            </button>
-          </div>
-
-          <div id="top20GridContainer" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            <!-- Injected via JS -->
-          </div>
-        </div>
-
-        <!-- FASE 3: SMART CROP & ESTÃšDIO -->
-        <div id="funnelStage3" class="flex flex-col gap-4 hidden" style="display: none;">
-          <div class="p-4 rounded-2xl bg-church-900 border border-church-800 flex items-center justify-between">
-            <div>
-              <div class="inline-flex items-center gap-1 text-emerald-400 font-bold text-xs mb-1">
-                <i class="fa-solid fa-crop-simple"></i> Fase 3: Smart Crop 4:5 Vertical & CalibraÃ§Ã£o DSLR
-              </div>
-              <p class="text-xs text-slate-300">
-                Ajuste o recorte inteligente sugerido pelo Gemini para o feed do Instagram e aplique Meus Presets.
-              </p>
-            </div>
-            <button onclick="downloadActiveServiceZip()" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-emerald-600/30 cursor-pointer">
-              <i class="fa-solid fa-file-zipper"></i>
-              <span>Baixar Lote (.ZIP)</span>
-            </button>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- ========================================================================= -->
-      <!-- VIEW 3: ESTÃšDIO DSLR COMPLETO (COM RECORTE INTELIGENTE & SLIDERS) -->
-      <!-- ========================================================================= -->
-      <div id="viewStudioSection" class="flex flex-col gap-4 hidden" style="display: none;">
-        
-        <!-- Studio Top Navigation & Smart Crop Controls -->
-        <div class="flex flex-wrap items-center justify-between p-3.5 rounded-2xl bg-church-900 border border-church-800 shadow-md gap-2">
-          <div class="flex items-center gap-2.5 min-w-0">
-            <button onclick="switchMainView('services')" class="px-2.5 py-1.5 rounded-xl bg-church-950 hover:bg-church-850 border border-church-800 text-slate-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
-              <i class="fa-solid fa-arrow-left text-xs"></i>
-              <span>Voltar</span>
-            </button>
-            <div class="min-w-0">
-              <span id="studioServiceTitle" class="text-xs sm:text-sm font-bold text-white block truncate">
-                Culto Ativo
-              </span>
-              <span id="studioServiceDate" class="text-[10px] text-slate-400 font-mono block truncate">
-                0 fotos no lote
-              </span>
-            </div>
-          </div>
-
-          <!-- Smart Crop Mode Buttons -->
-          <div class="flex items-center gap-1.5 bg-church-950 p-1 rounded-xl border border-church-800 text-xs">
-            <span class="text-[10px] text-slate-400 font-semibold px-1.5 hidden sm:inline">Recorte:</span>
-            <button id="cropBtn45" onclick="setSmartCropMode('4:5')" class="px-2.5 py-1 rounded-lg bg-blue-600 text-white font-bold text-[11px]">4:5 Insta</button>
-            <button id="cropBtn11" onclick="setSmartCropMode('1:1')" class="px-2.5 py-1 rounded-lg text-slate-400 hover:text-white font-medium text-[11px]">1:1 Quadrado</button>
-            <button id="cropBtnOff" onclick="setSmartCropMode('off')" class="px-2.5 py-1 rounded-lg text-slate-400 hover:text-white font-medium text-[11px]">Original</button>
-          </div>
-
-          <div class="flex items-center gap-2">
-            <button id="batchProcessBtn" onclick="processAllInQueue()" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-semibold text-xs flex items-center gap-1.5 shadow transition-all cursor-pointer">
-              <i class="fa-solid fa-bolt text-amber-300 text-xs"></i>
-              <span class="hidden sm:inline">Processar Lote</span>
-            </button>
-
-            <button onclick="downloadActiveServiceZip()" class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-emerald-600/30 transition-all cursor-pointer">
-              <i class="fa-solid fa-file-zipper text-xs"></i>
-              <span>Baixar (.ZIP)</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Presets Carousel for Active Team -->
-        <div class="flex flex-col gap-2">
-          <div class="flex items-center justify-between px-1">
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-              <i class="fa-solid fa-sliders text-purple-400"></i> Meus Presets: <span id="studioTeamNameLabel" class="text-blue-400 font-bold">MÃ­dia Principal</span>
-            </span>
-            <div class="flex items-center gap-3">
-              <button onclick="openSavePresetModal()" class="text-[11px] text-blue-400 hover:underline font-semibold flex items-center gap-1 cursor-pointer">
-                <i class="fa-solid fa-floppy-disk text-[10px]"></i> Salvar ParÃ¢metros Atuais
-              </button>
-              <button onclick="switchMainView('team_area')" class="text-[11px] text-purple-400 hover:underline font-semibold flex items-center gap-1 cursor-pointer">
-                <i class="fa-solid fa-users-gear text-[10px]"></i> Abrir Ãrea da Equipe
-              </button>
-            </div>
-          </div>
-          <div id="presetsContainer" class="flex gap-2.5 overflow-x-auto pb-1.5 pt-0.5 no-scrollbar scroll-smooth">
-            <!-- Injected via JS -->
-          </div>
-        </div>
-
-        <!-- Photo Queue Thumbnails Strip -->
-        <div id="thumbnailsStrip" class="flex flex-col gap-2">
-          <div class="flex items-center justify-between px-1">
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Fotos do Culto</span>
-            <div class="flex items-center gap-2">
-              <span class="text-[10px] text-slate-500 font-mono">Clique para inspecionar</span>
-              <label class="text-[11px] text-blue-400 hover:underline cursor-pointer flex items-center gap-1">
-                <i class="fa-solid fa-plus text-[10px]"></i> Mais fotos
-                <input type="file" id="addMorePhotosInput" multiple accept="image/*" class="hidden">
-              </label>
-            </div>
-          </div>
-          <div id="thumbnailsList" class="flex gap-2 overflow-x-auto pb-1 no-scrollbar min-h-[60px]">
-            <!-- Injected thumbnails via JS -->
-          </div>
-        </div>
-
-        <!-- INTERACTIVE VIEWER WITH SMART CROP OVERLAY -->
-        <div id="viewerContainer" class="flex flex-col rounded-2xl sm:rounded-3xl bg-church-900 border border-church-800 shadow-2xl overflow-hidden min-h-[420px] sm:min-h-[500px]">
-          
-          <!-- Viewer Top Bar -->
-          <div class="flex items-center justify-between px-3.5 py-2.5 bg-church-950 border-b border-church-800">
-            <div class="flex items-center gap-2 min-w-0">
-              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
-              <span id="activePhotoTitle" class="text-xs font-semibold text-white truncate max-w-[150px] sm:max-w-xs">
-                Comparador Interativo
-              </span>
-            </div>
-
-            <div class="flex items-center gap-2">
-              <div class="flex bg-church-950 p-0.5 rounded-lg border border-church-800 text-xs">
-                <button id="modeSliderBtn" onclick="setViewerMode('slider')" class="px-2 py-1 rounded-md bg-blue-600 text-white font-medium text-[11px]">DivisÃ£o</button>
-                <button id="modeSideBtn" onclick="setViewerMode('side')" class="px-2 py-1 rounded-md text-slate-400 hover:text-white font-medium text-[11px]">Lado a Lado</button>
-              </div>
-
-              <button id="downloadBtn" onclick="downloadCurrentProcessed()" disabled class="px-3 py-1.5 rounded-xl bg-church-800 hover:bg-church-700 disabled:opacity-30 disabled:cursor-not-allowed text-white text-xs font-semibold border border-church-700 flex items-center gap-1.5 transition-all">
-                <i class="fa-solid fa-download"></i>
-                <span class="hidden sm:inline">Baixar Foto HD</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Viewport Area -->
-          <div id="viewport" onclick="handleViewportClick(event)" class="relative w-full h-[360px] sm:h-[480px] bg-church-950 flex items-center justify-center overflow-hidden select-none cursor-crosshair">
-            
-            <!-- Empty State -->
-            <div id="emptyPrompt" class="flex flex-col items-center justify-center p-6 text-center text-slate-500">
-              <div class="w-16 h-16 rounded-2xl bg-church-900 border border-church-800 flex items-center justify-center text-slate-600 mb-3 shadow-inner">
-                <i class="fa-solid fa-images text-2xl"></i>
-              </div>
-              <span class="text-sm font-semibold text-slate-300">Nenhuma foto selecionada</span>
-              <p class="text-xs text-slate-500 mt-1 max-w-xs">
-                Clique em uma das fotos do culto acima para visualizar e calibrar.
-              </p>
-            </div>
-
-            <!-- Processing Loader State -->
-            <div id="processingLoader" class="flex flex-col items-center justify-center p-6 text-center text-blue-400 hidden" style="display: none;">
-              <div class="relative w-16 h-16 mb-3">
-                <div class="w-16 h-16 rounded-full border-4 border-blue-600/30 border-t-blue-500 animate-spin"></div>
-                <div class="absolute inset-0 flex items-center justify-center">
-                  <i class="fa-solid fa-wand-magic-sparkles text-amber-400 text-lg animate-pulse"></i>
-                </div>
-              </div>
-              <span class="text-sm font-bold text-white" id="loaderTitle">Tratando com Motor DSLR 3.0...</span>
-              <p class="text-xs text-slate-400 mt-1" id="loaderSubtitle">Atenuando LEDs, corrigindo Ã³ptica e calibrando tons de pele</p>
-            </div>
-
-            <!-- Slider Comparison View -->
-            <div id="sliderWrapper" class="relative w-full h-full hidden" style="display: none;">
-              <img id="imgAfter" class="absolute inset-0 w-full h-full object-contain pointer-events-none" src="" alt="Depois">
-
-              <div id="clipContainer" class="absolute inset-0 overflow-hidden pointer-events-none" style="clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);">
-                <img id="imgBefore" class="absolute inset-0 w-full h-full object-contain" src="" alt="Antes">
-              </div>
-
-              <!-- Focus Reticle -->
-              <div id="focusReticle" class="absolute z-20 pointer-events-none hidden transition-all duration-150" style="left: 50%; top: 40%; transform: translate(-50%, -50%);">
-                <div class="w-10 h-10 rounded-full border-2 border-amber-400 bg-amber-400/10 shadow-[0_0_15px_rgba(245,158,11,0.6)] focal-ring flex items-center justify-center">
-                  <div class="w-1.5 h-1.5 rounded-full bg-amber-300"></div>
-                </div>
-                <span id="focusReticleBadge" class="absolute top-11 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-md bg-black/80 border border-amber-400/40 text-[9px] font-mono text-amber-300 whitespace-nowrap shadow-lg">
-                  f/2.8 Â· Foco Ativo
-                </span>
-              </div>
-
-              <!-- Smart Crop Visual Guide Overlay Box -->
-              <div id="smartCropGuideBox" class="absolute z-25 pointer-events-none border-2 border-blue-400/90 border-dashed rounded-lg hidden transition-all duration-200" style="left: 20%; top: 5%; width: 60%; height: 90%;">
-                <span class="absolute -top-3 left-2 px-1.5 py-0.2 bg-blue-600 text-white text-[9px] font-mono font-bold rounded">Smart Crop 4:5</span>
-              </div>
-
-              <!-- Divider Line -->
-              <div id="dividerLine" class="slider-divider absolute top-0 bottom-0 z-30 cursor-ew-resize flex items-center justify-center group" style="left: 50%; transform: translateX(-50%);">
-                <div class="w-[2.5px] h-full bg-white group-hover:bg-blue-400 shadow-[0_0_12px_rgba(0,0,0,0.9)]"></div>
-                <div class="absolute w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-church-900/90 border-2 border-white flex items-center justify-center text-white shadow-2xl group-hover:scale-110 active:scale-95 transition-all backdrop-blur-sm">
-                  <i class="fa-solid fa-arrows-left-right text-xs"></i>
-                </div>
-              </div>
-
-              <span class="absolute bottom-3 left-3 z-10 px-2 py-0.5 rounded-md bg-black/75 border border-white/10 text-[10px] font-mono text-slate-300 uppercase pointer-events-none">
-                Original
-              </span>
-              <span class="absolute bottom-3 right-3 z-10 px-2 py-0.5 rounded-md bg-blue-600/90 border border-blue-400/30 text-[10px] font-mono text-white uppercase flex items-center gap-1 pointer-events-none">
-                <i class="fa-solid fa-sparkles text-amber-300 text-[9px]"></i> DSLR Pro (HD)
-              </span>
-            </div>
-
-            <!-- Side by Side View -->
-            <div id="sideBySideWrapper" class="grid grid-cols-2 w-full h-full gap-1.5 p-1.5 hidden" style="display: none;">
-              <div class="relative rounded-xl overflow-hidden bg-church-900 border border-church-800 flex items-center justify-center">
-                <img id="imgSideBefore" class="w-full h-full object-contain" src="" alt="Antes">
-                <span class="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/75 text-[9px] font-mono text-slate-300 pointer-events-none">Antes</span>
-              </div>
-              <div class="relative rounded-xl overflow-hidden bg-church-900 border border-church-800 flex items-center justify-center">
-                <img id="imgSideAfter" class="w-full h-full object-contain" src="" alt="Depois">
-                <span class="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-blue-600/90 text-[9px] font-mono text-white pointer-events-none">Depois</span>
-              </div>
-            </div>
-
-          </div>
-
-          <div id="telemetryFooter" class="px-3.5 py-2 bg-church-950 border-t border-church-800 flex items-center justify-between text-[11px] text-slate-400">
-            <span id="telemetryText" class="flex items-center gap-1.5">
-              <i class="fa-solid fa-hand-pointer text-amber-400 text-xs"></i>
-              <span>Toque na foto para mudar o foco</span>
-            </span>
-            <span id="resolutionBadge" class="font-mono text-slate-500 text-[10px]"></span>
-          </div>
-        </div>
-
-        <!-- 3-TAB CONTROLS PANEL -->
-        <div id="parametersPanel" class="rounded-2xl sm:rounded-3xl bg-church-900 border border-church-800 p-4 sm:p-5 shadow-xl hidden" style="display: none;">
-          
-          <!-- Diagnostic Scene Bar -->
-          <div class="p-3 rounded-xl bg-church-950 border border-church-800 text-xs mb-4">
-            <div class="flex items-center justify-between mb-1">
-              <div class="flex items-center gap-1.5 text-blue-400 font-semibold">
-                <i class="fa-solid fa-brain text-amber-400"></i> DiagnÃ³stico da Cena (Gemini 2.5 Pro):
-              </div>
-              <span id="focalPointDisplayBadge" class="text-[10px] font-mono text-amber-400">Foco: [50%, 40%]</span>
-            </div>
-            <p id="analysisSummary" class="text-slate-300 font-mono text-[11px] leading-relaxed"></p>
-            <div class="mt-2 flex flex-wrap gap-1.5">
-              <span id="lightingTag" class="px-2 py-0.5 rounded bg-blue-900/40 text-blue-300 border border-blue-800/40 text-[10px]"></span>
-              <span id="sceneTag" class="px-2 py-0.5 rounded bg-purple-900/40 text-purple-300 border border-purple-800/40 text-[10px]"></span>
-              <span id="fStopTag" class="px-2 py-0.5 rounded bg-emerald-900/40 text-emerald-300 border border-emerald-800/40 text-[10px]">f/2.8 Bokeh</span>
-            </div>
-          </div>
-
-          <!-- Navigation Tabs -->
-          <div class="flex border-b border-church-800 mb-4 gap-1 sm:gap-2">
-            <button id="tabBtn1" onclick="switchControlTab(1)" class="px-3 sm:px-4 py-2 text-xs font-bold border-b-2 border-blue-500 text-blue-400 flex items-center gap-1.5 transition-all">
-              <i class="fa-solid fa-palette text-xs"></i>
-              <span>1. Cor & Luz</span>
-            </button>
-            <button id="tabBtn2" onclick="switchControlTab(2)" class="px-3 sm:px-4 py-2 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-1.5 transition-all">
-              <i class="fa-solid fa-bolt text-xs"></i>
-              <span>2. Ã“ptica & Efeitos</span>
-            </button>
-          </div>
-
-          <!-- TAB 1: LUZ & COR -->
-          <div id="tabContent1" class="flex flex-col gap-3.5 block" style="display: block;">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
-              <div>
-                <div class="flex justify-between text-slate-300 mb-1">
-                  <span>ExposiÃ§Ã£o (EV)</span>
-                  <span id="val_exposure" class="font-mono text-blue-400 font-bold">0.00</span>
-                </div>
-                <input type="range" id="param_exposure" min="-3.0" max="3.0" step="0.05" value="0" oninput="updateSliderAndReprocess('exposure', this.value, '')" class="w-full accent-blue-500 h-2 bg-church-950 rounded-lg">
-              </div>
-
-              <div>
-                <div class="flex justify-between text-slate-300 mb-1">
-                  <span>Contraste</span>
-                  <span id="val_contrast" class="font-mono text-blue-400 font-bold">1.00x</span>
-                </div>
-                <input type="range" id="param_contrast" min="0.50" max="1.50" step="0.02" value="1.0" oninput="updateSliderAndReprocess('contrast', parseFloat(this.value).toFixed(2), 'x')" class="w-full accent-blue-500 h-2 bg-church-950 rounded-lg">
-              </div>
-
-              <div>
-                <div class="flex justify-between text-amber-300 font-semibold mb-1">
-                  <span>Realces (Highlights)</span>
-                  <span id="val_highlights" class="font-mono text-amber-400 font-bold">0%</span>
-                </div>
-                <input type="range" id="param_highlights" min="-1.0" max="1.0" step="0.05" value="0" oninput="updateSliderAndReprocess('highlights', Math.round(this.value*100), '%')" class="w-full accent-amber-500 h-2 bg-church-950 rounded-lg">
-              </div>
-
-              <div>
-                <div class="flex justify-between text-slate-300 mb-1">
-                  <span>Sombras (Shadows)</span>
-                  <span id="val_shadows" class="font-mono text-blue-400 font-bold">0%</span>
-                </div>
-                <input type="range" id="param_shadows" min="-1.0" max="1.0" step="0.05" value="0" oninput="updateSliderAndReprocess('shadows', Math.round(this.value*100), '%')" class="w-full accent-blue-500 h-2 bg-church-950 rounded-lg">
-              </div>
-
-              <div>
-                <div class="flex justify-between text-slate-300 mb-1">
-                  <span>Brancos (Whites)</span>
-                  <span id="val_whites" class="font-mono text-slate-100 font-bold">0%</span>
-                </div>
-                <input type="range" id="param_whites" min="-1.0" max="1.0" step="0.05" value="0" oninput="updateSliderAndReprocess('whites', Math.round(this.value*100), '%')" class="w-full accent-slate-300 h-2 bg-church-950 rounded-lg">
-              </div>
-
-              <div>
-                <div class="flex justify-between text-slate-300 mb-1">
-                  <span>Pretos (Blacks)</span>
-                  <span id="val_blacks" class="font-mono text-slate-500 font-bold">0%</span>
-                </div>
-                <input type="range" id="param_blacks" min="-1.0" max="1.0" step="0.05" value="0" oninput="updateSliderAndReprocess('blacks', Math.round(this.value*100), '%')" class="w-full accent-slate-500 h-2 bg-church-950 rounded-lg">
-              </div>
-
-              <div>
-                <div class="flex justify-between text-amber-300 font-semibold mb-1">
-                  <span>Temp (Kelvin)</span>
-                  <span id="val_kelvin" class="font-mono text-amber-400 font-bold">5500K</span>
-                </div>
-                <input type="range" id="param_kelvin" min="2500" max="9000" step="50" value="5500" oninput="updateSliderAndReprocess('kelvin', this.value, 'K')" class="w-full accent-amber-500 h-2 bg-church-950 rounded-lg">
-              </div>
-
-              <div>
-                <div class="flex justify-between text-purple-300 font-semibold mb-1">
-                  <span>ColoraÃ§Ã£o (Tint)</span>
-                  <span id="val_tint" class="font-mono text-purple-400 font-bold">0</span>
-                </div>
-                <input type="range" id="param_tint" min="-50.0" max="50.0" step="1.0" value="0" oninput="updateSliderAndReprocess('tint', this.value, '')" class="w-full accent-purple-500 h-2 bg-church-950 rounded-lg">
-              </div>
-            </div>
-          </div>
-
-          <!-- TAB 2: EFEITOS & DETALHES -->
-          <div id="tabContent2" class="flex flex-col gap-3.5 hidden" style="display: none;">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
-              
-              <div>
-              <div>
-                <div class="flex justify-between text-slate-300 mb-1">
-                  <span>SaturaÃ§Ã£o</span>
-                  <span id="val_saturation" class="font-mono text-emerald-400 font-bold">100%</span>
-                </div>
-                <input type="range" id="param_saturation" min="0.0" max="2.0" step="0.02" value="1.0" oninput="updateSliderAndReprocess('saturation', Math.round(this.value*100), '%')" class="w-full accent-emerald-500 h-2 bg-church-950 rounded-lg">
-              </div>
-
-              <div>
-                <div class="flex justify-between text-amber-300 font-semibold mb-1">
-                  <span>Clareza (Clarity)</span>
-                  <span id="val_clarity" class="font-mono text-amber-400 font-bold">0%</span>
-                </div>
-                <input type="range" id="param_clarity" min="-1.0" max="1.0" step="0.05" value="0" oninput="updateSliderAndReprocess('clarity', Math.round(this.value*100), '%')" class="w-full accent-amber-500 h-2 bg-church-950 rounded-lg">
-              </div>
-
-              <div>
-                <div class="flex justify-between text-blue-300 font-semibold mb-1">
-                  <span>DesembaÃ§ar (Dehaze)</span>
-                  <span id="val_dehaze" class="font-mono text-blue-400 font-bold">0%</span>
-                </div>
-                <input type="range" id="param_dehaze" min="-1.0" max="1.0" step="0.05" value="0" oninput="updateSliderAndReprocess('dehaze', Math.round(this.value*100), '%')" class="w-full accent-blue-500 h-2 bg-church-950 rounded-lg">
-              </div>
-
-              <div>
-                <div class="flex justify-between text-slate-300 mb-1">
-                  <span>Vinheta (Vignette)</span>
-                  <span id="val_vignette" class="font-mono text-slate-400 font-bold">0%</span>
-                </div>
-                <input type="range" id="param_vignette" min="-1.0" max="1.0" step="0.05" value="0" oninput="updateSliderAndReprocess('vignette', Math.round(this.value*100), '%')" class="w-full accent-slate-500 h-2 bg-church-950 rounded-lg">
-              </div>
-            </div>
-          </div>
-
-          <button onclick="applyCurrentManualParams()" class="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-98 text-white text-xs font-semibold shadow-md flex items-center justify-center gap-1.5 transition-all mt-4 cursor-pointer">
-            <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
-            <span>Aplicar Ajustes DSLR</span>
-          </button>
-
-        </div>
-
-      </div>
-
-      <!-- ========================================================================= -->
-      <!-- VIEW 4: ÃREA DA EQUIPE & AMBIENTE DE PRESETS INTEGRADOS -->
-      <!-- ========================================================================= -->
-      <div id="viewTeamAreaSection" class="flex flex-col gap-6 hidden" style="display: none;">
-        
-        <!-- Team Hero Header -->
-        <div class="rounded-2xl sm:rounded-3xl bg-gradient-to-b from-church-900 to-church-950 border border-church-800 p-5 sm:p-6 shadow-2xl relative overflow-hidden">
-          <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div>
-              <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-purple-950/80 border border-purple-800/60 text-purple-300 text-[10px] sm:text-xs font-semibold mb-2">
-                <i class="fa-solid fa-users text-purple-400"></i>
-                Workspace da Equipe de MÃ­dia
-              </div>
-              <h2 id="teamAreaHeaderName" class="text-xl sm:text-2xl font-bold text-white leading-tight">
-                MÃ­dia Principal
-              </h2>
-              <p class="text-xs text-slate-400 mt-1 max-w-lg">
-                Gerencie os membros da equipe e configure os <strong>Meus Presets</strong> compartilhados entre todos os voluntÃ¡rios.
-              </p>
-            </div>
-
-            <div class="flex flex-wrap gap-2 w-full sm:w-auto">
-              <button onclick="openInviteMemberModal()" class="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-lg shadow-blue-600/20">
-                <i class="fa-solid fa-user-plus text-xs"></i>
-                <span>+ Convidar Membro</span>
-              </button>
-              <button onclick="openSavePresetModal()" class="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-lg shadow-purple-600/20">
-                <i class="fa-solid fa-plus text-xs"></i>
-                <span>+ Criar Preset da Equipe</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Section 1: Real Team Members -->
-        <div class="flex flex-col gap-3">
-          <div class="flex items-center justify-between px-1">
-            <span class="text-sm font-bold text-white flex items-center gap-2">
-              <i class="fa-solid fa-user-group text-blue-400"></i> Meus Detalhes
-            </span>
-            <span id="teamAreaMemberCountBadge" class="text-xs text-slate-400 font-mono">1 membro ativo</span>
-          </div>
-
-          <div id="teamAreaMembersGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-            <!-- Injected via JS -->
-          </div>
-        </div>
-
-        <!-- Section 2: Team Presets Environment (Linked directly to Team) -->
-        <div class="flex flex-col gap-3 pt-4 border-t border-church-800/80">
-          <div class="flex items-center justify-between px-1">
-            <div>
-              <span class="text-sm font-bold text-white flex items-center gap-2">
-                <i class="fa-solid fa-sliders text-purple-400"></i> Meus Presets Salvos
-              </span>
-              <p class="text-xs text-slate-400 mt-0.5">Estes presets sÃ£o sincronizados e aplicados por todos os voluntÃ¡rios deste grupo.</p>
-            </div>
-            <button onclick="openSavePresetModal()" class="text-xs text-purple-400 hover:underline font-semibold flex items-center gap-1 cursor-pointer">
-              <i class="fa-solid fa-plus"></i> Novo Preset
-            </button>
-          </div>
-
-          <div id="teamPresetsManagerCardsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <!-- Injected via JS -->
-          </div>
-        </div>
-
-      </div>
-
-    </main>
-  </div>
-
-  <!-- ========================================================================= -->
-  <!-- MODAL: CONVIDAR VOLUNTÃRIO / MEMBRO -->
-  <!-- ========================================================================= -->
-  <div id="inviteMemberModal" class="fixed inset-0 z-50 items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden" style="display: none;">
-    <div class="w-full max-w-md bg-church-900 border border-church-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
-      <div class="absolute -top-16 -right-16 w-36 h-36 bg-blue-500/20 blur-3xl pointer-events-none"></div>
-
-      <button onclick="closeInviteMemberModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1.5 rounded-lg cursor-pointer">
-        <i class="fa-solid fa-xmark text-base"></i>
-      </button>
-
-      <div class="flex items-center gap-3 mb-4">
-        <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-600/30">
-          <i class="fa-solid fa-user-plus text-lg"></i>
-        </div>
-        <div>
-          <h3 class="text-base sm:text-lg font-bold text-white">Convidar VoluntÃ¡rio</h3>
-          <p class="text-xs text-slate-400">Adicione um novo membro para a equipe</p>
-        </div>
-      </div>
-
-      <form onsubmit="handleInviteMemberSubmit(event)" class="flex flex-col gap-3">
-        <div>
-          <label class="text-xs font-semibold text-slate-300 block mb-1">Nome ou @username</label>
-          <input type="text" id="inviteMemberInput" required placeholder="Ex: @gabriel_foto ou Gabriel Silva" class="w-full px-3.5 py-2.5 rounded-xl bg-church-950 border border-church-800 text-white text-xs focus:outline-none focus:border-blue-500">
-        </div>
-
-        <div>
-          <label class="text-xs font-semibold text-slate-300 block mb-1">FunÃ§Ã£o na Equipe</label>
-          <select id="inviteMemberRoleSelect" class="w-full px-3.5 py-2.5 rounded-xl bg-church-950 border border-church-800 text-white text-xs focus:outline-none focus:border-blue-500">
-            <option value="FotÃ³grafo">FotÃ³grafo(a)</option>
-            <option value="Editor(a)">Editor(a) de Foto</option>
-            <option value="LÃ­der de MÃ­dia">LÃ­der de MÃ­dia</option>
-            <option value="VoluntÃ¡rio">VoluntÃ¡rio</option>
-          </select>
-        </div>
-
-        <button type="submit" class="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-lg shadow-blue-600/30 transition-all mt-2 cursor-pointer">
-          Confirmar e Adicionar Ã  Equipe
-        </button>
-      </form>
-    </div>
-  </div>
-
-  <!-- ========================================================================= -->
-  <!-- MODAL: EDITAR / SALVAR PRESET DA EQUIPE -->
-  <!-- ========================================================================= -->
-  <div id="savePresetModal" class="fixed inset-0 z-50 items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden" style="display: none;">
-    <div class="w-full max-w-md bg-church-900 border border-church-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
-      <div class="absolute -top-16 -right-16 w-36 h-36 bg-purple-500/20 blur-3xl pointer-events-none"></div>
-
-      <button onclick="closeSavePresetModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1.5 rounded-lg cursor-pointer">
-        <i class="fa-solid fa-xmark text-base"></i>
-      </button>
-
-      <div class="flex items-center gap-3 mb-4">
-        <div class="w-10 h-10 rounded-2xl bg-purple-600 flex items-center justify-center text-white shadow-lg shadow-purple-600/30">
-          <i class="fa-solid fa-sliders text-base"></i>
-        </div>
-        <div>
-          <h3 id="presetModalHeaderTitle" class="text-base font-bold text-white">Editar / Salvar Preset</h3>
-          <p class="text-[11px] text-slate-400">Preset vinculado Ã  equipe ativa</p>
-        </div>
-      </div>
-
-      <form onsubmit="handleSaveTeamPresetSubmit(event)" class="flex flex-col gap-3">
-        <input type="hidden" id="editingPresetId" value="">
-
-        <div>
-          <label class="text-xs font-semibold text-slate-300 block mb-1">Nome do Preset</label>
-          <input type="text" id="newPresetName" required placeholder="Ex: Louvor Moody Sede" class="w-full px-3 py-2 rounded-xl bg-church-950 border border-church-800 text-white text-xs focus:outline-none focus:border-purple-500">
-        </div>
-
-        <div>
-          <label class="text-xs font-semibold text-slate-300 block mb-1">Categoria / Momento</label>
-          <select id="newPresetCategory" class="w-full px-3 py-2 rounded-xl bg-church-950 border border-church-800 text-white text-xs focus:outline-none focus:border-purple-500">
-            <option value="Louvor">Louvor / AdoraÃ§Ã£o</option>
-            <option value="PregaÃ§Ã£o">PregaÃ§Ã£o / Palavra</option>
-            <option value="ComunhÃ£o">ComunhÃ£o / Membros</option>
-            <option value="Jovens">Culto de Jovens</option>
-            <option value="Geral">Geral</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="text-xs font-semibold text-slate-300 block mb-1">DescriÃ§Ã£o</label>
-          <input type="text" id="newPresetDesc" placeholder="Ex: Calibrado para luz Ã¢mbar e desfoque suave f/2.4" class="w-full px-3 py-2 rounded-xl bg-church-950 border border-church-800 text-white text-xs focus:outline-none focus:border-purple-500">
-        </div>
-
-        <!-- Quick Sliders inside Preset Editor -->
-        <div class="p-3 rounded-xl bg-church-950 border border-church-800 space-y-2 text-xs">
-          <span class="font-bold text-slate-300 block text-[11px]">Calibragem dos ParÃ¢metros:</span>
-          
-          <div class="flex items-center justify-between gap-2">
-            <span class="text-slate-400">ExposiÃ§Ã£o:</span>
-            <input type="range" id="preset_edit_exp" min="-1.5" max="1.5" step="0.05" value="0.15" class="w-32 accent-blue-500">
-          </div>
-          <div class="flex items-center justify-between gap-2">
-            <span class="text-slate-400">Kelvin:</span>
-            <input type="range" id="preset_edit_kelvin" min="3000" max="8000" step="100" value="5600" class="w-32 accent-amber-500">
-          </div>
-          <div class="flex items-center justify-between gap-2">
-            <span class="text-slate-400">Contraste:</span>
-            <input type="range" id="preset_edit_contrast" min="0.8" max="1.4" step="0.02" value="1.10" class="w-32 accent-blue-500">
-          </div>
-          <div class="flex items-center justify-between gap-2">
-            <span class="text-slate-400">Abertura f/Stop:</span>
-            <select id="preset_edit_fstop" class="bg-church-900 border border-church-800 text-white text-xs rounded px-2 py-1">
-              <option value="1.8">f/1.8 (Retrato)</option>
-              <option value="2.4">f/2.4 (Louvor)</option>
-              <option value="2.8" selected>f/2.8 (PadrÃ£o)</option>
-              <option value="4.0">f/4.0 (PregaÃ§Ã£o)</option>
-              <option value="8.0">f/8.0 (Amplo)</option>
-            </select>
-          </div>
-        </div>
-
-        <button type="submit" class="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-lg shadow-purple-600/30 transition-all mt-1 cursor-pointer">
-          Salvar Preset na Equipe
-        </button>
-      </form>
-    </div>
-  </div>
-
-  <!-- MODAL: CRIAR NOVO CULTO -->
-  <div id="createServiceModal" class="fixed inset-0 z-50 items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden" style="display: none;">
-    <div class="w-full max-w-lg bg-church-900 border border-church-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
-      <div class="absolute -top-16 -right-16 w-36 h-36 bg-blue-500/20 blur-3xl pointer-events-none"></div>
-
-      <button onclick="closeCreateServiceModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1.5 rounded-lg cursor-pointer">
-        <i class="fa-solid fa-xmark text-base"></i>
-      </button>
-
-      <div class="flex items-center gap-3 mb-4">
-        <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-600/30">
-          <i class="fa-solid fa-church text-lg"></i>
-        </div>
-        <div>
-          <h3 class="text-base sm:text-lg font-bold text-white">Criar Novo Culto / Evento</h3>
-          <p class="text-xs text-slate-400">Adicione as fotos do lote (150-300+) para o funil de curadoria</p>
-        </div>
-      </div>
-
-      <form onsubmit="handleCreateServiceSubmit(event)" class="flex flex-col gap-4">
-        <div>
-          <label class="text-xs font-semibold text-slate-300 block mb-1.5">Nome do Culto / Evento</label>
-          <input type="text" id="newServiceTitle" required placeholder="Ex: Culto de CelebraÃ§Ã£o - Domingo Noite" class="w-full px-3.5 py-2.5 rounded-xl bg-church-950 border border-church-800 text-white text-xs sm:text-sm focus:outline-none focus:border-blue-500">
-          
-          <div class="flex flex-wrap gap-1.5 mt-2">
-            <button type="button" onclick="setServiceSuggestion('Culto Domingo Noite')" class="px-2.5 py-1 rounded-lg bg-church-950 hover:bg-church-800 border border-church-800 text-[10px] text-slate-300">Domingo Noite</button>
-            <button type="button" onclick="setServiceSuggestion('Culto da FamÃ­lia')" class="px-2.5 py-1 rounded-lg bg-church-950 hover:bg-church-800 border border-church-800 text-[10px] text-slate-300">Culto da FamÃ­lia</button>
-            <button type="button" onclick="setServiceSuggestion('Louvor & AdoraÃ§Ã£o')" class="px-2.5 py-1 rounded-lg bg-church-950 hover:bg-church-800 border border-church-800 text-[10px] text-slate-300">Louvor & AdoraÃ§Ã£o</button>
-            <button type="button" onclick="setServiceSuggestion('ConferÃªncia de Jovens')" class="px-2.5 py-1 rounded-lg bg-church-950 hover:bg-church-800 border border-church-800 text-[10px] text-slate-300">Jovens</button>
-            <button type="button" onclick="setServiceSuggestion('Batismo')" class="px-2.5 py-1 rounded-lg bg-church-950 hover:bg-church-800 border border-church-800 text-[10px] text-slate-300">Batismo</button>
-          </div>
-        </div>
-
-        <div>
-          <label class="text-xs font-semibold text-slate-300 block mb-1.5">Data do Culto</label>
-          <input type="date" id="newServiceDate" required class="w-full px-3.5 py-2 rounded-xl bg-church-950 border border-church-800 text-white text-xs focus:outline-none focus:border-blue-500">
-        </div>
-
-        <div>
-          <label class="text-xs font-semibold text-slate-300 block mb-1.5">Fotos do Lote (Selecione mÃºltiplas fotos)</label>
-          <div class="relative w-full rounded-2xl border-2 border-dashed border-church-700 hover:border-blue-500/80 bg-church-950/70 p-5 text-center transition-all cursor-pointer">
-            <input type="file" id="modalFileInput" multiple accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="handleModalFilesSelected(this.files)">
-            <i class="fa-solid fa-cloud-arrow-up text-2xl text-blue-400 mb-2"></i>
-            <span id="modalFileStatusText" class="text-xs font-semibold text-white block">Toque aqui para escolher as fotos da galeria</span>
-            <span class="text-[10px] text-slate-500 mt-0.5 block">Suporta 150 a 300+ fotos simultÃ¢neas</span>
-          </div>
-        </div>
-
-        <button type="submit" id="createServiceSubmitBtn" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-98 text-white font-bold text-xs sm:text-sm shadow-xl shadow-blue-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer mt-2">
-          <i class="fa-solid fa-wand-magic-sparkles"></i>
-          <span>Criar Culto & Abrir Funil de Curadoria</span>
-        </button>
-      </form>
-    </div>
-  </div>
-
-  <!-- ========================================================================= -->
-  <!-- MODAL: SUPABASE AUTHENTICATION (LOGIN & REGISTRO) -->
-  <!-- ========================================================================= -->
-  <div id="supabaseAuthModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 hidden" style="display: none;">
-    <div class="relative w-full max-w-md bg-church-900 border border-church-800 rounded-3xl p-6 sm:p-7 shadow-2xl overflow-hidden">
-      
-      <!-- Top Glow Background -->
-      <div class="absolute -top-24 -right-24 w-48 h-48 bg-emerald-500/15 blur-3xl pointer-events-none"></div>
-      <div class="absolute -bottom-24 -left-24 w-48 h-48 bg-blue-500/15 blur-3xl pointer-events-none"></div>
-
-      <!-- Close Button -->
-      <button onclick="closeSupabaseAuthModal()" class="absolute top-4 right-4 p-2 rounded-xl text-slate-400 hover:text-white hover:bg-church-800 transition-colors cursor-pointer">
-        <i class="fa-solid fa-xmark text-sm"></i>
-      </button>
-
-      <!-- Modal Header -->
-      <div class="flex items-center gap-3 mb-5">
-        <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-600 flex items-center justify-center text-white shadow-lg shadow-emerald-600/30 shrink-0">
-          <i class="fa-solid fa-cloud text-lg"></i>
-        </div>
-        <div>
-          <h3 class="text-base sm:text-lg font-bold text-white tracking-tight">Acessar ChurchPhoto Pro</h3>
-          <p class="text-[11px] text-slate-400">AutenticaÃ§Ã£o & Banco em Nuvem (Supabase)</p>
-        </div>
-      </div>
-
-      <!-- Tab Switcher -->
-      <div class="grid grid-cols-2 p-1 rounded-xl bg-church-950 border border-church-800 mb-5 text-xs font-semibold">
-        <button id="authTabLoginBtn" onclick="switchSupabaseAuthTab('login')" class="py-2 rounded-lg bg-emerald-600 text-white font-bold transition-all">
-          <i class="fa-solid fa-right-to-bracket mr-1.5"></i> Entrar
-        </button>
-        <button id="authTabRegisterBtn" onclick="switchSupabaseAuthTab('register')" class="py-2 rounded-lg text-slate-400 hover:text-white transition-all">
-          <i class="fa-solid fa-user-plus mr-1.5"></i> Criar Conta
-        </button>
-      </div>
-
-      <!-- Feedback Alert Box -->
-      <div id="supabaseAuthAlert" class="p-3 rounded-xl bg-red-950/70 border border-red-800/80 text-red-300 text-xs font-medium mb-4 hidden" style="display: none;">
-        <span id="supabaseAuthAlertText"></span>
-      </div>
-
-      <!-- FORM 1: LOGIN -->
-      <form id="formSupabaseLogin" onsubmit="handleSupabaseLoginSubmit(event)" class="space-y-3.5">
-        <div>
-          <label class="text-xs font-semibold text-slate-300 block mb-1">E-mail</label>
-          <div class="relative">
-            <i class="fa-solid fa-envelope absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
-            <input type="email" id="supabaseLoginEmail" required placeholder="seu.email@igreja.org" class="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-church-950 border border-church-750 text-white placeholder-slate-600 text-xs focus:outline-none focus:border-emerald-500 transition-colors">
-          </div>
-        </div>
-
-        <div>
-          <div class="flex items-center justify-between mb-1">
-            <label class="text-xs font-semibold text-slate-300">Senha</label>
-            <button type="button" onclick="handleSupabaseForgotPassword()" class="text-[10px] text-emerald-400 hover:underline cursor-pointer">
-              Esqueci a senha
-            </button>
-          </div>
-          <div class="relative">
-            <i class="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
-            <input type="password" id="supabaseLoginPassword" required placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" class="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-church-950 border border-church-750 text-white placeholder-slate-600 text-xs focus:outline-none focus:border-emerald-500 transition-colors">
-          </div>
-        </div>
-
-        <button type="submit" id="supabaseLoginSubmitBtn" class="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:scale-98 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer">
-          <i class="fa-solid fa-arrow-right-to-bracket"></i>
-          <span>Entrar no Sistema</span>
-        </button>
-      </form>
-
-      <!-- FORM 2: REGISTER -->
-      <form id="formSupabaseRegister" onsubmit="handleSupabaseRegisterSubmit(event)" class="space-y-3 hidden" style="display: none;">
-        <div>
-          <label class="text-xs font-semibold text-slate-300 block mb-1">Nome Completo</label>
-          <div class="relative">
-            <i class="fa-solid fa-user absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
-            <input type="text" id="supabaseRegisterName" required placeholder="Seu Nome ou Apelido" class="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-church-950 border border-church-750 text-white placeholder-slate-600 text-xs focus:outline-none focus:border-emerald-500 transition-colors">
-          </div>
-        </div>
-
-        <div>
-          <label class="text-xs font-semibold text-slate-300 block mb-1">E-mail</label>
-          <div class="relative">
-            <i class="fa-solid fa-envelope absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
-            <input type="email" id="supabaseRegisterEmail" required placeholder="seu.email@igreja.org" class="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-church-950 border border-church-750 text-white placeholder-slate-600 text-xs focus:outline-none focus:border-emerald-500 transition-colors">
-          </div>
-        </div>
-
-        <div>
-          <label class="text-xs font-semibold text-slate-300 block mb-1">Senha (MÃ­nimo 6 caracteres)</label>
-          <div class="relative">
-            <i class="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
-            <input type="password" id="supabaseRegisterPassword" required minlength="6" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" class="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-church-950 border border-church-750 text-white placeholder-slate-600 text-xs focus:outline-none focus:border-emerald-500 transition-colors">
-          </div>
-        </div>
-
-        <div>
-          <label class="text-xs font-semibold text-slate-300 block mb-1">Nome da Igreja / MinistÃ©rio</label>
-          <div class="relative">
-            <i class="fa-solid fa-church absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
-            <input type="text" id="supabaseRegisterChurch" placeholder="Ex: Comunidade da GraÃ§a" class="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-church-950 border border-church-750 text-white placeholder-slate-600 text-xs focus:outline-none focus:border-emerald-500 transition-colors">
-          </div>
-        </div>
-
-        <button type="submit" id="supabaseRegisterSubmitBtn" class="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:scale-98 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer mt-1">
-          <i class="fa-solid fa-user-check"></i>
-          <span>Criar Minha Conta GrÃ¡tis</span>
-        </button>
-      </form>
-
-      <!-- Divider -->
-      <div class="relative my-4">
-        <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-church-800"></div></div>
-        <div class="relative flex justify-center text-[10px] uppercase font-bold tracking-wider text-slate-500">
-          <span class="bg-church-900 px-3">Ou continue com</span>
-        </div>
-      </div>
-
-      <!-- Google OAuth Button -->
-      <button type="button" onclick="handleSupabaseGoogleLogin()" class="w-full py-2.5 px-3 rounded-xl bg-church-950 hover:bg-church-850 border border-church-800 text-white text-xs font-semibold flex items-center justify-center gap-2.5 transition-all cursor-pointer">
-        <svg class="w-4 h-4" viewBox="0 0 24 24">
-          <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.4 1 3.5 3.6 1.6 7.4l3.7 2.9C6.2 7.4 8.9 5 12 5z"/>
-          <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.7-.2-2.3H12v4.6h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.9z"/>
-          <path fill="#FBBC05" d="M5.3 14.7c-.2-.7-.4-1.4-.4-2.2s.2-1.5.4-2.2L1.6 7.4C.6 9.4 0 11.6 0 14s.6 4.6 1.6 6.6l3.7-2.9c-.4-.9-.6-1.9-.6-3z"/>
-          <path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.8-2.4-6.7-5.3L1.6 15.9C3.5 19.7 7.4 23 12 23z"/>
-        </svg>
-        <span>Google</span>
-      </button>
-
-    </div>
-  </div>
-
-
-
-  <!-- ================= JAVASCRIPT CORE LOGIC ================= -->
-  <script>
 
     // Global Application State
     let churchServices = [];
     let activeService = null;
     let activeTeam = { 
       id: 'team_default', 
-      name: 'MÃ­dia Principal', 
+      name: 'Mídia Principal', 
       members: [],
       presets: []
     };
@@ -1211,10 +34,10 @@
     const DEFAULT_TEAM_PRESETS = [
   {
     id: "warm_worship",
-    name: "Warm Worship (AdoraÃ§Ã£o Acolhedora)",
+    name: "Warm Worship (Adoração Acolhedora)",
     category: "Louvor",
     icon: "fa-sun text-amber-400",
-    description: "Ideal para momentos de louvor com iluminaÃ§Ã£o quente de palco.",
+    description: "Ideal para momentos de louvor com iluminação quente de palco.",
     params: {
       exposure_compensation: 0.0,
       temperature_kelvin: 6100, 
@@ -1236,7 +59,7 @@
     name: "Clean & Bright (Culto Matutino)",
     category: "Matutino",
     icon: "fa-sun text-blue-400",
-    description: "Perfeito para cultos durante o dia, batismos e reuniÃµes com bastante luz natural.",
+    description: "Perfeito para cultos durante o dia, batismos e reuniões com bastante luz natural.",
     params: {
       exposure_compensation: 0.40,
       temperature_kelvin: 5500,
@@ -1255,10 +78,10 @@
   },
   {
     id: "moody_stage",
-    name: "Moody Stage (Palco DramÃ¡tico)",
+    name: "Moody Stage (Palco Dramático)",
     category: "Jovens",
     icon: "fa-film text-purple-400",
-    description: "Destaque para feixes de luz, fumaÃ§a de palco e momentos intensos.",
+    description: "Destaque para feixes de luz, fumaça de palco e momentos intensos.",
     params: {
       exposure_compensation: 0.0,
       temperature_kelvin: 5500,
@@ -1302,7 +125,7 @@
     name: "Deep Matte (Editorial)",
     category: "Redes Sociais",
     icon: "fa-image text-slate-400",
-    description: "Visual moderno para posts do Instagram e materiais de divulgaÃ§Ã£o.",
+    description: "Visual moderno para posts do Instagram e materiais de divulgação.",
     params: {
       exposure_compensation: 0.0,
       temperature_kelvin: 5500,
@@ -1343,8 +166,8 @@
   },
   {
     id: "stage_light_fix",
-    name: "Stage Light Fix (CorreÃ§Ã£o)",
-    category: "CorreÃ§Ã£o",
+    name: "Stage Light Fix (Correção)",
+    category: "Correção",
     icon: "fa-wrench text-red-400",
     description: "Corrige rostos estourados por LEDs fortes.",
     params: {
@@ -1368,7 +191,7 @@
     name: "Monochrome Worship (P&B)",
     category: "Fine Art",
     icon: "fa-circle-half-stroke text-slate-300",
-    description: "Transmite solenidade, emoÃ§Ã£o e foco nas expressÃµes.",
+    description: "Transmite solenidade, emoção e foco nas expressões.",
     params: {
       exposure_compensation: 0.10,
       temperature_kelvin: 5500,
@@ -1387,10 +210,10 @@
   },
   {
     id: "vintage_film",
-    name: "Vintage Film (ComunhÃ£o)",
+    name: "Vintage Film (Comunhão)",
     category: "Estilo",
     icon: "fa-camera-retro text-amber-600",
-    description: "Curva em S suave com pretos lavados, para memÃ³rias e comunhÃ£o.",
+    description: "Curva em S suave com pretos lavados, para memórias e comunhão.",
     params: {
       exposure_compensation: 0.0,
       temperature_kelvin: 5800,
@@ -1474,7 +297,7 @@
               handleSupabaseUserSession(session.user);
               if (event === 'SIGNED_IN') {
                 closeSupabaseAuthModal();
-                showToast(`Bem-vindo(a), ${currentUser ? currentUser.name : 'usuÃ¡rio'}!`);
+                showToast(`Bem-vindo(a), ${currentUser ? currentUser.name : 'usuário'}!`);
                 loadTeamData();
                 await loadStoredServices();
                 switchMainView('services');
@@ -1501,7 +324,7 @@
 
     function handleSupabaseUserSession(user) {
       const metadata = user.user_metadata || {};
-      const uName = metadata.full_name || metadata.name || (user.email ? user.email.split('@')[0] : "VoluntÃ¡rio");
+      const uName = metadata.full_name || metadata.name || (user.email ? user.email.split('@')[0] : "Voluntário");
       const uUsername = (metadata.username || (user.email ? user.email.split('@')[0] : 'voluntario')).toLowerCase().replace(/\s+/g, '');
       const churchName = metadata.church_name || 'Igreja';
 
@@ -1578,7 +401,7 @@
 
       if (!email || !password) return;
       if (!supabaseClient) {
-        showSupabaseAuthAlert("Erro ao inicializar Supabase. Verifique sua conexÃ£o.");
+        showSupabaseAuthAlert("Erro ao inicializar Supabase. Verifique sua conexão.");
         return;
       }
 
@@ -1608,7 +431,7 @@
         showToast(`Bem-vindo(a) de volta, ${currentUser ? currentUser.name : ''}!`);
 
       } catch(err) {
-        showSupabaseAuthAlert("Erro de conexÃ£o: " + err.message);
+        showSupabaseAuthAlert("Erro de conexão: " + err.message);
       } finally {
         submitBtn.disabled = false;
         submitBtn.innerHTML = `<i class="fa-solid fa-arrow-right-to-bracket"></i> <span>Entrar no Sistema</span>`;
@@ -1625,7 +448,7 @@
 
       if (!name || !email || !password) return;
       if (!supabaseClient) {
-        showSupabaseAuthAlert("Erro ao inicializar Supabase. Verifique sua conexÃ£o.");
+        showSupabaseAuthAlert("Erro ao inicializar Supabase. Verifique sua conexão.");
         return;
       }
 
@@ -1647,7 +470,7 @@
         if (error) {
           showSupabaseAuthAlert("Erro no cadastro: " + error.message);
           submitBtn.disabled = false;
-          submitBtn.innerHTML = `<i class="fa-solid fa-user-check"></i> <span>Criar Minha Conta GrÃ¡tis</span>`;
+          submitBtn.innerHTML = `<i class="fa-solid fa-user-check"></i> <span>Criar Minha Conta Grátis</span>`;
           return;
         }
 
@@ -1655,21 +478,21 @@
         if (data.session) {
           showToast(`Conta criada com sucesso! Bem-vindo(a), ${name}!`);
         } else {
-          showToast("Conta criada! Se a confirmaÃ§Ã£o de e-mail estiver ativa no Supabase, verifique sua caixa de entrada.");
+          showToast("Conta criada! Se a confirmação de e-mail estiver ativa no Supabase, verifique sua caixa de entrada.");
         }
         loadTeamData();
         await loadStoredServices();
       } catch(err) {
-        showSupabaseAuthAlert("Erro de conexÃ£o: " + err.message);
+        showSupabaseAuthAlert("Erro de conexão: " + err.message);
       } finally {
         submitBtn.disabled = false;
-        submitBtn.innerHTML = `<i class="fa-solid fa-user-check"></i> <span>Criar Minha Conta GrÃ¡tis</span>`;
+        submitBtn.innerHTML = `<i class="fa-solid fa-user-check"></i> <span>Criar Minha Conta Grátis</span>`;
       }
     }
 
     async function handleSupabaseGoogleLogin() {
       if (!supabaseClient) {
-        showToast("Supabase nÃ£o disponÃ­vel no momento.");
+        showToast("Supabase não disponível no momento.");
         return;
       }
       try {
@@ -1686,11 +509,11 @@
     }
 
     async function handleSupabaseForgotPassword() {
-      const email = prompt("Digite seu e-mail cadastrado para receber o link de redefiniÃ§Ã£o de senha:");
+      const email = prompt("Digite seu e-mail cadastrado para receber o link de redefinição de senha:");
       if (!email || !email.trim()) return;
 
       if (!supabaseClient) {
-        showToast("Supabase nÃ£o disponÃ­vel.");
+        showToast("Supabase não disponível.");
         return;
       }
 
@@ -1701,7 +524,7 @@
       if (error) {
         showToast("Erro ao enviar e-mail: " + error.message);
       } else {
-        showToast("Link de redefiniÃ§Ã£o enviado para " + email + "!");
+        showToast("Link de redefinição enviado para " + email + "!");
       }
     }
 
@@ -1716,7 +539,7 @@
       renderAuthenticatedUser(null);
       loadTeamData();
       await loadStoredServices();
-      showToast("VocÃª saiu da sua conta.");
+      showToast("Você saiu da sua conta.");
     }
 
     // ================= ENTERPRISE INDEXEDDB PERSISTENT STORAGE =================
@@ -1953,7 +776,7 @@
               <button onclick="document.getElementById('supabaseSqlModal').remove()" class="text-slate-400 hover:text-white transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             <div class="p-5 overflow-y-auto">
-              <p class="text-sm text-slate-300 mb-4">Seu login funcionou, mas as tabelas para salvar seus cultos na nuvem nÃ£o existem no seu projeto Supabase. Para habilitar a sincronizaÃ§Ã£o em tempo real entre seus dispositivos, execute o script SQL abaixo no <strong>SQL Editor</strong> do seu painel Supabase:</p>
+              <p class="text-sm text-slate-300 mb-4">Seu login funcionou, mas as tabelas para salvar seus cultos na nuvem não existem no seu projeto Supabase. Para habilitar a sincronização em tempo real entre seus dispositivos, execute o script SQL abaixo no <strong>SQL Editor</strong> do seu painel Supabase:</p>
               <div class="relative bg-church-950 border border-church-800 rounded-lg p-3 group">
                 <button onclick="navigator.clipboard.writeText(document.getElementById('sqlCode').innerText); showToast('SQL copiado!');" class="absolute top-2 right-2 px-2 py-1 rounded bg-church-800 text-slate-300 text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer flex items-center gap-1"><i class="fa-regular fa-copy"></i> Copiar</button>
                 <pre id="sqlCode" class="text-[11px] text-blue-300 font-mono overflow-x-auto whitespace-pre">
@@ -2162,13 +985,13 @@ create table team_presets (
         if (sideLoggedIn) { sideLoggedIn.style.display = 'flex'; sideLoggedIn.classList.remove('hidden'); }
 
         if (sideAvatar) sideAvatar.src = user.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'M')}&backgroundColor=2563eb`;
-        if (sideName) sideName.textContent = user.name || 'VoluntÃ¡rio';
+        if (sideName) sideName.textContent = user.name || 'Voluntário';
         if (sideHandle) sideHandle.textContent = `@${user.username || 'voluntario'}`;
         if (heroStatus) heroStatus.innerHTML = `<span class="text-emerald-400 font-bold">Conectado como: ${user.name} (@${user.username})</span>`;
       } else {
         if (sideLoggedIn) { sideLoggedIn.style.display = 'none'; sideLoggedIn.classList.add('hidden'); }
         if (sideLoggedOut) { sideLoggedOut.style.display = 'flex'; sideLoggedOut.classList.remove('hidden'); }
-        if (heroStatus) heroStatus.textContent = 'Conta: Visitante (NÃ£o autenticado)';
+        if (heroStatus) heroStatus.textContent = 'Conta: Visitante (Não autenticado)';
       }
 
       renderSidebarTeamMembers();
@@ -2183,7 +1006,7 @@ create table team_presets (
       // Reset view to clean guest state
       loadTeamData();
       loadStoredServices();
-      showToast("VocÃª saiu da conta com sucesso.");
+      showToast("Você saiu da conta com sucesso.");
 
       if (wasAuth0 && auth0Client) {
         try {
@@ -2275,7 +1098,7 @@ create table team_presets (
         renderTeamAreaView();
       } else {
         viewStudio.style.display = 'flex'; viewStudio.classList.remove('hidden');
-        topTitle.textContent = "EstÃºdio DSLR";
+        topTitle.textContent = "Estúdio DSLR";
         topBadge.textContent = activeService ? activeService.title : "Comparador";
         sideNavStudio.className = "sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold bg-blue-600 text-white transition-all cursor-pointer shadow-sm";
         if (activeItem) showProcessedViewer(activeItem);
@@ -2311,7 +1134,7 @@ create table team_presets (
         } catch(e) {}
       }
 
-      const teamName = currentUser ? `MÃ­dia ${currentUser.church_name || 'Sede'}` : 'MÃ­dia Principal';
+      const teamName = currentUser ? `Mídia ${currentUser.church_name || 'Sede'}` : 'Mídia Principal';
       const members = (storedTeam && storedTeam.members) ? storedTeam.members : [];
 
       // Combine DEFAULT presets with all stored custom presets
@@ -2349,9 +1172,9 @@ create table team_presets (
     function getRealTeamMembersList() {
       const members = [];
       if (currentUser) {
-        members.push({ name: currentUser.name, username: currentUser.username, role: "VocÃª (LÃ­der da Equipe)" });
+        members.push({ name: currentUser.name, username: currentUser.username, role: "Você (Líder da Equipe)" });
       } else {
-        members.push({ name: "VocÃª (Visitante)", username: "visitante", role: "NÃ£o autenticado" });
+        members.push({ name: "Você (Visitante)", username: "visitante", role: "Não autenticado" });
       }
 
       if (activeTeam.members && activeTeam.members.length > 0) {
@@ -2368,7 +1191,7 @@ create table team_presets (
       const sidePresetsBadge = document.getElementById('sideTeamPresetsCountBadge');
       const studioTeamLabel = document.getElementById('studioTeamNameLabel');
 
-      const teamName = activeTeam.name || "MÃ­dia Principal";
+      const teamName = activeTeam.name || "Mídia Principal";
       if (teamTitle) teamTitle.textContent = teamName;
       if (topBadge) topBadge.textContent = teamName;
       if (studioTeamLabel) studioTeamLabel.textContent = teamName;
@@ -2483,7 +1306,7 @@ create table team_presets (
       const newMember = {
         name: cleanName,
         username: cleanUser,
-        role: role || "VoluntÃ¡rio de MÃ­dia"
+        role: role || "Voluntário de Mídia"
       };
 
       if (!activeTeam.members) activeTeam.members = [];
@@ -2491,7 +1314,7 @@ create table team_presets (
       saveTeamData();
       closeInviteMemberModal();
       renderTeamAreaView();
-      showToast(`@${cleanUser} adicionado Ã  equipe com sucesso!`);
+      showToast(`@${cleanUser} adicionado à equipe com sucesso!`);
     }
 
     function renderStudioPresetsStrip() {
@@ -2608,7 +1431,7 @@ create table team_presets (
         };
         activeTeam.presets.unshift(newPreset);
         presetToSync = newPreset;
-        showToast(`Novo preset "${name}" adicionado Ã  equipe!`);
+        showToast(`Novo preset "${name}" adicionado à equipe!`);
       }
 
       saveTeamData();
@@ -2631,7 +1454,7 @@ create table team_presets (
         switchMainView('studio');
         processAllInQueue();
       } else {
-        showToast(`Preset "${p.name}" pronto para ser usado no estÃºdio!`);
+        showToast(`Preset "${p.name}" pronto para ser usado no estúdio!`);
       }
     }
 
@@ -2642,28 +1465,28 @@ create table team_presets (
       activeItem.currentParams = { ...p.params };
       const par = p.params;
 
-      const setVal = (id, internalVal, displayVal) => {
+      const setVal = (id, val, suffix = '') => {
         const el = document.getElementById(`param_${id}`);
         const valEl = document.getElementById(`val_${id}`);
-        if (el && internalVal !== undefined) {
-          el.value = internalVal;
-          if (valEl) valEl.textContent = displayVal;
+        if (el && val !== undefined) {
+          el.value = val;
+          if (valEl) valEl.textContent = `${val}${suffix}`;
         }
       };
 
-      setVal('exposure', par.exposure_compensation, par.exposure_compensation);
-      setVal('kelvin', par.temperature_kelvin, par.temperature_kelvin + 'K');
-      setVal('tint', par.tint, par.tint);
-      setVal('contrast', par.contrast, par.contrast + 'x');
-      setVal('highlights', par.highlights, Math.round(par.highlights*100) + '%');
-      setVal('shadows', par.shadows, Math.round(par.shadows*100) + '%');
-      setVal('whites', par.whites, Math.round(par.whites*100) + '%');
-      setVal('blacks', par.blacks, Math.round(par.blacks*100) + '%');
-      setVal('saturation', par.saturation, Math.round(par.saturation*100) + '%');
-      if (par.vibrance !== undefined) setVal('vibrance', par.vibrance, Math.round(par.vibrance*100) + '%');
-      setVal('clarity', par.clarity, Math.round(par.clarity*100) + '%');
-      setVal('dehaze', par.dehaze, Math.round(par.dehaze*100) + '%');
-      setVal('vignette', par.vignette, Math.round(par.vignette*100) + '%');
+      setVal('exposure', par.exposure_compensation, '');
+      setVal('kelvin', par.temperature_kelvin, 'K');
+      setVal('tint', par.tint, '');
+      setVal('contrast', par.contrast, 'x');
+      setVal('highlights', par.highlights !== undefined ? Math.round(par.highlights*100) : 0, '%');
+      setVal('shadows', par.shadows !== undefined ? Math.round(par.shadows*100) : 0, '%');
+      setVal('whites', par.whites !== undefined ? Math.round(par.whites*100) : 0, '%');
+      setVal('blacks', par.blacks !== undefined ? Math.round(par.blacks*100) : 0, '%');
+      setVal('saturation', par.saturation !== undefined ? Math.round(par.saturation*100) : 100, '%');
+      setVal('vibrance', par.vibrance !== undefined ? Math.round(par.vibrance*100) : 100, '%');
+      setVal('clarity', par.clarity !== undefined ? Math.round(par.clarity*100) : 0, '%');
+      setVal('dehaze', par.dehaze !== undefined ? Math.round(par.dehaze*100) : 0, '%');
+      setVal('vignette', par.vignette !== undefined ? Math.round(par.vignette*100) : 0, '%');
 
       applyCurrentManualParams();
       showToast(`Preset "${p.name}" aplicado!`);
@@ -2774,7 +1597,7 @@ create table team_presets (
         b1.className = "px-3 py-1.5 rounded-lg bg-amber-600 text-white font-bold flex items-center gap-1.5 transition-all";
         renderDeduplicationGroups();
       } else if (step === 2) {
-        // Descartar fotos duplicadas (nÃ£o campeÃ£s) da Fase 1
+        // Descartar fotos duplicadas (não campeãs) da Fase 1
         if (activeService && activeService.dedupGroups) {
           const discardedIds = new Set();
           activeService.dedupGroups.forEach(g => {
@@ -2843,7 +1666,7 @@ create table team_presets (
           if (chunk.length > 1) {
             groups.push({
               groupId: `grp_${groupCounter++}`,
-              name: `SequÃªncia ${groupCounter - 1} (${chunk.length} fotos)`,
+              name: `Sequência ${groupCounter - 1} (${chunk.length} fotos)`,
               championId: chunk[0].id,
               allPhotos: chunk
             });
@@ -2858,9 +1681,9 @@ create table team_presets (
          container.innerHTML = `
            <div class="text-center py-10">
              <i class="fa-solid fa-check-double text-4xl text-emerald-500 mb-4"></i>
-             <p class="text-sm font-bold text-white mb-2">Sua galeria estÃ¡ limpa!</p>
-             <p class="text-xs text-slate-400">A IA nÃ£o detectou fotos repetidas ou em rajada.</p>
-             <button onclick="setFunnelStep(2)" class="mt-4 px-4 py-2 rounded-lg bg-emerald-600 text-white font-bold text-xs cursor-pointer">Ir para SeleÃ§Ã£o Top 20</button>
+             <p class="text-sm font-bold text-white mb-2">Sua galeria está limpa!</p>
+             <p class="text-xs text-slate-400">A IA não detectou fotos repetidas ou em rajada.</p>
+             <button onclick="setFunnelStep(2)" class="mt-4 px-4 py-2 rounded-lg bg-emerald-600 text-white font-bold text-xs cursor-pointer">Ir para Seleção Top 20</button>
            </div>`;
          return;
       }
@@ -2882,26 +1705,26 @@ create table team_presets (
                 <i class="fa-solid fa-layer-group text-blue-400"></i> ${g.name}
               </span>
               <span class="px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800/60 text-[9px] font-mono font-bold">
-                â­ Foto CampeÃ£ Eleita
+                ⭐ Foto Campeã Eleita
               </span>
             </div>
 
             <div class="relative rounded-xl overflow-hidden bg-church-950 border-2 border-amber-400/80 aspect-video flex items-center justify-center">
               <img src="${champ.processedBase64 || champ.previewUrl}" class="w-full h-full object-cover">
               <span class="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/80 text-amber-300 text-[10px] font-bold flex items-center gap-1">
-                <i class="fa-solid fa-trophy text-amber-400 text-xs"></i> CampeÃ£ (Maior Nitidez: ${computePhotoScore(champ)})
+                <i class="fa-solid fa-trophy text-amber-400 text-xs"></i> Campeã (Maior Nitidez: ${computePhotoScore(champ)})
               </span>
             </div>
 
             ${discarded.length > 0 ? `
               <div class="pt-2 border-t border-church-800">
-                <span class="text-[10px] text-slate-400 font-semibold block mb-1.5">Alternativas na mesma sequÃªncia (descartadas):</span>
+                <span class="text-[10px] text-slate-400 font-semibold block mb-1.5">Alternativas na mesma sequência (descartadas):</span>
                 <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
                   ${discarded.map(alt => `
                     <div class="relative w-16 h-16 shrink-0 rounded-lg overflow-hidden bg-church-950 border border-church-800 group/alt">
                       <img src="${alt.processedBase64 || alt.previewUrl}" class="w-full h-full object-cover opacity-60 group-hover/alt:opacity-100 transition-opacity">
                       <button onclick="setChampionPhoto('${g.groupId}', '${alt.id}')" class="absolute inset-0 bg-black/70 opacity-0 group-hover/alt:opacity-100 flex items-center justify-center text-amber-300 text-[9px] font-bold transition-opacity cursor-pointer text-center p-1 leading-tight">
-                        Tornar CampeÃ£
+                        Tornar Campeã
                       </button>
                     </div>
                   `).join('')}
@@ -2917,7 +1740,7 @@ create table team_presets (
       const group = activeService.dedupGroups.find(g => g.groupId === groupId);
       if (group) {
         group.championId = photoId;
-        showToast("Foto campeÃ£ da sequÃªncia atualizada!");
+        showToast("Foto campeã da sequência atualizada!");
         renderDeduplicationGroups();
       }
     }
@@ -3331,7 +2154,7 @@ create table team_presets (
       queue = srv.items || [];
 
       document.getElementById('studioServiceTitle').textContent = srv.title;
-      document.getElementById('studioServiceDate').textContent = `${srv.date} Â· ${queue.length} fotos`;
+      document.getElementById('studioServiceDate').textContent = `${srv.date} · ${queue.length} fotos`;
 
       renderThumbnails();
       switchMainView('funnel');
@@ -3345,7 +2168,7 @@ create table team_presets (
       queue = srv.items || [];
 
       document.getElementById('studioServiceTitle').textContent = srv.title;
-      document.getElementById('studioServiceDate').textContent = `${srv.date} Â· ${queue.length} fotos`;
+      document.getElementById('studioServiceDate').textContent = `${srv.date} · ${queue.length} fotos`;
 
       renderThumbnails();
       switchMainView('studio');
@@ -3365,7 +2188,7 @@ create table team_presets (
         await saveServicesToStorage();
         renderServicesGrid();
         renderSidebarRecentServices();
-        showToast("Culto excluÃ­do com sucesso.");
+        showToast("Culto excluído com sucesso.");
       }
     }
 
@@ -3418,7 +2241,7 @@ create table team_presets (
     async function downloadServiceZip(serviceId) {
       const srv = churchServices.find(s => s.id === serviceId);
       if (!srv || !srv.items || srv.items.length === 0) {
-        showToast("Nenhuma foto disponÃ­vel para download.");
+        showToast("Nenhuma foto disponível para download.");
         return;
       }
 
@@ -3456,7 +2279,7 @@ create table team_presets (
         document.body.removeChild(a);
         URL.revokeObjectURL(downloadUrl);
 
-        showToast("Download do lote ZIP concluÃ­do!");
+        showToast("Download do lote ZIP concluído!");
       } catch (err) {
         console.error("Erro ZIP:", err);
         showToast("Erro ao compactar: " + err.message);
@@ -3548,8 +2371,8 @@ create table team_presets (
 
       const p = item.currentParams || item.analysis;
       if (p) {
-        document.getElementById('analysisSummary').textContent = p.analysis_summary || 'CalibraÃ§Ã£o DSLR concluÃ­da com sucesso.';
-        document.getElementById('lightingTag').textContent = p.detected_lighting_condition || 'IluminaÃ§Ã£o de Palco';
+        document.getElementById('analysisSummary').textContent = p.analysis_summary || 'Calibração DSLR concluída com sucesso.';
+        document.getElementById('lightingTag').textContent = p.detected_lighting_condition || 'Iluminação de Palco';
         document.getElementById('sceneTag').textContent = p.scene_moment || 'Culto / Palco';
         document.getElementById('fStopTag').textContent = `f/${p.f_stop_simulation || 2.8} Bokeh`;
 
@@ -3633,7 +2456,7 @@ create table team_presets (
 
       if (btn) {
         btn.disabled = false;
-        btn.innerHTML = `<i class="fa-solid fa-check text-emerald-300 text-xs"></i> Lote ConcluÃ­do`;
+        btn.innerHTML = `<i class="fa-solid fa-check text-emerald-300 text-xs"></i> Lote Concluído`;
         setTimeout(() => { btn.innerHTML = `<i class="fa-solid fa-bolt text-amber-300 text-xs"></i> Processar Lote`; }, 2500);
       }
 
@@ -4043,8 +2866,4 @@ create table team_presets (
       a.download = `dslr_${activeItem.fileName || 'foto.jpg'}`;
       a.click();
     }
-  </script>
-</body>
-</html>
-
-
+  
