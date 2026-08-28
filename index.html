@@ -11,6 +11,7 @@
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
+window.onerror = function(msg, url, lineNo, columnNo, error) { alert('Erro JS: ' + msg + ' na linha ' + lineNo); }; window.addEventListener('unhandledrejection', function(event) { alert('Erro Async: ' + event.reason); });
     tailwind.config = {
       darkMode: 'class',
       theme: {
@@ -1178,6 +1179,7 @@
 
   <!-- ================= JAVASCRIPT CORE LOGIC ================= -->
   <script>
+window.onerror = function(msg, url, lineNo, columnNo, error) { alert('Erro JS: ' + msg + ' na linha ' + lineNo); }; window.addEventListener('unhandledrejection', function(event) { alert('Erro Async: ' + event.reason); });
     // Global Application State
     let churchServices = [];
     let activeService = null;
@@ -3908,3 +3910,4 @@ create table team_presets (
   </script>
 </body>
 </html>
+
