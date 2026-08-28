@@ -1142,10 +1142,10 @@ create table team_presets (
       DEFAULT_TEAM_PRESETS.forEach(p => allPresetsMap.set(p.id, { ...p }));
 
 //       // if (storedTeam && storedTeam.presets && Array.isArray(storedTeam.presets)) {
-      }
+//       }
 
 //       // if (Array.isArray(userPresets)) {
-      }
+//       }
 
       activeTeam = {
         id: (storedTeam && storedTeam.id) ? storedTeam.id : 'team_default',
