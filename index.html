@@ -2547,10 +2547,28 @@ create table team_presets (
       activeItem.currentParams = { ...p.params };
       const par = p.params;
 
-      if (par.exposure_compensation !== undefined) document.getElementById('param_exposure').value = par.exposure_compensation;
-      if (par.temperature_kelvin !== undefined) document.getElementById('param_kelvin').value = par.temperature_kelvin;
-      if (par.contrast !== undefined) document.getElementById('param_contrast').value = par.contrast;
-      if (par.f_stop_simulation !== undefined) setFStop(par.f_stop_simulation);
+      const setVal = (id, val, suffix = '') => {
+        const el = document.getElementById(`param_${id}`);
+        const valEl = document.getElementById(`val_${id}`);
+        if (el && val !== undefined) {
+          el.value = val;
+          if (valEl) valEl.textContent = `${val}${suffix}`;
+        }
+      };
+
+      setVal('exposure', par.exposure_compensation, '');
+      setVal('kelvin', par.temperature_kelvin, 'K');
+      setVal('tint', par.tint, '');
+      setVal('contrast', par.contrast, 'x');
+      setVal('highlights', par.highlights !== undefined ? Math.round(par.highlights*100) : 0, '%');
+      setVal('shadows', par.shadows !== undefined ? Math.round(par.shadows*100) : 0, '%');
+      setVal('whites', par.whites !== undefined ? Math.round(par.whites*100) : 0, '%');
+      setVal('blacks', par.blacks !== undefined ? Math.round(par.blacks*100) : 0, '%');
+      setVal('saturation', par.saturation !== undefined ? Math.round(par.saturation*100) : 100, '%');
+      setVal('vibrance', par.vibrance !== undefined ? Math.round(par.vibrance*100) : 100, '%');
+      setVal('clarity', par.clarity !== undefined ? Math.round(par.clarity*100) : 0, '%');
+      setVal('dehaze', par.dehaze !== undefined ? Math.round(par.dehaze*100) : 0, '%');
+      setVal('vignette', par.vignette !== undefined ? Math.round(par.vignette*100) : 0, '%');
 
       applyCurrentManualParams();
       showToast(`Preset "${p.name}" aplicado!`);
@@ -3438,21 +3456,31 @@ create table team_presets (
         updateFocusReticleUI();
 
         document.getElementById('param_exposure').value = p.exposure_compensation;
-        document.getElementById('val_exposure').textContent = `${p.exposure_compensation > 0 ? '+' : ''}${p.exposure_compensation} EV`;
+        document.getElementById('val_exposure').textContent = `${p.exposure_compensation > 0 ? '+' : ''}${p.exposure_compensation}`;
         document.getElementById('param_kelvin').value = p.temperature_kelvin;
         document.getElementById('val_kelvin').textContent = `${p.temperature_kelvin}K`;
         document.getElementById('param_tint').value = p.tint || 0.0;
         document.getElementById('val_tint').textContent = `${p.tint || 0.0}`;
         document.getElementById('param_contrast').value = p.contrast || 1.10;
         document.getElementById('val_contrast').textContent = `${(p.contrast || 1.10).toFixed(2)}x`;
-        document.getElementById('param_highlights').value = p.highlights_recovery;
-        document.getElementById('val_highlights').textContent = `${Math.round(p.highlights_recovery*100)}%`;
-        document.getElementById('param_shadows').value = p.shadows_lift;
-        document.getElementById('val_shadows').textContent = `${Math.round(p.shadows_lift*100)}%`;
-        document.getElementById('param_saturation').value = p.saturation || 1.0;
-        document.getElementById('val_saturation').textContent = `${Math.round((p.saturation||1.0)*100)}%`;
-        document.getElementById('param_vibrance').value = p.vibrance || 1.05;
-        document.getElementById('val_vibrance').textContent = `${Math.round((p.vibrance||1.05)*100)}%`;
+        document.getElementById('param_highlights').value = p.highlights || 0.0;
+        document.getElementById('val_highlights').textContent = `${Math.round((p.highlights || 0.0)*100)}%`;
+        document.getElementById('param_shadows').value = p.shadows || 0.0;
+        document.getElementById('val_shadows').textContent = `${Math.round((p.shadows || 0.0)*100)}%`;
+        document.getElementById('param_whites').value = p.whites || 0.0;
+        document.getElementById('val_whites').textContent = `${Math.round((p.whites || 0.0)*100)}%`;
+        document.getElementById('param_blacks').value = p.blacks || 0.0;
+        document.getElementById('val_blacks').textContent = `${Math.round((p.blacks || 0.0)*100)}%`;
+        document.getElementById('param_saturation').value = p.saturation !== undefined ? p.saturation : 1.0;
+        document.getElementById('val_saturation').textContent = `${Math.round((p.saturation !== undefined ? p.saturation : 1.0)*100)}%`;
+        document.getElementById('param_vibrance').value = p.vibrance !== undefined ? p.vibrance : 1.0;
+        document.getElementById('val_vibrance').textContent = `${Math.round((p.vibrance !== undefined ? p.vibrance : 1.0)*100)}%`;
+        document.getElementById('param_clarity').value = p.clarity || 0.0;
+        document.getElementById('val_clarity').textContent = `${Math.round((p.clarity || 0.0)*100)}%`;
+        document.getElementById('param_dehaze').value = p.dehaze || 0.0;
+        document.getElementById('val_dehaze').textContent = `${Math.round((p.dehaze || 0.0)*100)}%`;
+        document.getElementById('param_vignette').value = p.vignette || 0.0;
+        document.getElementById('val_vignette').textContent = `${Math.round((p.vignette || 0.0)*100)}%`;
       }
     }
 
@@ -3714,17 +3742,15 @@ create table team_presets (
         temperature_kelvin: 5600,
         tint: 0.0,
         contrast: 1.10,
-        highlights_recovery: 0.45,
-        shadows_lift: 0.35,
+        highlights: -0.45,
+        shadows: 0.35,
+        whites: 0.0,
+        blacks: 0.0,
         saturation: 1.03,
         vibrance: 1.07,
-        chromatic_aberration_fix: 0.50,
-        vignette_correction: 0.35,
-        lens_distortion_correction: 0.20,
-        led_clipping_restoration: 0.60,
-        stage_led_tint_suppression: 0.45,
-        selective_denoise: 0.30,
-        skin_tone_protection_strength: 0.88,
+        clarity: 0.20,
+        dehaze: 0.10,
+        vignette: -0.15,
         focal_point_x: 0.50,
         focal_point_y: 0.40,
         f_stop_simulation: 2.8,
