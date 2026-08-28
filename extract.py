@@ -1,0 +1,1 @@
+import re; html=open('index.html', encoding='utf-8', errors='ignore').read(); script = ''.join(re.findall(r'<script>([\s\S]*?)</script>', html, re.IGNORECASE)); open('app.js','w',encoding='utf-8').write(script)
