@@ -205,7 +205,7 @@
       </div>
 
       <div class="mt-2.5 text-center flex justify-center opacity-70">
-        <span class="text-[9px] text-slate-500 font-mono tracking-widest uppercase border border-slate-700/50 bg-church-900/50 px-2 py-0.5 rounded-full">v2.4.6 (hotfix)</span>
+        <span class="text-[9px] text-slate-500 font-mono tracking-widest uppercase border border-slate-700/50 bg-church-900/50 px-2 py-0.5 rounded-full">v2.5.0 (skip-studio)</span>
       </div>
 
     </div>
@@ -1020,6 +1020,13 @@
         <div>
           <label class="text-xs font-semibold text-slate-300 block mb-1.5">Data do Culto</label>
           <input type="date" id="newServiceDate" required class="w-full px-3.5 py-2 rounded-xl bg-church-950 border border-church-800 text-white text-xs focus:outline-none focus:border-blue-500">
+        </div>
+
+        <div class="mt-2">
+          <label class="flex items-center gap-2.5 cursor-pointer">
+            <input type="checkbox" id="newServiceSkipStudio" class="w-4 h-4 rounded text-blue-600 bg-church-950 border-church-800 focus:ring-blue-500 cursor-pointer">
+            <span class="text-xs text-slate-300 font-medium select-none">Ignorar Edição (Usar apenas deduplicação e IA no Funil)</span>
+          </label>
         </div>
 
         <div>
@@ -2766,6 +2773,12 @@ create table team_presets (
       [b1, b2, b3].forEach(b => {
         b.className = "px-3 py-1.5 rounded-lg text-slate-400 hover:text-white font-medium flex items-center gap-1.5 transition-all";
       });
+      
+      if (activeService && activeService.skipStudio) {
+        if (b3) b3.style.display = 'none';
+      } else {
+        if (b3) b3.style.display = 'flex';
+      }
 
       if (step === 1) {
         s1.style.display = 'flex'; s1.classList.remove('hidden');
@@ -2790,15 +2803,34 @@ create table team_presets (
         s2.style.display = 'flex'; s2.classList.remove('hidden');
         s3.style.display = 'none'; s3.classList.add('hidden');
         b2.className = "px-3 py-1.5 rounded-lg bg-blue-600 text-white font-bold flex items-center gap-1.5 transition-all";
+        
+        const btnNext = document.querySelector('#funnelStage2 button[onclick="setFunnelStep(3)"]');
+        if (btnNext) {
+          if (activeService && activeService.skipStudio) {
+            btnNext.innerHTML = `<i class="fa-solid fa-check"></i> Finalizar Galeria (Salvar)`;
+            btnNext.className = "px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-blue-600/30 cursor-pointer";
+          } else {
+            btnNext.innerHTML = `Aprovar Galeria (Ir para Fase 3) <i class="fa-solid fa-arrow-right"></i>`;
+            btnNext.className = "px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-emerald-600/30 cursor-pointer";
+          }
+        }
+        
         renderTop20Grid();
       } else {
         // Enviar para Fase 3 (Studio) apenas as selecionadas na Fase 2
         if (activeService && activeService.items) {
           activeService.items = activeService.items.filter(i => i.isTop20 !== false);
           dbSaveService(activeService);
-          openServiceInStudio(activeService.id);
+          
+          if (activeService.skipStudio) {
+            showToast("Culto finalizado com sucesso!");
+            switchMainView('services');
+          } else {
+            openServiceInStudio(activeService.id);
+          }
         } else {
-          switchMainView('studio');
+          if (activeService && activeService.skipStudio) switchMainView('services');
+          else switchMainView('studio');
         }
       }
     }
@@ -3287,7 +3319,8 @@ create table team_presets (
         date: date || new Date().toLocaleDateString('pt-BR'),
         presetName: activeTeam && activeTeam.presets && activeTeam.presets[0] ? activeTeam.presets[0].name : 'Luz Quente Natural',
         items: [],
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        skipStudio: document.getElementById('newServiceSkipStudio') ? document.getElementById('newServiceSkipStudio').checked : false
       };
 
       if (pendingModalFiles.length > 0) {
