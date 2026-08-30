@@ -99,7 +99,7 @@
     <!-- Top Header: Logo & Retract Button -->
     <div class="p-3.5 border-b border-church-800/80 flex items-center justify-between gap-2">
       <div class="flex items-center gap-2.5 min-w-0">
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-600/30 shrink-0">
+        <div class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white  shrink-0">
           <i class="fa-solid fa-camera-retro text-base"></i>
         </div>
         <div class="sidebar-logo-text min-w-0">
@@ -198,14 +198,20 @@
 
       <!-- When Unauthenticated: ALWAYS Visible Big Login Button -->
       <div id="sideProfileLoggedOut" class="flex items-center justify-between w-full">
-        <button onclick="openSupabaseAuthModal()" class="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:scale-95 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg shadow-emerald-600/30">
+        <button onclick="openSupabaseAuthModal()" class="w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ">
           <i class="fa-solid fa-cloud text-xs shrink-0 text-amber-300"></i>
           <span class="sidebar-text">Entrar / Criar Conta</span>
         </button>
       </div>
 
-      <div class="mt-2.5 text-center flex justify-center opacity-70">
-        <span class="text-[9px] text-slate-500 font-mono tracking-widest uppercase border border-slate-700/50 bg-church-900/50 px-2 py-0.5 rounded-full">v2.5.0 (skip-studio)</span>
+      <div class="mt-2 text-center flex justify-center">
+        <button onclick="toggleTheme()" class="px-3 py-1.5 rounded-lg border border-church-800 bg-church-900 hover:bg-church-850 text-slate-400 text-xs font-semibold flex items-center gap-2 cursor-pointer transition-all">
+          <i class="fa-solid fa-moon" id="themeIcon"></i> <span id="themeText">Modo Escuro</span>
+        </button>
+      </div>
+
+      <div class="mt-2 text-center flex justify-center opacity-70">
+        <span class="text-[9px] text-slate-500 font-mono tracking-widest uppercase border border-slate-700/50 bg-church-900/50 px-2 py-0.5 rounded-full">v2.5.1 (minimal-light)</span>
       </div>
 
     </div>
@@ -246,7 +252,7 @@
           <span class="hidden sm:inline" id="topTeamNameBadge">MÃ­dia Principal</span>
         </button>
 
-        <button onclick="openCreateServiceModal()" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-xs font-semibold shadow-md shadow-blue-600/25 transition-all flex items-center gap-1.5 cursor-pointer">
+        <button onclick="openCreateServiceModal()" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-xs font-semibold shadow-sm  transition-all flex items-center gap-1.5 cursor-pointer">
           <i class="fa-solid fa-plus text-xs"></i>
           <span>Novo Culto</span>
         </button>
@@ -254,7 +260,7 @@
     </header>
 
     <!-- Global Toast Notification Banner -->
-    <div id="toastNotification" class="fixed top-16 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-2xl bg-church-900/95 border border-emerald-500/50 text-white text-xs font-semibold shadow-2xl shadow-emerald-500/20 backdrop-blur-md flex items-center gap-2 transition-all duration-300 transform -translate-y-10 opacity-0 pointer-events-none">
+    <div id="toastNotification" class="fixed top-16 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-2xl bg-church-900/95 border border-emerald-500/50 text-white text-xs font-semibold shadow-sm  backdrop-blur-md flex items-center gap-2 transition-all duration-300 transform -translate-y-10 opacity-0 pointer-events-none">
       <i class="fa-solid fa-circle-check text-emerald-400"></i>
       <span id="toastText">OperaÃ§Ã£o realizada com sucesso!</span>
     </div>
@@ -268,7 +274,7 @@
       <div id="viewServicesSection" class="flex flex-col gap-5 w-full">
         
         <!-- Hero Banner -->
-        <div class="rounded-2xl sm:rounded-3xl bg-gradient-to-b from-church-900 to-church-950 border border-church-800 p-5 sm:p-6 shadow-2xl relative overflow-hidden">
+        <div class="rounded-2xl sm:rounded-3xl bg-church-900 border border-church-800 p-5 sm:p-6 shadow-sm relative overflow-hidden">
           <div class="absolute -top-20 right-0 w-64 h-32 bg-emerald-500/10 blur-3xl pointer-events-none"></div>
 
           <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -286,12 +292,12 @@
             </div>
 
             <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-              <button id="mainHeroAuthBtn" onclick="openSupabaseAuthModal()" class="w-full sm:w-auto px-5 py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:scale-95 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2 transition-all cursor-pointer">
+              <button id="mainHeroAuthBtn" onclick="openSupabaseAuthModal()" class="w-full sm:w-auto px-5 py-3.5 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold text-xs sm:text-sm rounded-xl  flex items-center justify-center gap-2 transition-all cursor-pointer">
                 <i class="fa-solid fa-cloud text-sm text-amber-300"></i>
                 <span>Entrar / Criar Conta</span>
               </button>
 
-              <button onclick="openCreateServiceModal()" class="w-full sm:w-auto px-6 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-95 text-white font-bold text-xs sm:text-sm rounded-xl shadow-xl shadow-blue-600/30 flex items-center justify-center gap-2.5 transition-all cursor-pointer shrink-0">
+              <button onclick="openCreateServiceModal()" class="w-full sm:w-auto px-6 py-3.5 bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-bold text-xs sm:text-sm rounded-xl  flex items-center justify-center gap-2.5 transition-all cursor-pointer shrink-0">
                 <i class="fa-solid fa-plus text-sm"></i>
                 <span>Criar Novo Culto</span>
               </button>
@@ -324,7 +330,7 @@
           <p class="text-xs text-slate-400 mt-1 max-w-sm">
             Crie seu primeiro culto para fazer upload das fotos da equipe de mÃ­dia e iniciar a curadoria em lote.
           </p>
-          <button onclick="openCreateServiceModal()" class="mt-4 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs flex items-center gap-2 transition-all cursor-pointer shadow-lg shadow-blue-600/20">
+          <button onclick="openCreateServiceModal()" class="mt-4 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs flex items-center gap-2 transition-all cursor-pointer shadow-sm ">
             <i class="fa-solid fa-plus"></i> Criar Primeiro Culto
           </button>
         </div>
@@ -337,7 +343,7 @@
       <div id="viewFunnelSection" class="flex flex-col gap-5 hidden" style="display: none;">
         
         <!-- Funnel Stepper Header -->
-        <div class="p-3.5 sm:p-4 rounded-2xl bg-church-900 border border-church-800 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div class="p-3.5 sm:p-4 rounded-2xl bg-church-900 border border-church-800 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
           <div class="flex items-center gap-2">
             <div class="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 text-sm">
               <i class="fa-solid fa-filter"></i>
@@ -376,7 +382,7 @@
                 O Gemini agrupou fotos em sequÃªncia e elegeu a foto com melhor nitidez e olhos abertos. Fotos idÃªnticas recebem rigorosamente o mesmo critÃ©rio.
               </p>
             </div>
-            <button onclick="setFunnelStep(2)" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-blue-600/30 shrink-0 cursor-pointer">
+            <button onclick="setFunnelStep(2)" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-2  shrink-0 cursor-pointer">
               <span>AvanÃ§ar para Top 20</span>
               <i class="fa-solid fa-arrow-right text-xs"></i>
             </button>
@@ -403,7 +409,7 @@
               <span id="top20LiveCounter" class="px-3 py-2 rounded-xl bg-blue-950 border border-blue-800 text-blue-300 font-mono text-xs font-bold">
                 0 / 20 Selecionadas
               </span>
-              <button onclick="setFunnelStep(3)" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-emerald-600/30 cursor-pointer">
+              <button onclick="setFunnelStep(3)" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-2  cursor-pointer">
                 <span>Ir para EdiÃ§Ã£o & Crop</span>
                 <i class="fa-solid fa-arrow-right text-xs"></i>
               </button>
@@ -438,7 +444,7 @@
                 Ajuste o recorte inteligente sugerido pelo Gemini para o feed do Instagram e aplique Meus Presets.
               </p>
             </div>
-            <button onclick="downloadActiveServiceZip()" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-emerald-600/30 cursor-pointer">
+            <button onclick="downloadActiveServiceZip()" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5  cursor-pointer">
               <i class="fa-solid fa-file-zipper"></i>
               <span>Baixar Lote (.ZIP)</span>
             </button>
@@ -453,7 +459,7 @@
       <div id="viewStudioSection" class="flex flex-col gap-4 hidden" style="display: none;">
         
         <!-- Studio Top Navigation & Smart Crop Controls -->
-        <div class="flex flex-wrap items-center justify-between p-3.5 rounded-2xl bg-church-900 border border-church-800 shadow-md gap-2">
+        <div class="flex flex-wrap items-center justify-between p-3.5 rounded-2xl bg-church-900 border border-church-800 shadow-sm gap-2">
           <div class="flex items-center gap-2.5 min-w-0">
             <button onclick="switchMainView('services')" class="px-2.5 py-1.5 rounded-xl bg-church-950 hover:bg-church-850 border border-church-800 text-slate-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
               <i class="fa-solid fa-arrow-left text-xs"></i>
@@ -483,7 +489,7 @@
               <span class="hidden sm:inline">Processar Lote</span>
             </button>
 
-            <button onclick="downloadActiveServiceZip()" class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-emerald-600/30 transition-all cursor-pointer">
+            <button onclick="downloadActiveServiceZip()" class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold text-xs flex items-center gap-1.5  transition-all cursor-pointer">
               <i class="fa-solid fa-file-zipper text-xs"></i>
               <span>Baixar (.ZIP)</span>
             </button>
@@ -528,7 +534,7 @@
         </div>
 
         <!-- INTERACTIVE VIEWER WITH SMART CROP OVERLAY -->
-        <div id="viewerContainer" class="flex flex-col rounded-2xl sm:rounded-3xl bg-church-900 border border-church-800 shadow-2xl overflow-hidden min-h-[420px] sm:min-h-[500px]">
+        <div id="viewerContainer" class="flex flex-col rounded-2xl sm:rounded-3xl bg-church-900 border border-church-800 shadow-sm overflow-hidden min-h-[420px] sm:min-h-[500px]">
           
           <!-- Viewer Top Bar -->
           <div class="flex items-center justify-between px-3.5 py-2.5 bg-church-950 border-b border-church-800">
@@ -591,7 +597,7 @@
                 <div class="w-10 h-10 rounded-full border-2 border-amber-400 bg-amber-400/10 shadow-[0_0_15px_rgba(245,158,11,0.6)] focal-ring flex items-center justify-center">
                   <div class="w-1.5 h-1.5 rounded-full bg-amber-300"></div>
                 </div>
-                <span id="focusReticleBadge" class="absolute top-11 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-md bg-black/80 border border-amber-400/40 text-[9px] font-mono text-amber-300 whitespace-nowrap shadow-lg">
+                <span id="focusReticleBadge" class="absolute top-11 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-md bg-black/80 border border-amber-400/40 text-[9px] font-mono text-amber-300 whitespace-nowrap shadow-sm">
                   f/2.8 Â· Foco Ativo
                 </span>
               </div>
@@ -604,7 +610,7 @@
               <!-- Divider Line -->
               <div id="dividerLine" class="slider-divider absolute top-0 bottom-0 z-30 cursor-ew-resize flex items-center justify-center group" style="left: 50%; transform: translateX(-50%);">
                 <div class="w-[2.5px] h-full bg-white group-hover:bg-blue-400 shadow-[0_0_12px_rgba(0,0,0,0.9)]"></div>
-                <div class="absolute w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-church-900/90 border-2 border-white flex items-center justify-center text-white shadow-2xl group-hover:scale-110 active:scale-95 transition-all backdrop-blur-sm">
+                <div class="absolute w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-church-900/90 border-2 border-white flex items-center justify-center text-white shadow-sm group-hover:scale-110 active:scale-95 transition-all backdrop-blur-sm">
                   <i class="fa-solid fa-arrows-left-right text-xs"></i>
                 </div>
               </div>
@@ -641,7 +647,7 @@
         </div>
 
         <!-- 3-TAB CONTROLS PANEL -->
-        <div id="parametersPanel" class="rounded-2xl sm:rounded-3xl bg-church-900 border border-church-800 p-4 sm:p-5 shadow-xl hidden" style="display: none;">
+        <div id="parametersPanel" class="rounded-2xl sm:rounded-3xl bg-church-900 border border-church-800 p-4 sm:p-5 shadow-sm hidden" style="display: none;">
           
           <!-- Diagnostic Scene Bar -->
           <div class="p-3 rounded-xl bg-church-950 border border-church-800 text-xs mb-4">
@@ -779,7 +785,7 @@
             </div>
           </div>
 
-          <button onclick="applyCurrentManualParams()" class="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-98 text-white text-xs font-semibold shadow-md flex items-center justify-center gap-1.5 transition-all mt-4 cursor-pointer">
+          <button onclick="applyCurrentManualParams()" class="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-98 text-white text-xs font-semibold shadow-sm flex items-center justify-center gap-1.5 transition-all mt-4 cursor-pointer">
             <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
             <span>Aplicar Ajustes DSLR</span>
           </button>
@@ -794,7 +800,7 @@
       <div id="viewTeamAreaSection" class="flex flex-col gap-6 hidden" style="display: none;">
         
         <!-- Team Hero Header -->
-        <div class="rounded-2xl sm:rounded-3xl bg-gradient-to-b from-church-900 to-church-950 border border-church-800 p-5 sm:p-6 shadow-2xl relative overflow-hidden">
+        <div class="rounded-2xl sm:rounded-3xl bg-church-900 border border-church-800 p-5 sm:p-6 shadow-sm relative overflow-hidden">
           <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
               <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-purple-950/80 border border-purple-800/60 text-purple-300 text-[10px] sm:text-xs font-semibold mb-2">
@@ -810,11 +816,11 @@
             </div>
 
             <div class="flex flex-wrap gap-2 w-full sm:w-auto">
-              <button onclick="openInviteMemberModal()" class="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-lg shadow-blue-600/20">
+              <button onclick="openInviteMemberModal()" class="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-sm ">
                 <i class="fa-solid fa-user-plus text-xs"></i>
                 <span>+ Convidar Membro</span>
               </button>
-              <button onclick="openSavePresetModal()" class="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-lg shadow-purple-600/20">
+              <button onclick="openSavePresetModal()" class="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-sm ">
                 <i class="fa-solid fa-plus text-xs"></i>
                 <span>+ Criar Preset da Equipe</span>
               </button>
@@ -864,15 +870,15 @@
   <!-- MODAL: CONVIDAR VOLUNTÃRIO / MEMBRO -->
   <!-- ========================================================================= -->
   <div id="inviteMemberModal" class="fixed inset-0 z-50 items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden" style="display: none;">
-    <div class="w-full max-w-md bg-church-900 border border-church-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
-      <div class="absolute -top-16 -right-16 w-36 h-36 bg-blue-500/20 blur-3xl pointer-events-none"></div>
+    <div class="w-full max-w-md bg-church-900 border border-church-800 rounded-3xl p-6 shadow-sm relative overflow-hidden">
+      
 
       <button onclick="closeInviteMemberModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1.5 rounded-lg cursor-pointer">
         <i class="fa-solid fa-xmark text-base"></i>
       </button>
 
       <div class="flex items-center gap-3 mb-4">
-        <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-600/30">
+        <div class="w-11 h-11 rounded-2xl bg-blue-600 flex items-center justify-center text-white ">
           <i class="fa-solid fa-user-plus text-lg"></i>
         </div>
         <div>
@@ -897,7 +903,7 @@
           </select>
         </div>
 
-        <button type="submit" class="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-lg shadow-blue-600/30 transition-all mt-2 cursor-pointer">
+        <button type="submit" class="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs  transition-all mt-2 cursor-pointer">
           Confirmar e Adicionar Ã  Equipe
         </button>
       </form>
@@ -908,7 +914,7 @@
   <!-- MODAL: EDITAR / SALVAR PRESET DA EQUIPE -->
   <!-- ========================================================================= -->
   <div id="savePresetModal" class="fixed inset-0 z-50 items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden" style="display: none;">
-    <div class="w-full max-w-md bg-church-900 border border-church-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
+    <div class="w-full max-w-md bg-church-900 border border-church-800 rounded-3xl p-6 shadow-sm relative overflow-hidden">
       <div class="absolute -top-16 -right-16 w-36 h-36 bg-purple-500/20 blur-3xl pointer-events-none"></div>
 
       <button onclick="closeSavePresetModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1.5 rounded-lg cursor-pointer">
@@ -916,7 +922,7 @@
       </button>
 
       <div class="flex items-center gap-3 mb-4">
-        <div class="w-10 h-10 rounded-2xl bg-purple-600 flex items-center justify-center text-white shadow-lg shadow-purple-600/30">
+        <div class="w-10 h-10 rounded-2xl bg-purple-600 flex items-center justify-center text-white shadow-sm ">
           <i class="fa-solid fa-sliders text-base"></i>
         </div>
         <div>
@@ -977,7 +983,7 @@
           </div>
         </div>
 
-        <button type="submit" class="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-lg shadow-purple-600/30 transition-all mt-1 cursor-pointer">
+        <button type="submit" class="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-sm  transition-all mt-1 cursor-pointer">
           Salvar Preset na Equipe
         </button>
       </form>
@@ -986,15 +992,15 @@
 
   <!-- MODAL: CRIAR NOVO CULTO -->
   <div id="createServiceModal" class="fixed inset-0 z-50 items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden" style="display: none;">
-    <div class="w-full max-w-lg bg-church-900 border border-church-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
-      <div class="absolute -top-16 -right-16 w-36 h-36 bg-blue-500/20 blur-3xl pointer-events-none"></div>
+    <div class="w-full max-w-lg bg-church-900 border border-church-800 rounded-3xl p-6 shadow-sm relative overflow-hidden">
+      
 
       <button onclick="closeCreateServiceModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1.5 rounded-lg cursor-pointer">
         <i class="fa-solid fa-xmark text-base"></i>
       </button>
 
       <div class="flex items-center gap-3 mb-4">
-        <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-600/30">
+        <div class="w-11 h-11 rounded-2xl bg-blue-600 flex items-center justify-center text-white ">
           <i class="fa-solid fa-church text-lg"></i>
         </div>
         <div>
@@ -1039,7 +1045,7 @@
           </div>
         </div>
 
-        <button type="submit" id="createServiceSubmitBtn" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-98 text-white font-bold text-xs sm:text-sm shadow-xl shadow-blue-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer mt-2">
+        <button type="submit" id="createServiceSubmitBtn" class="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-98 text-white font-bold text-xs sm:text-sm  transition-all flex items-center justify-center gap-2 cursor-pointer mt-2">
           <i class="fa-solid fa-wand-magic-sparkles"></i>
           <span>Criar Culto & Abrir Funil de Curadoria</span>
         </button>
@@ -1051,7 +1057,7 @@
   <!-- MODAL: SUPABASE AUTHENTICATION (LOGIN & REGISTRO) -->
   <!-- ========================================================================= -->
   <div id="supabaseAuthModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 hidden" style="display: none;">
-    <div class="relative w-full max-w-md bg-church-900 border border-church-800 rounded-3xl p-6 sm:p-7 shadow-2xl overflow-hidden">
+    <div class="relative w-full max-w-md bg-church-900 border border-church-800 rounded-3xl p-6 sm:p-7 shadow-sm overflow-hidden">
       
       <!-- Top Glow Background -->
       <div class="absolute -top-24 -right-24 w-48 h-48 bg-emerald-500/15 blur-3xl pointer-events-none"></div>
@@ -1064,7 +1070,7 @@
 
       <!-- Modal Header -->
       <div class="flex items-center gap-3 mb-5">
-        <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-600 flex items-center justify-center text-white shadow-lg shadow-emerald-600/30 shrink-0">
+        <div class="w-11 h-11 rounded-2xl bg-emerald-600 flex items-center justify-center text-white  shrink-0">
           <i class="fa-solid fa-cloud text-lg"></i>
         </div>
         <div>
@@ -1111,7 +1117,7 @@
           </div>
         </div>
 
-        <button type="submit" id="supabaseLoginSubmitBtn" class="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:scale-98 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer">
+        <button type="submit" id="supabaseLoginSubmitBtn" class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-98 text-white font-bold text-xs  transition-all flex items-center justify-center gap-2 cursor-pointer">
           <i class="fa-solid fa-arrow-right-to-bracket"></i>
           <span>Entrar no Sistema</span>
         </button>
@@ -1151,7 +1157,7 @@
           </div>
         </div>
 
-        <button type="submit" id="supabaseRegisterSubmitBtn" class="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:scale-98 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer mt-1">
+        <button type="submit" id="supabaseRegisterSubmitBtn" class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-98 text-white font-bold text-xs  transition-all flex items-center justify-center gap-2 cursor-pointer mt-1">
           <i class="fa-solid fa-user-check"></i>
           <span>Criar Minha Conta GrÃ¡tis</span>
         </button>
@@ -1451,7 +1457,36 @@
       console.warn("Supabase SDK init exception:", e);
     }
 
+    function toggleTheme() {
+      const htmlEl = document.documentElement;
+      const isDark = htmlEl.classList.contains('dark');
+      if (isDark) {
+        htmlEl.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+        document.getElementById('themeIcon').className = 'fa-solid fa-sun text-amber-500';
+        document.getElementById('themeText').textContent = 'Modo Claro';
+      } else {
+        htmlEl.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+        document.getElementById('themeIcon').className = 'fa-solid fa-moon text-blue-400';
+        document.getElementById('themeText').textContent = 'Modo Escuro';
+      }
+    }
+
+    function initTheme() {
+      const storedTheme = localStorage.getItem('theme');
+      const htmlEl = document.documentElement;
+      if (storedTheme === 'light') {
+        htmlEl.classList.remove('dark');
+        const ti = document.getElementById('themeIcon');
+        const tt = document.getElementById('themeText');
+        if (ti) ti.className = 'fa-solid fa-sun text-amber-500';
+        if (tt) tt.textContent = 'Modo Claro';
+      }
+    }
+
     window.addEventListener('DOMContentLoaded', async () => {
+      initTheme();
       const dateInp = document.getElementById('newServiceDate');
       if (dateInp) dateInp.valueAsDate = new Date();
 
@@ -1954,7 +1989,7 @@
       if(document.getElementById('supabaseSqlModal')) return;
       const modalHtml = `
         <div id="supabaseSqlModal" class="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div class="bg-church-900 border border-church-800 rounded-2xl w-full max-w-lg shadow-2xl flex flex-col max-h-[90vh]">
+          <div class="bg-church-900 border border-church-800 rounded-2xl w-full max-w-lg shadow-sm flex flex-col max-h-[90vh]">
             <div class="p-4 border-b border-church-800 flex justify-between items-center bg-church-950/50 rounded-t-2xl">
               <h3 class="text-base font-bold text-white flex items-center gap-2"><i class="fa-solid fa-database text-blue-500"></i> Configure seu Banco de Dados</h3>
               <button onclick="document.getElementById('supabaseSqlModal').remove()" class="text-slate-400 hover:text-white transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
@@ -2428,7 +2463,7 @@ create table team_presets (
         presetsList.innerHTML = presets.map(p => {
           const par = p.params || {};
           return `
-            <div class="rounded-2xl bg-church-900 border border-church-800 hover:border-purple-500/50 p-4 shadow-xl flex flex-col justify-between transition-all">
+            <div class="rounded-2xl bg-church-900 border border-church-800 hover:border-purple-500/50 p-4 shadow-sm flex flex-col justify-between transition-all">
               <div>
                 <div class="flex items-start justify-between gap-2 mb-2">
                   <div>
@@ -2808,10 +2843,10 @@ create table team_presets (
         if (btnNext) {
           if (activeService && activeService.skipStudio) {
             btnNext.innerHTML = `<i class="fa-solid fa-check"></i> Finalizar Galeria (Salvar)`;
-            btnNext.className = "px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-blue-600/30 cursor-pointer";
+            btnNext.className = "px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-2  cursor-pointer";
           } else {
             btnNext.innerHTML = `Aprovar Galeria (Ir para Fase 3) <i class="fa-solid fa-arrow-right"></i>`;
-            btnNext.className = "px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-emerald-600/30 cursor-pointer";
+            btnNext.className = "px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-2  cursor-pointer";
           }
         }
         
@@ -2908,7 +2943,7 @@ create table team_presets (
         });
 
         return `
-          <div class="rounded-2xl bg-church-900 border border-church-800 p-4 flex flex-col gap-3 shadow-md">
+          <div class="rounded-2xl bg-church-900 border border-church-800 p-4 flex flex-col gap-3 shadow-sm">
             <div class="flex items-center justify-between">
               <span class="text-xs font-bold text-white flex items-center gap-1.5">
                 <i class="fa-solid fa-layer-group text-blue-400"></i> ${g.name}
@@ -2968,7 +3003,7 @@ create table team_presets (
         const score = computePhotoScore(item);
 
         return `
-          <div onclick="togglePhotoTop20Selection('${item.id}')" class="relative rounded-xl overflow-hidden bg-church-900 border-2 ${isSelected ? 'border-blue-500 shadow-lg shadow-blue-500/20' : 'border-church-800 opacity-60'} cursor-pointer transition-all flex flex-col group">
+          <div onclick="togglePhotoTop20Selection('${item.id}')" class="relative rounded-xl overflow-hidden bg-church-900 border-2 ${isSelected ? 'border-blue-500 shadow-sm ' : 'border-church-800 opacity-60'} cursor-pointer transition-all flex flex-col group">
             <div class="relative aspect-[4/5] bg-church-950 flex items-center justify-center overflow-hidden">
               <img src="${item.processedBase64 || item.previewUrl}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200">
               
@@ -3227,7 +3262,7 @@ create table team_presets (
         `).join('');
 
         return `
-          <div class="rounded-2xl sm:rounded-3xl bg-church-900 border border-church-800 hover:border-blue-500/50 p-4 sm:p-5 shadow-xl flex flex-col justify-between transition-all group">
+          <div class="rounded-2xl sm:rounded-3xl bg-church-900 border border-church-800 hover:border-blue-500/50 p-4 sm:p-5 shadow-sm flex flex-col justify-between transition-all group">
             <div>
               <div class="flex items-start justify-between gap-2 mb-2">
                 <div>
@@ -3525,7 +3560,7 @@ create table team_presets (
         const isSelected = activeItem && activeItem.id === item.id;
         return `
           <div onclick="selectQueueItem('${item.id}')" class="relative shrink-0 w-14 h-14 rounded-xl overflow-hidden cursor-pointer border-2 transition-all ${
-            isSelected ? 'border-blue-500 scale-105 shadow-md shadow-blue-500/30' : 'border-church-800 opacity-70 hover:opacity-100'
+            isSelected ? 'border-blue-500 scale-105 shadow-sm ' : 'border-church-800 opacity-70 hover:opacity-100'
           }">
             <img src="${item.processedBase64 || item.previewUrl}" class="w-full h-full object-cover">
             ${item.status === 'completed' ? '<span class="absolute top-0.5 right-0.5 w-2 h-2 rounded-full bg-emerald-400"></span>' : ''}
